@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema Profissional de Gerenciamento de Inventário e Vendas.">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Sistema de Inventário Profissional">
+    <meta property="og:description" content="Controle de estoque, vendas e relatórios em tempo real.">
+    <meta property="og:image"
+        content="https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&q=80&w=1200">
+
+    <title>Sistema de Inventário - Loja de Calçados e Vestuário</title>
+
+    <!-- Favicon Placeholder -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2897/2897837.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#f59e0b', // Amber 500
+                        secondary: '#0f172a', // Slate 900
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js para Gráficos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+    <!-- Estilos Externos -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        #bgCanvasLogin {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+            background: #020617;
+        }
+
+        .login-glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .magnetic-login-btn {
+            transition: transform 0.2s cubic-bezier(0.33, 1, 0.68, 1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+
+    <!-- Tela de Login -->
+    <div id="loginSection" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <canvas id="bgCanvasLogin"></canvas>
+        <div
+            class="login-glass text-white rounded-3xl shadow-2xl max-w-md w-full p-10 slide-in border border-white/10 relative overflow-hidden">
+            <!-- Glow effect -->
+            <div
+                class="absolute top-0 right-0 w-32 h-32 bg-amber-500/20 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none">
+            </div>
+
+            <div class="text-center mb-8">
+                <div id="loginLogoContainer"
+                    class="bg-slate-800/50 p-4 rounded-2xl inline-block mb-6 w-24 h-24 flex items-center justify-center overflow-hidden mx-auto border border-amber-500/30 shadow-[0_0_30px_rgba(251,191,36,0.15)]">
+                    <i id="loginDefaultIcon" class="fas fa-shield-halved text-amber-400 text-4xl"></i>
+                    <img id="loginLogoImg" src="" alt="Logo" class="hidden w-full h-full object-cover">
+                </div>
+                <h2 id="loginStoreName" class="text-4xl font-black tracking-tighter mb-2 text-white">VERUM GESTÃO</h2>
+                <p id="loginStoreDesc" class="text-slate-400 text-sm font-medium uppercase tracking-[0.2em]">Painel de
+                    Gestão</p>
+                <div class="flex flex-col gap-3 mt-8">
+                    <a href="index.html"
+                        class="magnetic-login-btn text-slate-500 hover:text-slate-300 transition text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                        <i class="fas fa-house"></i> Voltar ao Início
+                    </a>
+                </div>
+            </div>
+
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">E-mail</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" id="loginEmail" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900"
+                            placeholder="seu@email.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Senha</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-key"></i>
+                        </span>
+                        <input type="password" id="loginPassword" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <a href="#" id="showRegisterBtn" class="font-medium text-amber-500 hover:text-amber-400">
+                        Não tem conta? Criar conta
+                    </a>
+                </div>
+
+                <button type="submit" id="btnLogin"
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-4 rounded-xl transition duration-200 transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(245,158,11,0.2)]">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Acessar Sistema
+                </button>
+            </form>
+
+            <form id="registerForm" class="space-y-4 hidden">
+                <div class="text-center mb-2">
+                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">Criar Nova Conta</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Seu Nome</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" id="regNome" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900"
+                            placeholder="Seu nome completo">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-mail</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" id="regEmail" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900"
+                            placeholder="seu@email.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" id="regPassword" required minlength="6"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900"
+                            placeholder="Minímo 6 caracteres">
+                    </div>
+                </div>
+
+                <!-- Escolha do Tipo de Cadastro (Switch Premium) -->
+                <div
+                    class="flex p-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-2xl mb-6 ring-1 ring-slate-200 dark:ring-slate-700">
+                    <button type="button" id="btnNovaLoja"
+                        class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 bg-amber-500 text-slate-900 shadow-sm">
+                        <i class="fas fa-plus-circle"></i>
+                        CRIAR LOJA
+                    </button>
+                    <button type="button" id="btnEntrarLoja"
+                        class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                        <i class="fas fa-sign-in-alt"></i>
+                        ENTRAR EM LOJA
+                    </button>
+                </div>
+
+                <!-- Campo Nome da Loja -->
+                <div id="nomeLojaCont">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Nome da Loja <span class="text-amber-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-store"></i>
+                        </span>
+                        <input type="text" id="regNomeLoja"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-slate-900"
+                            placeholder="Ex: Minha Loja">
+                    </div>
+                </div>
+
+                <!-- Campo Chave de Acesso -->
+                <div id="chaveAcessoCont" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Chave de Acesso <span class="text-indigo-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-key"></i>
+                        </span>
+                        <input type="text" id="regChaveAcesso"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 uppercase"
+                            placeholder="Digite a chave da loja" maxlength="8">
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">
+                        <i class="fas fa-info-circle"></i> Solicite a chave ao dono da loja.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <a href="#" id="showLoginBtn" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        Já tem conta? Fazer Login
+                    </a>
+                </div>
+
+                <button type="button" id="btnRegister"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <i class="fas fa-rocket"></i>
+                    Criar Conta
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-gray-100 dark:border-slate-700 text-center relative">
+                <p class="text-xs text-gray-500 mb-2 font-medium cursor-pointer" id="secretMasterBtn">Verum Gestão
+                    Profissional v2.0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal do App (Escondido até Login) -->
+    <div id="mainApp" class="hidden">
+        <!-- Cabeçalho -->
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-3">
+                    <div id="storeLogoContainer"
+                        class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg w-12 h-12 flex items-center justify-center overflow-hidden border border-amber-500/20">
+                        <i id="defaultLogoIcon" class="fas fa-warehouse text-amber-500 text-2xl"></i>
+                        <img id="storeLogoImg" src="" alt="Logo" class="hidden w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <h1 id="headerStoreName"
+                            class="text-2xl font-black tracking-tight text-slate-800 dark:text-white">VERUM <span
+                                class="text-amber-500">GESTÃO</span></h1>
+                        <p id="headerStoreDesc" class="text-sm text-gray-500">Gerenciamento Profissional</p>
+                    </div>
+                </div>
+
+                <!-- Navegação entre Abas -->
+                <nav class="nav-pill-container w-full md:w-auto">
+                    <button id="navEstoque" class="nav-pill-btn active">
+                        <i class="fas fa-boxes"></i><span>Estoque</span>
+                    </button>
+                    <button id="navVendas" class="nav-pill-btn">
+                        <i class="fas fa-shopping-cart"></i><span>Vendas</span>
+                    </button>
+                    <button id="navClientes" class="nav-pill-btn">
+                        <i class="fas fa-users"></i><span>Clientes</span>
+                    </button>
+                    <button id="navFinancas" class="nav-pill-btn">
+                        <i class="fas fa-wallet"></i><span>Finanças</span>
+                    </button>
+                    <button id="navRelatorios" class="nav-pill-btn">
+                        <i class="fas fa-chart-pie"></i><span>Relatórios</span>
+                    </button>
+                </nav>
+
+                <div class="flex items-center space-x-2">
+                    <button id="btnConfigLoja" title="Configurações da Loja"
+                        class="hidden p-2 text-gray-500 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all">
+                        <i class="fas fa-cog text-xl"></i>
+                    </button>
+                    <button id="logoutBtn" onclick="logoutUser()"
+                        class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition mr-1 btn-premium"
+                        title="Sair do Sistema">
+                        <i class="fas fa-sign-out-alt text-xl"></i>
+                    </button>
+                    <button id="usersBtn"
+                        class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition btn-premium"
+                        title="Gerenciar Usuários" style="display: none;">
+                        <i class="fas fa-users-cog text-gray-400 dark:text-gray-500 text-xl"></i>
+                    </button>
+                    <button id="configBtn"
+                        class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition btn-premium admin-only">
+                        <i class="fas fa-cog text-gray-400 dark:text-gray-500 text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
+            <!-- Conteúdo Principal -->
+            <main class="flex-1">
+                <!-- SEÇÃO DE ESTOQUE -->
+                <section id="sectionEstoque">
+                    <!-- Cards de Resumo -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div
+                            class="bg-white rounded-xl shadow p-6 border-b-4 border-blue-500 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
+                            <p class="title-static text-gray-500 font-bold uppercase tracking-widest text-xs">Total de
+                                Produtos</p>
+
+                            <!-- Valor e Ícone (Padrão) -->
+                            <div class="main-content">
+                                <h2 id="totalProdutos" class="text-3xl font-bold mt-2">0</h2>
+                                <div class="bg-blue-100 p-2 rounded-full mt-2">
+                                    <i class="fas fa-boxes text-blue-600 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <!-- Insight (Hover) -->
+                            <div class="hover-content">
+                                <span class="insight-title">Resumo</span>
+                                <span id="insightTotalProdutos" class="insight-content">Carregando...</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-xl shadow p-6 border-b-4 border-green-500 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
+                            <p class="title-static text-gray-500 font-bold uppercase tracking-widest text-xs">Itens em
+                                Estoque</p>
+
+                            <!-- Valor e Ícone (Padrão) -->
+                            <div class="main-content">
+                                <h2 id="totalEstoque" class="text-3xl font-bold mt-2">0</h2>
+                                <div class="bg-green-100 p-2 rounded-full mt-2">
+                                    <i class="fas fa-box-open text-green-600 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <!-- Insight (Hover) -->
+                            <div class="hover-content">
+                                <span class="insight-title">Destaque</span>
+                                <span id="insightMaiorEstoque" class="insight-content">Carregando...</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-xl shadow p-6 border-b-4 border-yellow-500 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
+                            <p class="title-static text-gray-500 font-bold uppercase tracking-widest text-xs">Estoque
+                                Baixo</p>
+
+                            <!-- Valor e Ícone (Padrão) -->
+                            <div class="main-content">
+                                <h2 id="estoqueBaixo" class="text-3xl font-bold mt-2 text-yellow-600">0</h2>
+                                <div class="bg-yellow-100 p-2 rounded-full mt-2">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <!-- Insight (Hover) -->
+                            <div class="hover-content">
+                                <span class="insight-title">Itens Críticos</span>
+                                <span id="insightEstoqueBaixo" class="insight-content">Tudo em dia!</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-xl shadow p-6 border-b-4 border-purple-500 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
+                            <p class="title-static text-gray-500 font-bold uppercase tracking-widest text-xs">Categorias
+                            </p>
+
+                            <!-- Valor e Ícone (Padrão) -->
+                            <div class="main-content">
+                                <h2 id="totalCategorias" class="text-3xl font-bold mt-2">0</h2>
+                                <div class="bg-purple-100 p-2 rounded-full mt-2">
+                                    <i class="fas fa-tags text-purple-600 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-4 mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div class="relative w-full md:w-auto">
+                                <i
+                                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="searchInput"
+                                    placeholder="Buscar produtos por nome, SKU ou categoria..."
+                                    class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="addProductBtn"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition btn-premium">
+                                    <i class="fas fa-plus"></i>
+                                    Novo Produto
+                                </button>
+                                <button id="importXMLBtn" onclick="openImportModal()"
+                                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition flex items-center gap-2">
+                                    <i class="fas fa-file-import"></i>
+                                    Importar XML
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Produtos -->
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold">Produtos em Estoque</h3>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Produto</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Categoria</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            SKU</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Preço</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Estoque</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="produtosTable" class="bg-white divide-y divide-gray-200">
+                                    <tr id="loadingRow">
+                                        <td colspan="7" class="px-6 py-8 text-center">
+                                            <div class="flex justify-center">
+                                                <div
+                                                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600">
+                                                </div>
+                                            </div>
+                                            <p class="mt-2 text-gray-500">Carregando produtos...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                            <div class="text-sm text-gray-500">
+                                Mostrando <span id="produtosMostrados">0</span> de <span
+                                    id="totalProdutosTabela">0</span>
+                                produtos
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="prevBtn"
+                                    class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button id="nextBtn"
+                                    class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SEÇÃO DE VENDAS -->
+                <section id="sectionVendas" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div
+                            class="bg-white rounded-xl shadow p-6 border-b-4 border-emerald-500 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
+                            <p class="title-static text-gray-500 font-bold uppercase tracking-widest text-xs">Vendas
+                                Hoje</p>
+
+                            <div class="main-content">
+                                <h2 id="vendasHoje" class="text-3xl font-bold mt-2">0</h2>
+                                <div class="bg-emerald-100 p-2 rounded-full mt-2">
+                                    <i class="fas fa-chart-line text-emerald-600 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <div class="hover-content">
+                                <span class="insight-title">Última Venda</span>
+                                <span id="insightVendaHoje" class="insight-content">Nenhuma hoje</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-xl shadow p-6 border-b-4 border-blue-500 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
+                            <p class="title-static text-gray-500 font-bold uppercase tracking-widest text-xs">Total
+                                Vendido</p>
+
+                            <div class="main-content">
+                                <h2 id="totalVendido" class="text-3xl font-bold mt-2">0</h2>
+                                <div class="bg-blue-100 p-2 rounded-full mt-2">
+                                    <i class="fas fa-shopping-bag text-blue-600 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <div class="hover-content">
+                                <span class="insight-title">Total Geral</span>
+                                <span id="insightTotalVendido" class="insight-content">Carregando...</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-xl shadow p-6 border-b-4 border-orange-500 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
+                            <p class="title-static text-gray-500 font-bold uppercase tracking-widest text-xs">Receita
+                                Total</p>
+
+                            <div class="main-content">
+                                <h2 id="receitaTotal" class="text-3xl font-bold mt-2">R$ 0,00</h2>
+                                <div class="bg-orange-100 p-2 rounded-full mt-2">
+                                    <i class="fas fa-dollar-sign text-orange-600 text-sm"></i>
+                                </div>
+                            </div>
+
+                            <div class="hover-content">
+                                <span class="insight-title">Top Rentável</span>
+                                <span id="insightReceitaTotal" class="insight-content">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow p-4 mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div class="relative w-full md:w-auto">
+                                <i
+                                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="searchVendasInput"
+                                    placeholder="Buscar vendas por produto ou SKU..."
+                                    class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <button id="addVendaBtn"
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition">
+                                <i class="fas fa-cart-plus"></i>
+                                Registrar Venda
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">Histórico de Vendas</h3>
+                            <button id="exportVendas" class="text-sm text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-download mr-1"></i> Exportar
+                            </button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Data</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Produto</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Variante</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Qtd</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Preço Un.</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vendasTable" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                                            Carregando vendas...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SEÇÃO DE RELATÓRIOS -->
+                <!-- SEÇÃO DE RELATÓRIOS (REFORMULADA - 100% ÚTIL) -->
+                <section id="sectionRelatorios" class="hidden">
+                    <!-- Alerta de Precisão Financeira (Custo Faltante) -->
+                    <div id="costWarning"
+                        class="hidden bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded-r-xl shadow-sm dark:bg-amber-900/20 dark:border-amber-600">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-amber-400 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-amber-800 dark:text-amber-200 font-bold">
+                                    Precisão Financeira Reduzida
+                                </p>
+                                <p class="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                                    Detectamos produtos vendidos sem preço de custo cadastrado. Para que o Ponto de
+                                    Equilíbrio e o Lucro Bruto sejam 100% precisos, recomendamos atualizar os seguintes
+                                    produtos:
+                                </p>
+                                <div id="missingCostList" class="mt-2 flex flex-wrap gap-2">
+                                    <!-- Preenchido via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Controle de Data e Ações -->
+                    <div
+                        class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100 dark:bg-slate-800 dark:border-slate-700">
+                        <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Inteligência de Vendas</h2>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Análise detalhada para tomada de
+                                    decisão.</p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                                <!-- Filtro de Data Personalizado -->
+                                <div
+                                    class="flex items-center gap-2 bg-gray-50 dark:bg-slate-900 p-1.5 rounded-lg border border-gray-200 dark:border-slate-600">
+                                    <div class="relative">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-calendar text-gray-400 text-xs"></i>
+                                        </div>
+                                        <input type="date" id="dateStart"
+                                            class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 pl-8 w-32 cursor-pointer font-medium">
+                                    </div>
+                                    <span class="text-gray-400 font-bold text-xs">ATÉ</span>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-calendar text-gray-400 text-xs"></i>
+                                        </div>
+                                        <input type="date" id="dateEnd"
+                                            class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 pl-8 w-32 cursor-pointer font-medium">
+                                    </div>
+                                    <button id="applyDateBtn"
+                                        class="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-xs font-bold hover:bg-indigo-700 transition shadow-sm">
+                                        FILTRAR
+                                    </button>
+                                </div>
+
+                                <button id="btnExportReport"
+                                    class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold text-sm hover:bg-emerald-700 transition shadow-sm btn-premium">
+                                    <i class="fas fa-file-pdf"></i> Exportar Relatório
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cards de KPI Premium (Com Comparativos) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <!-- Faturamento Total -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border-l-4 border-indigo-600 relative overflow-hidden group hover:-translate-y-1 transition duration-300">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                                <i class="fas fa-chart-line text-6xl text-indigo-600"></i>
+                            </div>
+                            <p
+                                class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                                Receita total</p>
+                            <h3 id="kpiFaturamento" class="text-2xl font-black text-gray-800 dark:text-white mt-1">R$
+                                0,00</h3>
+                            <div class="flex items-center mt-3 gap-2">
+                                <span id="kpiFaturamentoComp"
+                                    class="text-xs font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500 flex items-center gap-1">--</span>
+                                <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap">vs. período
+                                    anterior</span>
+                            </div>
+                        </div>
+
+                        <!-- Lucro Bruto -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border-l-4 border-emerald-500 relative overflow-hidden group hover:-translate-y-1 transition duration-300">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                                <i class="fas fa-hand-holding-usd text-6xl text-emerald-500"></i>
+                            </div>
+                            <p
+                                class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                                Lucro Bruto</p>
+                            <h3 id="kpiLucroBruto" class="text-2xl font-black text-gray-800 dark:text-white mt-1">R$
+                                0,00</h3>
+                            <div class="flex items-center mt-3 gap-2">
+                                <span id="kpiLucroMargem"
+                                    class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">0%</span>
+                                <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap">Margem
+                                    Bruta</span>
+                            </div>
+                        </div>
+
+                        <!-- CMV -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border-l-4 border-amber-500 relative overflow-hidden group hover:-translate-y-1 transition duration-300">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                                <i class="fas fa-boxes text-6xl text-amber-500"></i>
+                            </div>
+                            <p
+                                class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                                CMV (Custo Merc.)</p>
+                            <h3 id="kpiCMV" class="text-2xl font-black text-gray-800 dark:text-white mt-1">R$ 0,00</h3>
+                            <p class="text-[10px] text-gray-400 font-medium mt-3">Investimento em estoque vendido</p>
+                        </div>
+
+                        <!-- Lucro Líquido -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border-l-4 border-rose-600 relative overflow-hidden group hover:-translate-y-1 transition duration-300">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                                <i class="fas fa-piggy-bank text-6xl text-rose-600"></i>
+                            </div>
+                            <p
+                                class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">
+                                Lucro Líquido</p>
+                            <h3 id="kpiLucroLiquido" class="text-2xl font-black text-gray-800 dark:text-white mt-1">R$
+                                0,00</h3>
+                            <div class="flex items-center mt-3 gap-2">
+                                <span id="kpiLucroLiquidoMargem"
+                                    class="text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700">0%</span>
+                                <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap">Eficiência
+                                    Final</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Segunda Linha de Indicadores -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Ticket Médio -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-slate-700 flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                                <i class="fas fa-receipt text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Ticket Médio
+                                </p>
+                                <h4 id="kpiTicketMedio" class="text-lg font-black dark:text-white">R$ 0,00</h4>
+                            </div>
+                        </div>
+
+                        <!-- Total Pedidos -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-slate-700 flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600">
+                                <i class="fas fa-shopping-cart text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Total Pedidos
+                                </p>
+                                <h4 id="kpiPedidos" class="text-lg font-black dark:text-white">0</h4>
+                            </div>
+                        </div>
+
+                        <!-- Despesas Totais -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-slate-700 flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600">
+                                <i class="fas fa-wallet text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Despesas do
+                                    Período</p>
+                                <h4 id="kpiDespesasTotal" class="text-lg font-black dark:text-white">R$ 0,00</h4>
+                            </div>
+                        </div>
+
+                        <!-- Valor em Estoque -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-5 border border-gray-100 dark:border-slate-700 flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-600">
+                                <i class="fas fa-warehouse text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Patrimônio
+                                    (Estoque)</p>
+                                <h4 id="kpiPatrimonioEstoque" class="text-lg font-black dark:text-white">R$ 0,00</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Meta Mensal -->
+                    <div
+                        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700 mb-8">
+                        <div class="flex flex-col md:flex-row justify-between items-end mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                    <i class="fas fa-bullseye text-indigo-600"></i> Meta Mensal
+                                </h3>
+                                <p class="text-sm text-gray-500 mt-1">Defina sua meta de faturamento para acompanhar o
+                                    progresso.</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-4 md:mt-0">
+                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300">Sua Meta: R$</span>
+                                <input type="number" id="inputMetaMensal" value="10000" oninput="saveFinancialGoals()"
+                                    class="w-32 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded px-2 py-1 text-right font-bold text-indigo-600 focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative pt-1">
+                        <div class="flex mb-2 items-center justify-between">
+                            <div>
+                                <span id="metaPorcentagem"
+                                    class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
+                                    0%
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-semibold inline-block text-indigo-600">
+                                    Faltam <span id="metaFaltante">R$ 0,00</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-indigo-100 dark:bg-slate-700">
+                            <div id="barraProgressoMeta" style="width:0%"
+                                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500 transition-all duration-1000 ease-out relative overflow-hidden">
+                                <div
+                                    class="absolute top-0 left-0 w-full h-full bg-white/20 animate-[pulse_2s_ease-in-out_infinite]">
+                                </div>
+                            </div>
+                        </div>
+                        <p id="metaMensagem" class="text-center text-sm font-medium text-gray-500 italic">"Vamos lá!
+                            Cada venda conta para atingir o objetivo."</p>
+                    </div>
+
+
+                    <!-- Gráficos Principais -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- Tendência de Vendas (Grande) -->
+                        <div
+                            class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-6 flex items-center justify-between">
+                                <span class="flex items-center gap-2"><i class="fas fa-chart-area text-indigo-500"></i>
+                                    Tendência de Faturamento</span>
+                            </h3>
+                            <div class="relative h-[350px]">
+                                <canvas id="chartVendasPrincipal"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top 5 Produtos (Lista Rica) -->
+                        <div
+                            class="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700 flex flex-col">
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+                                <i class="fas fa-crown text-amber-500"></i> Top Campeões de Vendas
+                            </h3>
+                            <div id="listTopProdutos" class="flex-1 overflow-y-auto pr-2 space-y-4">
+                                <!-- Preenchido via JS -->
+                                <div class="text-center text-gray-400 py-10">Carregando dados...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos Secundários e DRE -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
+                        <!-- Mapa de Calor Semanal -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                                <i class="fas fa-calendar-week text-emerald-500"></i> Movimento Semanal
+                            </h3>
+                            <p class="text-xs text-gray-500 mb-6">Faturamento médio por dia</p>
+                            <div class="relative h-[250px] w-full items-center justify-center">
+                                <canvas id="chartSemana"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Categorias (Donut) -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
+                            <h3 class="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                                <i class="fas fa-chart-pie text-purple-500"></i> Performance por Categoria
+                            </h3>
+                            <p class="text-xs text-gray-500 mb-6">Distribuição de Receita</p>
+                            <div class="relative h-[250px] w-full flex items-center justify-center">
+                                <canvas id="chartCategorias"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Tabela DRE Simplificada (Contabilidade) -->
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
+                            <div class="p-6 border-b border-gray-50 dark:border-slate-700">
+                                <h3 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                    <i class="fas fa-calculator text-rose-500"></i> Demonstrativo (DRE)
+                                </h3>
+                                <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Resumo Contábil do
+                                    Período</p>
+                            </div>
+                            <div class="p-0">
+                                <table class="w-full text-sm">
+                                    <tbody class="divide-y divide-gray-50 dark:divide-slate-700">
+                                        <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition">
+                                            <td class="px-6 py-4 font-bold text-gray-600 dark:text-gray-300">(+) Receita
+                                                Bruta</td>
+                                            <td id="dreReceita" class="px-6 py-4 text-right font-black text-indigo-600">
+                                                R$ 0,00</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition">
+                                            <td class="px-6 py-4 font-bold text-gray-600 dark:text-gray-300">(-) CMV
+                                                (Custo Prod.)</td>
+                                            <td id="dreCMV" class="px-6 py-4 text-right font-bold text-rose-500">- R$
+                                                0,00</td>
+                                        </tr>
+                                        <tr class="bg-gray-50/50 dark:bg-slate-900/50">
+                                            <td class="px-6 py-3 font-black text-gray-800 dark:text-white">(=) LUCRO
+                                                BRUTO</td>
+                                            <td id="dreLucroBruto"
+                                                class="px-6 py-3 text-right font-black text-emerald-600">R$ 0,00</td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition">
+                                            <td class="px-6 py-4 font-bold text-gray-600 dark:text-gray-300">(-)
+                                                Despesas Gerenciais</td>
+                                            <td id="dreDespesas" class="px-6 py-4 text-right font-bold text-rose-500">-
+                                                R$ 0,00</td>
+                                        </tr>
+                                        <tr class="bg-indigo-600">
+                                            <td class="px-6 py-4 font-black text-white">(=) LUCRO LÍQUIDO</td>
+                                            <td id="dreLucroLiquido" class="px-6 py-4 text-right font-black text-white">
+                                                R$ 0,00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SEÇÃO DE CLIENTES -->
+                <section id="sectionClientes" class="hidden">
+                    <div class="bg-white rounded-xl shadow p-4 mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div class="relative w-full md:w-auto">
+                                <i
+                                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="searchClientInput"
+                                    placeholder="Buscar clientes por nome, WhatsApp ou CPF..."
+                                    class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+                            <button id="addClientBtn"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition btn-premium">
+                                <i class="fas fa-user-plus"></i> Novo Cliente
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold">Base de Clientes</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Nome</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            WhatsApp</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            CPF/CNPJ</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Cadastro</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientesTable" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">Carregando
+                                            clientes...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SEÇÃO DE FINANÇAS -->
+                <section id="sectionFinancas" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Receita
+                                        total</p>
+                                    <h3 id="finReceitaTotal" class="text-2xl font-black text-gray-800">R$ 0,00</h3>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-lg"><i
+                                        class="fas fa-hand-holding-usd text-blue-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-rose-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Despesas +
+                                        Custos</p>
+                                    <h3 id="finDespesasTotal" class="text-2xl font-black text-gray-800">R$ 0,00</h3>
+                                </div>
+                                <div class="bg-rose-100 p-3 rounded-lg"><i class="fas fa-arrow-down text-rose-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-emerald-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Lucro
+                                        Líquido</p>
+                                    <h3 id="finLucroLiquido" class="text-2xl font-black text-emerald-600">R$ 0,00</h3>
+                                </div>
+                                <div class="bg-emerald-100 p-3 rounded-lg"><i
+                                        class="fas fa-chart-line text-emerald-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">Gestão de Despesas</h3>
+                            <button id="addExpenseBtn"
+                                class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                                <i class="fas fa-plus"></i> Nova Despesa
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Descrição</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Valor</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Vencimento</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTable" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-8 text-center text-gray-500">Carregando
+                                            despesas...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Sidebars (Produto, Cliente, Venda, Despesa) movidos para o final para clareza -->
+        </div>
+
+        <!-- Sidebar para Adicionar Produto -->
+        <aside id="sidebar" class="sidebar bg-white dark:bg-slate-800 shadow-xl">
+            <div class="flex justify-between items-center mb-6 p-6 border-b border-gray-100 dark:border-slate-700">
+                <h3 class="text-xl font-bold">Adicionar Novo Produto</h3>
+                <button id="closeSidebar" class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="productForm" class="space-y-6 px-6 pb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Código de Barras</label>
+                    <input type="text" id="ean" placeholder="EAN / BIP"
+                        class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                    <input type="text" id="sku" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                    <input type="text" id="nome" required class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Categoria *</label>
+                    <select id="categoria" required class="w-full px-3 py-2 border rounded-lg">
+                        <option value="">Selecione...</option>
+                        <option value="Tênis">Tênis</option>
+                        <option value="Sapatos">Sapatos</option>
+                        <option value="Sandálias">Sandálias</option>
+                        <option value="Botas">Botas</option>
+                        <option value="Camisetas">Camisetas</option>
+                        <option value="Calças">Calças</option>
+                        <option value="Jaquetas">Jaquetas</option>
+                        <option value="Vestidos">Vestidos</option>
+                        <option value="Acessórios">Acessórios</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Preço Venda (R$) *</label>
+                    <input type="number" id="preco_venda" step="0.01" required
+                        class="w-full px-3 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="block text-sm font-medium text-gray-700">Variantes</label>
+                        <button type="button" id="addVariantBtn"
+                            class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">Adicionar</button>
+                    </div>
+                    <div id="variantsContainer" class="space-y-4">
+                        <div class="variant-item p-3 border rounded-lg bg-gray-50">
+                            <div class="grid grid-cols-3 gap-2 mb-2">
+                                <input type="text" class="variant-tamanho w-full p-2 text-sm border rounded"
+                                    placeholder="Tam">
+                                <input type="text" class="variant-cor w-full p-2 text-sm border rounded"
+                                    placeholder="Cor">
+                                <input type="number" class="variant-estoque w-full p-2 text-sm border rounded"
+                                    value="0">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" class="variant-alerta w-full p-2 text-sm border rounded" value="5">
+                                <input type="number" step="0.01" class="variant-custo w-full p-2 text-sm border rounded"
+                                    value="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold">Salvar
+                        Produto</button>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Sidebar Clientes -->
+        <aside id="sidebarCliente" class="sidebar bg-white dark:bg-slate-800 shadow-xl">
+            <div class="p-6 border-b flex justify-between items-center text-xl font-bold">
+                <span id="clientSidebarTitle">Novo Cliente</span>
+                <button id="closeSidebarCliente"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="clientForm" class="p-6 space-y-4">
+                <input type="text" id="clientNome" placeholder="Nome Completo *" required
+                    class="w-full p-3 border rounded-lg">
+                <input type="text" id="clientWhatsapp" placeholder="WhatsApp" class="w-full p-3 border rounded-lg">
+                <input type="text" id="clientCpf" placeholder="CPF/CNPJ" class="w-full p-3 border rounded-lg">
+                <textarea id="clientEndereco" placeholder="Endereço" class="w-full p-3 border rounded-lg"></textarea>
+                <div class="flex gap-3">
+                    <button type="button" id="cancelClientBtn"
+                        class="flex-1 py-3 border border-gray-300 rounded-lg font-bold text-gray-600 hover:bg-gray-50">Cancelar</button>
+                    <button type="submit"
+                        class="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-bold text-lg">Salvar</button>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Sidebar Venda -->
+        <aside id="sidebarVenda" class="sidebar bg-white dark:bg-slate-800 shadow-xl">
+            <div class="p-6 border-b flex justify-between items-center text-xl font-bold">
+                <span>Registrar Venda</span>
+                <button id="closeSidebarVenda"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="saleForm" class="p-6 space-y-4">
+                <input type="text" id="saleEan" placeholder="Bipar Produto"
+                    class="w-full p-4 border-2 border-indigo-100 rounded-xl bg-indigo-50/20">
+                <select id="saleProduto" required class="w-full p-3 border rounded-lg">
+                    <option value="">Produto *</option>
+                </select>
+                <select id="saleCliente" class="w-full p-3 border rounded-lg">
+                    <option value="">Venda Direta</option>
+                </select>
+                <select id="saleVariante" required class="w-full p-3 border rounded-lg">
+                    <option value="">Variante *</option>
+                </select>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" id="saleQuantidade" value="1" min="1" required class="p-3 border rounded-lg">
+                    <input type="text" id="salePrecoUnitario" readonly class="p-3 border rounded-lg bg-gray-100">
+                </div>
+                <div id="saleEstoqueInfo" class="text-sm text-gray-500 font-bold ml-1"></div>
+                <button type="button" id="addToCartBtn"
+                    class="w-full bg-indigo-500 text-white py-3 rounded-lg font-bold">Adicionar
+                    Carrinho</button>
+                <div id="cartItemsList" class="max-h-40 overflow-y-auto space-y-2 border-t pt-4"></div>
+                <div id="cartSummary" class="hidden border-t pt-4">
+                    <div class="flex justify-between text-xl font-black mb-4"><span>Total:</span><span
+                            id="cartGrandTotal">R$
+                            0,00</span></div>
+                    <div class="flex gap-3">
+                        <button type="button" id="cancelVendaBtn"
+                            class="flex-1 py-3 border border-gray-300 rounded-xl font-bold text-gray-600 hover:bg-gray-50">CANCELAR</button>
+                        <button type="submit"
+                            class="flex-[2] bg-emerald-600 text-white py-4 rounded-xl font-black text-lg">FINALIZAR
+                            VENDA</button>
+                    </div>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Sidebar Despesa -->
+        <aside id="sidebarDespesa" class="sidebar bg-white dark:bg-slate-800 shadow-xl">
+            <div class="p-6 border-b flex justify-between items-center text-xl font-bold">
+                <span id="expenseSidebarTitle">Lançar Despesa</span>
+                <button id="closeSidebarDespesa"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="expenseForm" class="p-6 space-y-4">
+                <input type="text" id="expenseDesc" placeholder="Descrição" required
+                    class="w-full p-3 border rounded-lg">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" id="expenseValor" step="0.01" required placeholder="Valor"
+                        class="p-3 border rounded-lg">
+                    <input type="date" id="expenseVencimento" class="p-3 border rounded-lg">
+                </div>
+                <select id="expenseStatus" class="w-full p-3 border rounded-lg">
+                    <option value="pendente">Pendente</option>
+                    <option value="pago">Pago</option>
+                </select>
+                <div class="flex gap-3">
+                    <button type="button" id="cancelExpenseBtn"
+                        class="flex-1 py-3 border border-gray-300 rounded-lg font-bold text-gray-600 hover:bg-gray-50">Cancelar</button>
+                    <button type="submit"
+                        class="flex-1 bg-rose-600 text-white py-3 rounded-lg font-bold">Salvar</button>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Sidebar Usuários -->
+        <aside id="sidebarUsuarios" class="sidebar bg-white dark:bg-slate-800 shadow-xl w-[600px] max-w-full">
+            <div
+                class="p-6 border-b flex justify-between items-center text-xl font-bold border-gray-100 dark:border-slate-700">
+                <span class="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                    <i class="fas fa-users-cog"></i> Gerenciar Usuários
+                </span>
+                <button id="closeSidebarUsuarios" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"><i
+                        class="fas fa-times"></i></button>
+            </div>
+
+            <div class="p-6 h-[calc(100vh-80px)] overflow-y-auto">
+                <div
+                    class="mb-6 bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800">
+                    <h3 class="font-bold text-indigo-900 dark:text-indigo-300 mb-2">Controle de Acesso</h3>
+                    <p class="text-sm text-indigo-700 dark:text-indigo-400">
+                        Gerencie quem pode acessar o sistema. Cuidado ao alterar permissões.
+                    </p>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-gray-100 dark:border-slate-700">
+                    <table class="w-full text-left bg-white dark:bg-slate-800">
+                        <thead
+                            class="bg-gray-50 dark:bg-slate-700/50 text-xs text-gray-500 uppercase font-bold tracking-wider">
+                            <tr>
+                                <th class="p-4">Usuário</th>
+                                <th class="p-4">Email</th>
+                                <th class="p-4">Nível</th>
+                                <th class="p-4">Alterar Para</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="divide-y divide-gray-100 dark:divide-slate-700 text-sm">
+                            <tr>
+                                <td colspan="4" class="p-4 text-center">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </aside>
+
+
+    </div>
+
+    <!-- Modais Extras (Configuração, Detalhes Produto, etc) -->
+    <div id="productModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-xl shadow-lg max-w-4xl w-full mx-4 p-8">
+            <div class="flex justify-between mb-8">
+                <h2 id="modalProductName" class="text-3xl font-black"></h2><button id="closeModal" class="text-2xl"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div id="modalVariantsTable" class="mb-8 overflow-x-auto"></div>
+            <div class="flex justify-end gap-4"><button id="editProductBtn"
+                    class="bg-indigo-600 text-white px-8 py-3 rounded-lg">Editar</button><button id="deleteProductBtn"
+                    class="bg-red-600 text-white px-8 py-3 rounded-lg">Excluir</button></div>
+        </div>
+    </div>
+
+    <div id="configModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+            <h3 class="text-2xl font-bold mb-6 flex justify-between">Configurações <button id="closeConfigModal"><i
+                        class="fas fa-times"></i></button></h3>
+            <div class="space-y-4">
+                <input type="text" id="storeNameInput" placeholder="Nome do Negócio"
+                    class="w-full p-3 border rounded-xl">
+                <div class="flex items-center gap-4">
+                    <div id="previewLogo"
+                        class="w-16 h-16 border-2 border-dashed rounded-xl flex items-center justify-center text-gray-400">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <input type="file" id="logoFileInput" class="hidden" accept="image/*">
+                    <label for="logoFileInput"
+                        class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg cursor-pointer font-bold hover:bg-indigo-100 transition">
+                        <i class="fas fa-upload mr-1"></i> Upload
+                    </label>
+                    <button id="removeLogoBtn"
+                        class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-100 transition hidden">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-8 space-y-3">
+                <button id="saveConfigBtn" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold">Salvar
+                    Tudo</button>
+                <button id="testConnectionBtn" class="hidden w-full border py-3 rounded-xl">Testar Conexão</button>
+            </div>
+            <!-- Configurações de Banco removidas da UI por segurança -->
+        </div>
+    </div>
+
+    <!-- Modal de Importação XML -->
+    <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl m-4 max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i class="fas fa-file-import text-purple-600"></i>
+                    Importar Estoque via XML
+                </h2>
+                <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6">
+                <!-- Instruções -->
+                <div
+                    class="mb-6 bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h3 class="font-bold text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i>
+                        Como funciona
+                    </h3>
+                    <ul class="text-sm text-blue-700 dark:text-blue-400 space-y-1">
+                        <li>• O sistema busca produtos pelo <strong>SKU</strong></li>
+                        <li>• Se o produto existir, <strong>atualiza</strong> o estoque</li>
+                        <li>• Se não existir, <strong>cria</strong> um novo produto</li>
+                        <li>• Formatos aceitos: <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded">sku</code>,
+                            <code class="bg-blue-100 dark:bg-blue-900 px-1 rounded">codigo</code>, <code
+                                class="bg-blue-100 dark:bg-blue-900 px-1 rounded">id</code>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Upload -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        Selecione o arquivo XML
+                    </label>
+                    <input type="file" id="xmlFileInput" accept=".xml"
+                        class="w-full p-3 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-500 transition cursor-pointer bg-gray-50 dark:bg-slate-700">
+                </div>
+
+                <!-- Botões -->
+                <div class="flex gap-3 mb-6">
+                    <button id="processXMLBtn" onclick="processXMLFile()"
+                        class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                        <i class="fas fa-upload"></i>
+                        Processar XML
+                    </button>
+                    <button onclick="downloadXMLTemplate()"
+                        class="bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 font-bold py-3 px-4 rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        Baixar Template
+                    </button>
+                </div>
+
+                <!-- Resultados -->
+                <div id="importResults" class="hidden">
+                    <div class="border-t border-gray-200 dark:border-slate-700 pt-6">
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <i class="fas fa-clipboard-check text-green-600"></i>
+                            Resultados da Importação
+                        </h3>
+
+                        <!-- Sucessos -->
+                        <div class="mb-4">
+                            <h4 class="font-semibold text-green-600 dark:text-green-400 mb-2">
+                                ✅ Produtos Processados
+                            </h4>
+                            <div id="importSuccessList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                        </div>
+
+                        <!-- Erros -->
+                        <div>
+                            <h4 class="font-semibold text-red-600 dark:text-red-400 mb-2">
+                                ❌ Erros Encontrados
+                            </h4>
+                            <div id="importErrorList" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-b-xl">
+                <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    <i class="fas fa-shield-alt"></i>
+                    Apenas usuários com permissão de <strong>Gerente+</strong> podem importar produtos
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="fixed top-6 right-6 z-[200] hidden">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl border-l-8 border-indigo-600 flex items-center gap-4 slide-in">
+            <div id="notificationIcon" class="text-3xl"></div>
+            <div>
+                <h4 id="notificationTitle" class="font-bold"></h4>
+                <p id="notificationMessage" class="text-sm text-gray-600"></p>
+            </div>
+            <button id="closeNotification" class="ml-4 text-gray-400 hover:text-gray-600"><i
+                    class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <!-- Modal de Configurações da Loja -->
+    <div id="modalConfigLoja"
+        class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-95 opacity-0 duration-300"
+            id="configContent">
+            <div
+                class="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-store text-amber-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white">Minha Loja</h3>
+                        <p class="text-xs text-gray-500">Configurações de Identidade</p>
+                    </div>
+                </div>
+                <button id="closeConfigModal"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <!-- Nome da Loja -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome da Loja</label>
+                    <input type="text" id="confNomeLoja"
+                        class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm transition-all">
+                </div>
+
+                <!-- Descrição -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Slogan ou
+                        Descrição</label>
+                    <input type="text" id="confDescLoja"
+                        class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm transition-all"
+                        placeholder="Ex: Qualidade em cada detalhe">
+                </div>
+
+                <!-- Chave de Acesso (Segura) -->
+                <div class="pt-4 border-t border-gray-100 dark:border-slate-700">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chave de Acesso
+                        Funcionários</label>
+                    <div class="flex gap-2">
+                        <div class="relative flex-1">
+                            <input type="text" id="confChaveLoja" readonly
+                                class="w-full pl-4 pr-10 py-2.5 bg-slate-100 dark:bg-slate-950 border border-transparent rounded-xl text-sm font-mono text-amber-600 dark:text-amber-400 select-all">
+                            <i class="fas fa-lock absolute right-3 top-3 text-slate-400 text-xs"></i>
+                        </div>
+                        <button id="copyChaveBtn"
+                            class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-amber-500 hover:text-white transition-all shadow-sm">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2 italic">Forneça esta chave para que seus vendedores possam
+                        se cadastrar na sua loja.</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
+                <button id="saveConfigBtn"
+                    class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
+                    <i class="fas fa-check"></i> Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- ⚠️ IMPORTANTE: config.production.js DEVE ser carregado ANTES de config.js -->
+    <script src="js/config.production.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/permissions.js"></script>
+    <script src="js/loja_config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/clientes.js"></script>
+    <script src="js/financas.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/users.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Interactive Background for Login Section
+        const canvasLogin = document.getElementById('bgCanvasLogin');
+        if (canvasLogin) {
+            const ctxL = canvasLogin.getContext('2d');
+            let particlesL = [];
+            let mouseL = { x: null, y: null };
+
+            function initCanvasLogin() {
+                canvasLogin.width = window.innerWidth;
+                canvasLogin.height = window.innerHeight;
+                particlesL = [];
+                for (let i = 0; i < 50; i++) {
+                    particlesL.push({
+                        x: Math.random() * canvasLogin.width,
+                        y: Math.random() * canvasLogin.height,
+                        size: Math.random() * 2 + 0.5,
+                        speedX: Math.random() * 0.4 - 0.2,
+                        speedY: Math.random() * 0.4 - 0.2,
+                        opacity: Math.random() * 0.4
+                    });
+                }
+            }
+
+            function animateParticlesLogin() {
+                ctxL.clearRect(0, 0, canvasLogin.width, canvasLogin.height);
+                particlesL.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    if (p.x > canvasLogin.width) p.x = 0;
+                    if (p.x < 0) p.x = canvasLogin.width;
+                    if (p.y > canvasLogin.height) p.y = 0;
+                    if (p.y < 0) p.y = canvasLogin.height;
+
+                    const dx = p.x - mouseL.x;
+                    const dy = p.y - mouseL.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 200) {
+                        ctxL.beginPath();
+                        ctxL.strokeStyle = `rgba(129, 140, 248, ${0.1 * (1 - dist / 200)})`;
+                        ctxL.moveTo(p.x, p.y);
+                        ctxL.lineTo(mouseL.x, mouseL.y);
+                        ctxL.stroke();
+                    }
+                    ctxL.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                    ctxL.beginPath();
+                    ctxL.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctxL.fill();
+                });
+                requestAnimationFrame(animateParticlesLogin);
+            }
+
+            window.addEventListener('mousemove', (e) => {
+                mouseL.x = e.clientX;
+                mouseL.y = e.clientY;
+            });
+
+            initCanvasLogin();
+            animateParticlesLogin();
+            window.addEventListener('resize', initCanvasLogin);
+        }
+
+        // Magnetic Login Buttons
+        document.querySelectorAll('.magnetic-login-btn').forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                btn.style.transform = `translate(${x * 0.4}px, ${y * 0.4}px)`;
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = `translate(0px, 0px)`;
+            });
+        });
+    </script>
+
+    <!-- Sistema de Importação XML -->
+    <script src="js/import.js"></script>
+</body>
+
+</html>

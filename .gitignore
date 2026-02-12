@@ -1,0 +1,55 @@
+# =====================================================
+# GITIGNORE - Arquivos que NÃO devem ir para o GitHub
+# =====================================================
+
+# Configurações sensíveis (credenciais do Supabase)
+js/config.production.js
+config.production.js
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.production
+
+# Logs e debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Cache e builds
+.cache/
+dist/
+build/
+.next/
+out/
+
+# IDEs e Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+
+# Backups
+*.bak
+*.backup
+*~
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Dados sensíveis do usuário
+uploads/
+user-data/

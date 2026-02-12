@@ -1,0 +1,107 @@
+# ========================================
+# GUIA PASSO A PASSO - CONFIGURAÇÃO GIT
+# ========================================
+
+## IMPORTANTE: FECHE E REABRA O POWERSHELL PRIMEIRO!
+
+Depois de reabrir o PowerShell, execute os comandos abaixo um por um:
+
+## 1. VERIFICAR SE O GIT ESTÁ INSTALADO
+git --version
+
+## 2. CONFIGURAR SEU NOME E EMAIL
+# Substitua "Seu Nome" e "seu-email@exemplo.com" pelos seus dados reais
+git config --global user.name "Seu Nome"
+git config --global user.email "seu-email@exemplo.com"
+
+## 3. INICIALIZAR O REPOSITÓRIO
+git init
+
+## 4. ADICIONAR TODOS OS ARQUIVOS
+git add .
+
+## 5. VERIFICAR O STATUS (IMPORTANTE!)
+git status
+
+## 6. VERIFICAR SE AS CREDENCIAIS ESTÃO PROTEGIDAS
+# O arquivo config.production.js NÃO deve aparecer na lista acima
+# Se aparecer, execute:
+git rm --cached js/config.production.js
+
+## 7. FAZER O PRIMEIRO COMMIT
+git commit -m "Commit inicial: Sistema de Gestao Comercial"
+
+## 8. RENOMEAR BRANCH PARA MAIN
+git branch -M main
+
+## 9. CRIAR REPOSITÓRIO NO GITHUB
+# Acesse: https://github.com/new
+# - Nome: sistema-gestao-comercial (ou outro nome)
+# - Descrição: Sistema completo de gestão para lojas de varejo
+# - Visibilidade: Public ou Private
+# - NÃO marque "Add a README file"
+# - Clique em "Create repository"
+
+## 10. CONECTAR COM O GITHUB
+# Substitua SEU-USUARIO e SEU-REPOSITORIO pelos valores reais
+git remote add origin https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
+
+## 11. ENVIAR PARA O GITHUB
+git push -u origin main
+
+# Quando pedir autenticação, use:
+# - Username: seu usuário do GitHub
+# - Password: Personal Access Token (NÃO use sua senha normal!)
+
+## COMO CRIAR UM PERSONAL ACCESS TOKEN:
+# 1. Acesse: https://github.com/settings/tokens
+# 2. Clique em "Generate new token" → "Generate new token (classic)"
+# 3. Nome: "Git Access"
+# 4. Marque: "repo" (acesso completo aos repositórios)
+# 5. Clique em "Generate token"
+# 6. COPIE O TOKEN (você não verá novamente!)
+# 7. Use o token como senha quando o Git pedir
+
+## ========================================
+## PRONTO! SEU CÓDIGO ESTÁ NO GITHUB! 🎉
+## ========================================
+
+## COMANDOS ÚTEIS PARA O DIA A DIA:
+
+# Ver status dos arquivos
+git status
+
+# Adicionar arquivos modificados
+git add .
+
+# Fazer commit
+git commit -m "Descrição das mudanças"
+
+# Enviar para o GitHub
+git push
+
+# Baixar mudanças do GitHub
+git pull
+
+# Ver histórico de commits
+git log --oneline
+
+## ========================================
+## EM CASO DE PROBLEMAS
+## ========================================
+
+# Se o Git não for reconhecido:
+# 1. Feche TODOS os terminais PowerShell
+# 2. Abra um NOVO PowerShell
+# 3. Tente novamente: git --version
+
+# Se aparecer erro de autenticação:
+# 1. Certifique-se de usar Personal Access Token (não a senha)
+# 2. Ou instale GitHub CLI: winget install --id GitHub.cli
+# 3. E faça login: gh auth login
+
+# Se commitou credenciais por engano:
+# 1. Revogue as chaves no Supabase Dashboard
+# 2. Gere novas credenciais
+# 3. Atualize config.production.js local
+# 4. Use BFG Repo-Cleaner para limpar o histórico

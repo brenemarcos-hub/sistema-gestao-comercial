@@ -1,0 +1,357 @@
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --secondary: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+
+    /* Light Mode Variables */
+    --app-bg: #f8fafc;
+    /* Slate-50 - softer than gray-50 */
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    /* Slate-200 */
+    --text-main: #1e293b;
+    /* Slate-800 */
+    --text-muted: #64748b;
+    /* Slate-500 */
+}
+
+.dark {
+    /* Dark Mode Variables - Keeping current dark aesthetics */
+    --app-bg: #0f172a;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+}
+
+body {
+    background-color: var(--app-bg);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Override Tailwind bg-white for softer light mode */
+.bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+.sidebar {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-premium {
+    transition: all 0.2s ease;
+}
+
+.btn-premium:active {
+    transform: scale(0.95);
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    z-index: 100;
+    transform: translateX(100%);
+    box-shadow: -10px 0 15px -3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 0;
+    border-radius: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.drawer-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.modal-overlay.hidden {
+    display: none !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Skeleton Loader */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite linear;
+    border-radius: 4px;
+}
+
+.dark .skeleton {
+    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Navegação Estilo Segmented Control */
+.nav-pill-container {
+    background-color: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+    display: flex;
+    gap: 0.25rem;
+}
+
+.dark .nav-pill-container {
+    background-color: #1e293b;
+}
+
+.nav-pill-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.nav-pill-btn:hover {
+    color: #475569;
+}
+
+.dark .nav-pill-btn:hover {
+    color: #94a3b8;
+}
+
+.nav-pill-btn.active {
+    background-color: white;
+    color: #4f46e5;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.dark .nav-pill-btn.active {
+    background-color: #334155;
+    color: #818cf8;
+}
+
+.nav-pill-btn i {
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .nav-pill-container {
+        width: 100%;
+    }
+
+    .nav-pill-btn span {
+        display: none;
+    }
+
+    .nav-pill-btn {
+        padding: 0.75rem;
+    }
+
+    .nav-pill-btn i {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+}
+
+/* Dark Mode Overrides */
+.dark body {
+    background-color: var(--app-bg);
+    color: var(--text-main);
+}
+
+.dark .bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+.dark .text-gray-800,
+.dark .text-gray-900,
+.dark .text-gray-700 {
+    color: #f1f5f9 !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500 {
+    color: var(--text-muted) !important;
+}
+
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-100 {
+    border-color: var(--border-color) !important;
+}
+
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+    background-color: #1e293b !important;
+}
+
+.dark .shadow-sm,
+.dark .shadow {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+    background-color: #1e293b;
+    color: #f1f5f9;
+    border-color: #334155;
+}
+
+.dark .hover\:bg-gray-50:hover {
+    background-color: #1e293b !important;
+}
+
+/* --- Dashboard Interaction: Swap Content (Fase 1.8) --- */
+.card-hover {
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+}
+
+/* Conteúdo Padrão (Número + Ícone) */
+.card-hover .main-content {
+    opacity: 1;
+    transform: scale(1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-hover:hover .main-content {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+}
+
+/* Conteúdo Detalhado (Insights - aparece no hover) */
+.card-hover .hover-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: inherit;
+    z-index: 10;
+}
+
+.card-hover:hover .hover-content {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.insight-title {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    opacity: 0.7;
+}
+
+.insight-content {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.title-static {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover .title-static {
+    opacity: 0.4;
+    transform: translateY(-2px);
+}

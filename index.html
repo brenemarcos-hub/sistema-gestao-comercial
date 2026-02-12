@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Soluções Estratégicas para Inventário e Crescimento.">
+
+    <title>Verum | Gestão Inteligente para Pequenos Negócios</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap');
+
+        :root {
+            --primary: #fbbf24;
+            /* Amber-400 (Gold) */
+            --accent: #1e293b;
+            /* Slate-800 (Navy complement) */
+            --bg: #0f172a;
+            /* Slate-900 (Deep Navy) */
+            --gold-glow: rgba(251, 191, 36, 0.4);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: #f8fafc;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Canvas Particle Background */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 25px var(--gold-glow);
+        }
+
+        /* Magnetic Button Effect */
+        .magnetic-btn {
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.33, 1, 0.68, 1);
+        }
+
+        /* Gradient Animation */
+        .animated-gradient {
+            background: linear-gradient(270deg, #fbbf24, #f59e0b, #fff7ed);
+            background-size: 200% 200%;
+            animation: gradientFlow 6s ease infinite;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .hero-img-container {
+            perspective: 1000px;
+        }
+
+        .parallax-img {
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        .reveal-char {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .reveal-char.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="selection:bg-indigo-500/30">
+
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 px-8 py-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass px-6 py-3 rounded-2xl">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-400 to-yellow-200 rotate-12 shadow-[0_0_15px_rgba(251,191,36,0.5)]">
+                </div>
+                <span class="font-bold tracking-tighter text-xl text-white">VERUM</span>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+                <a href="#funcionalidades" class="hover:text-amber-400 transition">FUNCIONALIDADES</a>
+                <a href="#missao" class="hover:text-amber-400 transition">SOBRE NÓS</a>
+                <a href="https://wa.me/5511956288863" target="_blank"
+                    class="flex items-center gap-2 hover:text-amber-400 transition bg-amber-500/10 px-5 py-2 rounded-full text-amber-400 text-xs font-bold tracking-wider hover:bg-amber-500/20 border border-amber-500/10">
+                    <i class="fab fa-whatsapp"></i> FALAR NO WHATSAPP
+                </a>
+            </div>
+            <a href="app.html"
+                class="magnetic-btn bg-amber-500 text-slate-900 px-6 py-2.5 rounded-xl font-bold text-sm hover:scale-105 hover:bg-amber-400 active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+                ACESSAR SISTEMA
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="min-h-screen flex flex-col items-center justify-center pt-32 px-6">
+        <div class="max-w-4xl w-full text-center space-y-12">
+
+            <div class="space-y-8 flex flex-col items-center">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-[10px] font-black tracking-widest text-amber-400 uppercase">
+                    <span class="relative flex h-2 w-2">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                    Simplicidade & Honestidade
+                </div>
+
+                <h1 id="heroTitle"
+                    class="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter glow-text text-white">
+                    VERUM <br>
+                    <span class="animated-gradient text-5xl md:text-7xl">A VERDADE QUE LIBERTA.</span>
+                </h1>
+
+                <p
+                    class="text-slate-400 text-lg leading-relaxed max-w-xl mx-auto border-l-4 border-amber-500 pl-4 text-left md:text-center md:border-l-0 md:border-t-4 md:pt-4">
+                    "Simplicidade no uso, mas rigoroso na honestidade."
+                </p>
+
+                <div class="flex items-center gap-6 justify-center">
+                    <a href="app.html"
+                        class="magnetic-btn group relative flex items-center justify-center px-8 py-4 bg-amber-600 rounded-2xl font-bold overflow-hidden shadow-2xl shadow-amber-500/20">
+                        <div
+                            class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                        </div>
+                        <span
+                            class="relative group-hover:text-black text-white transition-colors duration-300 flex items-center gap-2">
+                            ACESSAR PLATAFORMA <i class="fas fa-arrow-right text-sm"></i>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-32 animate-bounce opacity-20">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- Novo Chamariz: Funcionalidades -->
+    <section id="funcionalidades" class="py-24 px-6 relative z-10">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 space-y-4">
+                <span class="text-amber-500 font-bold tracking-widest text-xs uppercase">Por que escolher o
+                    Verum?</span>
+                <h2 class="text-4xl md:text-5xl font-black text-white">
+                    Pare de Perder Dinheiro <br>
+                    <span class="text-slate-500">com Desorganização.</span>
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div
+                    class="glass p-8 rounded-3xl border-t border-white/10 hover:-translate-y-2 transition duration-300 group">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center mb-6 group-hover:bg-indigo-500 transition">
+                        <i class="fas fa-boxes text-indigo-400 text-2xl group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Controle de Estoque</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Saiba exatamente o que entra e sai. Nunca mais seja surpreendido pela falta de produtos ou furos
+                        no estoque.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div
+                    class="glass p-8 rounded-3xl border-t border-amber-500/20 hover:-translate-y-2 transition duration-300 group relative overflow-hidden">
+                    <div
+                        class="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition">
+                    </div>
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center mb-6 group-hover:bg-amber-500 transition">
+                        <i class="fas fa-chart-line text-amber-500 text-2xl group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Financeiro na Mão</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Veja seu lucro real em tempo real. Gráficos simples que mostram para onde seu dinheiro está
+                        indo.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div
+                    class="glass p-8 rounded-3xl border-t border-white/10 hover:-translate-y-2 transition duration-300 group">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition">
+                        <i class="fas fa-mobile-alt text-emerald-400 text-2xl group-hover:text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Acesso em Qualquer Lugar</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Seja no computador ou no celular, sua empresa está no seu bolso. Gestão completa sem
+                        complicações.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-16 text-center">
+                <a href="https://wa.me/55XXXXXXXXXXX" target="_blank"
+                    class="inline-flex items-center gap-2 text-amber-500 font-bold hover:text-amber-400 transition hover:tracking-wide duration-300">
+                    QUERO CONTRATAR AGORA <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Detalhada -->
+    <section class="py-32 px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+            <!-- Missão -->
+            <div id="missao"
+                class="glass p-10 rounded-[2.5rem] space-y-4 hover:border-amber-500/50 transition duration-500 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition">
+                    <i class="fas fa-flag text-6xl text-amber-500"></i>
+                </div>
+                <div class="text-[10px] font-black text-amber-400 tracking-[0.2em] mb-4">01 // MISSÃO</div>
+                <h3 class="text-2xl font-bold text-white">O Propósito Diário</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Libertar o pequeno empreendedor da confusão e da desonestidade, oferecendo uma gestão de estoque
+                    clara, honesta e acessível, para que ele tenha o controle total do seu suor e do seu lucro.
+                </p>
+            </div>
+
+            <!-- Visão -->
+            <div id="visao"
+                class="glass p-10 rounded-[2.5rem] space-y-4 hover:border-amber-500/50 transition duration-500 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition">
+                    <i class="fas fa-eye text-6xl text-amber-500"></i>
+                </div>
+                <div class="text-[10px] font-black text-amber-400 tracking-[0.2em] mb-4">02 // VISÃO</div>
+                <h3 class="text-2xl font-bold text-white">O Futuro que Construímos</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Ser a ferramenta que transforma pequenos negócios em gigantes, sendo reconhecida não apenas pela
+                    tecnologia, mas pela generosidade e pelo impacto real na vida de quem produz.
+                </p>
+            </div>
+
+            <!-- Valores -->
+            <div id="valores"
+                class="glass p-10 rounded-[2.5rem] space-y-4 hover:border-amber-500/50 transition duration-500 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition">
+                    <i class="fas fa-gem text-6xl text-amber-500"></i>
+                </div>
+                <div class="text-[10px] font-black text-amber-400 tracking-[0.2em] mb-4">03 // VALORES</div>
+                <h3 class="text-2xl font-bold text-white">Leis Inegociáveis</h3>
+                <ul class="text-slate-400 text-sm space-y-2">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-amber-500 text-xs"></i> Deus acima
+                        de tudo.</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-amber-500 text-xs"></i> Honestidade
+                        Radical.</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-amber-500 text-xs"></i> Respeito ao
+                        Indivíduo.</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-amber-500 text-xs"></i> Paixão pela
+                        Solução.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-24 border-t border-white/5 bg-slate-950/50">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12">
+            <div class="space-y-4">
+                <div class="flex items-center gap-2 opacity-80">
+                    <div class="w-6 h-6 rounded bg-amber-500"></div>
+                    <span class="font-bold tracking-tight text-white">VERUM</span>
+                </div>
+                <p class="text-xs text-slate-500 uppercase tracking-widest font-black">&copy; 2026 Verum Gestão.
+                    Todos os direitos reservados.</p>
+            </div>
+            <div id="contato" class="flex gap-8 text-xs font-black text-slate-600 tracking-widest">
+                <!-- LINK DO WHATSAPP (Ex: https://wa.me/5511988887777) -->
+                <a href="https://wa.me/55XXXXXXXXXXX" target="_blank"
+                    class="hover:text-emerald-500 transition flex items-center gap-2">
+                    <i class="fab fa-whatsapp text-lg"></i> WHATSAPP
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Particle Background Logic
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null };
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 80; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speedX: Math.random() * 0.5 - 0.25,
+                    speedY: Math.random() * 0.5 - 0.25,
+                    opacity: Math.random() * 0.5
+                });
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+
+                if (p.x > canvas.width) p.x = 0;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.y > canvas.height) p.y = 0;
+                if (p.y < 0) p.y = canvas.height;
+
+                // Connection lines to mouse
+                const dx = p.x - mouse.x;
+                const dy = p.y - mouse.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 150) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(251, 191, 36, ${0.1 * (1 - dist / 150)})`;
+                    ctx.lineWidth = 1;
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+
+            // Parallax image movement
+            const img = document.querySelector('.parallax-img');
+            const moveX = (e.clientX - window.innerWidth / 2) / 50;
+            const moveY = (e.clientY - window.innerHeight / 2) / 50;
+            img.style.transform = `rotateY(${moveX}deg) rotateX(${-moveY}deg)`;
+        });
+
+        // Magnetic Button Logic
+        const magneticBtns = document.querySelectorAll('.magnetic-btn');
+        magneticBtns.forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = `translate(0px, 0px)`;
+            });
+        });
+
+        initCanvas();
+        animateParticles();
+        window.addEventListener('resize', initCanvas);
+    </script>
+</body>
+
+</html>
