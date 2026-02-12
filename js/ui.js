@@ -328,19 +328,28 @@ async function viewProductDetails(id) {
     const p = produtos.find(item => item.id == id);
     if (!p) return;
 
-    document.getElementById('modalProductName').textContent = p.nome;
-    document.getElementById('modalProductSku').textContent = `SKU: ${p.sku}`;
-    document.getElementById('modalProductCategory').textContent = p.categoria;
-    document.getElementById('modalProductPrice').textContent = `R$ ${parseFloat(p.preco_venda).toFixed(2).replace('.', ',')}`;
+    // Helper para atualizar texto com segurança
+    const setSafeText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+
+    setSafeText('modalProductName', p.nome);
+    setSafeText('modalProductSku', `SKU: ${p.sku}`);
+    setSafeText('modalProductCategory', p.categoria);
+    setSafeText('modalProductPrice', `R$ ${parseFloat(p.preco_venda).toFixed(2).replace('.', ',')}`);
 
     const table = document.getElementById('modalVariantsTable');
-    table.innerHTML = '';
-    p.variantes.forEach(v => {
-        const row = `<tr><td class="px-4 py-2">${v.tamanho}</td><td class="px-4 py-2">${v.cor}</td><td class="px-4 py-2">${v.estoque_atual}</td><td class="px-4 py-2">${v.alerta_minimo}</td></tr>`;
-        table.innerHTML += row;
-    });
+    if (table) {
+        table.innerHTML = '';
+        p.variantes.forEach(v => {
+            const row = `<tr><td class="px-4 py-2">${v.tamanho}</td><td class="px-4 py-2">${v.cor}</td><td class="px-4 py-2">${v.estoque_atual}</td><td class="px-4 py-2">${v.alerta_minimo}</td></tr>`;
+            table.innerHTML += row;
+        });
+    }
 
-    document.getElementById('productModal').classList.remove('hidden');
+    const modal = document.getElementById('productModal');
+    if (modal) modal.classList.remove('hidden');
     selectedProductId = id;
 }
 
@@ -475,5 +484,35 @@ function removeFromCart(index) {
         showNotification('Removido', `${carrinho[index].nome} retirado do carrinho.`, 'info');
         carrinho.splice(index, 1);
         renderCart();
+    }
+}
+
+// Função para renderizar gráficos de forma robusta
+function renderCharts() {
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+
+    try {
+        if (window.myChart) window.myChart.destroy();
+
+        // Exemplo básico de gráfico
+        window.myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                datasets: [{
+                    label: 'Vendas da Semana',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    borderColor: '#f59e0b',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    } catch (e) {
+        console.warn('Chart.js não pôde ser inicializado:', e);
     }
 }

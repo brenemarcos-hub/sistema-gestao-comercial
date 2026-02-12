@@ -344,7 +344,8 @@ async function saveSale(e) {
         showNotification('Processando...', 'Sincronizando com o banco de dados.', 'info');
 
         // Cliente selecionado no dropdown da Sidebar de Venda
-        const idCliente = document.getElementById('saleCliente').value || null;
+        const idClienteVal = document.getElementById('saleCliente').value;
+        const idCliente = idClienteVal === "" ? null : idClienteVal;
         const lojaId = await getUserLojaId();
 
         if (!lojaId) {
