@@ -169,17 +169,17 @@ function setupEventListeners() {
         }, 2000); // Aguarda login carregar
     }
 
-    // Configurações (disponível na tela de login)
-    addListener('configLoginBtn', 'click', () => {
-        console.log('Config login button clicked');
-        const modal = document.getElementById('configModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            console.log('Modal opened from login screen');
-        } else {
-            console.error('Modal not found from login screen!');
-        }
-    });
+    // Configurações (disponível na tela de login - Opcional)
+    const configBtn = document.getElementById('configLoginBtn');
+    if (configBtn) {
+        configBtn.addEventListener('click', () => {
+            console.log('Config login button clicked');
+            const modal = document.getElementById('configModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        });
+    }
 
     addListener('closeConfigModal', 'click', () => {
         const modal = document.getElementById('configModal');
