@@ -1,17 +1,24 @@
 // =====================================================
 // CONFIGURAÇÕES DO SUPABASE
 // =====================================================
-// ⚠️ As credenciais reais estão em: js/config.production.js
-// ⚠️ Esse arquivo está no .gitignore e NÃO vai para o GitHub
-// ⚠️ Para novos desenvolvedores: copie config.example.js → config.production.js
+// ⚠️ DESENVOLVIMENTO LOCAL: Carrega js/config.production.js
+// ⚠️ PRODUÇÃO (Netlify): Usa js/config.netlify.js
 // =====================================================
 
-// Este objeto será preenchido pelo config.production.js
-// que é carregado ANTES deste arquivo no HTML
+// O config.production.js ou config.netlify.js já definem window.SUPABASE_CONFIG
+// Este arquivo apenas garante que existe um fallback
+
 window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
     url: '',
     key: ''
 };
+
+// Avisar se não foi configurado
+if (!window.SUPABASE_CONFIG.url || !window.SUPABASE_CONFIG.key) {
+    console.error('❌ SUPABASE_CONFIG não configurado!');
+    console.warn('📝 Local: Carregue js/config.production.js no HTML');
+    console.warn('☁️ Netlify: Carregue js/config.netlify.js no HTML');
+}
 
 // VARIÁVEIS GLOBAIS DO SISTEMA
 var supabaseClient = null;
