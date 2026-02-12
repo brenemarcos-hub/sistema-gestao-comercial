@@ -345,35 +345,61 @@ async function saveSale(e) {
 
         // Cliente selecionado no dropdown da Sidebar de Venda
         const idCliente = document.getElementById('saleCliente').value || null;
+        const lojaId = await getUserLojaId();
 
-        // Loop para processar cada item do carrinho
-        for (const item of carrinho) {
-            // Re-verifica estoque antes de cada item (segurança)
-            const { data: variantData, error: vErr } = await supabaseClient.from('variantes').select('estoque_atual').eq('id', item.variantId).single();
-            if (vErr) throw vErr;
-
-            if (item.qtd > variantData.estoque_atual) {
-                throw new Error(`Estoque insuficiente para ${item.nome} (${item.variante}).`);
-            }
-
-            // Insere a venda
-            const lojaId = await getUserLojaId();
-            await supabaseClient.from('vendas').insert({
-                id_produto: item.productId,
-                id_variante: item.variantId,
-                cliente_id: idCliente,
-                quantidade: item.qtd,
-                total: item.preco * item.qtd,
-                loja_id: lojaId
-            });
-
-            // Baixa no estoque
-            await supabaseClient.from('variantes').update({
-                estoque_atual: variantData.estoque_atual - item.qtd
-            }).eq('id', item.variantId);
+        if (!lojaId) {
+            throw new Error('Não foi possível identificar sua loja. Faça login novamente.');
         }
 
-        showNotification('Sucesso!', `${carrinho.length} itens vendidos com sucesso.`, 'success');
+        // 🔒 PROTEÇÃO CONTRA RACE CONDITION
+        // Usar transação atômica via RPC para cada item do carrinho
+        const vendasProcessadas = [];
+        const erros = [];
+
+        for (const item of carrinho) {
+            try {
+                // Chama a função SQL que faz tudo atomicamente
+                const { data, error } = await supabaseClient.rpc('vender_produto', {
+                    p_variant_id: item.variantId,
+                    p_quantidade: item.qtd,
+                    p_produto_id: item.productId,
+                    p_preco_unitario: item.preco,
+                    p_cliente_id: idCliente,
+                    p_loja_id: lojaId
+                });
+
+                if (error) {
+                    // Captura erros específicos da função SQL
+                    throw new Error(error.message || `Erro ao processar ${item.nome}`);
+                }
+
+                vendasProcessadas.push(item.nome);
+            } catch (itemError) {
+                // Registra erro mas continua processando outros itens
+                erros.push({
+                    produto: item.nome,
+                    variante: item.variante,
+                    erro: itemError.message
+                });
+                console.error(`❌ Erro ao vender ${item.nome}:`, itemError);
+            }
+        }
+
+        // Verificar resultado do processamento
+        if (erros.length > 0 && vendasProcessadas.length === 0) {
+            // Todos os itens falharam
+            throw new Error(`Nenhum item pôde ser vendido:\n${erros.map(e => `• ${e.produto}: ${e.erro}`).join('\n')}`);
+        } else if (erros.length > 0) {
+            // Alguns itens falharam
+            showNotification(
+                'Venda parcial',
+                `${vendasProcessadas.length} itens vendidos. ${erros.length} falharam:\n${erros.map(e => `• ${e.produto}: ${e.erro}`).join('\n')}`,
+                'warning'
+            );
+        } else {
+            // Tudo certo!
+            showNotification('Sucesso!', `${carrinho.length} itens vendidos com sucesso.`, 'success');
+        }
 
         // Fechar sidebar e resetar
         document.getElementById('sidebarVenda').classList.remove('open');
@@ -390,6 +416,7 @@ async function saveSale(e) {
         showNotification('Erro ao finalizar', error.message || 'Problema na transação.', 'error');
     }
 }
+
 
 // Excluir venda
 async function deleteSale(saleId) {
