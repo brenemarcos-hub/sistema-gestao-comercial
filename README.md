@@ -134,8 +134,36 @@ cd SEU-REPOSITORIO
 │   ├── loja_config.js         # Configurações da loja
 │   └── import.js              # Importação XML
 │
-└── docs/
-    └── DOCS-CHAVE-MESTRA.md   # Documentação do sistema de segurança
+├── docs/                       # 📚 Documentação
+│   ├── INDEX.md               # Índice da documentação
+│   ├── AUDITORIA-SEGURANCA.md
+│   ├── CHECKLIST-SEGURANCA.md
+│   ├── DOCS-CHAVE-MESTRA.md
+│   ├── COMO-PUBLICAR-GITHUB.md
+│   ├── GUIA-GITHUB.md
+│   ├── COMANDOS-GIT.txt
+│   ├── CHECKLIST.txt
+│   ├── INSTALACAO-IMPORTACAO-XML.md
+│   ├── INSTALACAO-RACE-CONDITION.md
+│   ├── IMPORTACAO-XML-INSTALADO.md
+│   ├── RELATORIO-FINAL.md
+│   ├── PLANO-DE-TESTES.md
+│   ├── ATUALIZACAO-PRECO-CUSTO.md
+│   └── PERMISSOES.md
+│
+├── sql/                        # 🗄️ Scripts SQL
+│   ├── README.md              # Guia dos scripts SQL
+│   ├── CREATE-MASTER-KEY-SYSTEM.sql
+│   ├── CREATE-VENDER-PRODUTO-FUNCTION.sql
+│   ├── FIX-CLIENTES-BANCO.sql
+│   ├── FIX-ESTOQUE-PERMISSAO.sql
+│   ├── FIX-FINAL-RECURSAO.sql
+│   ├── FIX-PERMISSAO-USUARIOS.sql
+│   └── RESET-TOTAL-SISTEMA.sql
+│
+└── scripts/                    # 🔧 Scripts de automação
+    ├── setup-git.bat          # Setup Git (Windows)
+    └── setup-git.ps1          # Setup Git (PowerShell)
 ```
 
 ---
