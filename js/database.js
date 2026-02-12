@@ -33,6 +33,29 @@ async function getUserLojaId() {
     }
 }
 
+// ✅ VALIDAÇÃO GLOBAL - Verifica se o loja_id pertence ao usuário atual
+async function validateLojaAccess(lojaId, userId) {
+    if (!supabaseClient) return false;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('loja_id')
+            .eq('id', userId)
+            .single();
+
+        if (error) {
+            console.error('❌ Erro ao validar acesso à loja:', error);
+            return false;
+        }
+
+        return data?.loja_id === lojaId;
+    } catch (err) {
+        console.error('⚠️ Falha na validação de acesso:', err);
+        return false;
+    }
+}
+
 // Testar conexão com o Supabase
 async function testConnection() {
     if (!supabaseClient) return false;
@@ -230,8 +253,38 @@ async function deleteProduct(productId) {
     if (!confirm('Tem certeza que deseja excluir?')) return;
 
     try {
+        // 🔒 VALIDAÇÃO DE SEGURANÇA: Verifica se o produto pertence à loja do usuário
+        const lojaId = await getUserLojaId();
+        if (!lojaId) {
+            showNotification('Erro de autenticação', 'Não foi possível identificar sua loja.', 'error');
+            return;
+        }
+
+        // Verifica se o produto pertence à loja antes de excluir
+        const { data: produto, error: checkError } = await supabaseClient
+            .from('produtos')
+            .select('loja_id')
+            .eq('id', productId)
+            .single();
+
+        if (checkError) throw checkError;
+
+        if (produto.loja_id !== lojaId) {
+            showNotification('Acesso negado', 'Você não tem permissão para excluir este produto.', 'error');
+            console.error('⚠️ Tentativa de exclusão de produto de outra loja bloqueada!');
+            return;
+        }
+
+        // Excluir variantes primeiro
         await supabaseClient.from('variantes').delete().eq('id_produto', productId);
-        const { error } = await supabaseClient.from('produtos').delete().eq('id', productId);
+
+        // Excluir produto com validação de loja_id
+        const { error } = await supabaseClient
+            .from('produtos')
+            .delete()
+            .eq('id', productId)
+            .eq('loja_id', lojaId); // Segurança extra
+
         if (error) throw error;
 
         showNotification('Produto excluído', 'Sucesso.', 'success');
@@ -343,11 +396,48 @@ async function deleteSale(saleId) {
     if (!confirm('Deseja excluir este registro de venda?')) return;
 
     try {
-        const { data: venda } = await supabaseClient.from('vendas').select('quantidade, id_variante').eq('id', saleId).single();
-        const { data: variante } = await supabaseClient.from('variantes').select('estoque_atual').eq('id', venda.id_variante).single();
+        // 🔒 VALIDAÇÃO DE SEGURANÇA: Verifica se a venda pertence à loja do usuário
+        const lojaId = await getUserLojaId();
+        if (!lojaId) {
+            showNotification('Erro de autenticação', 'Não foi possível identificar sua loja.', 'error');
+            return;
+        }
 
-        await supabaseClient.from('variantes').update({ estoque_atual: variante.estoque_atual + venda.quantidade }).eq('id', venda.id_variante);
-        await supabaseClient.from('vendas').delete().eq('id', saleId);
+        // Busca a venda com validação de loja
+        const { data: venda, error: vendaError } = await supabaseClient
+            .from('vendas')
+            .select('quantidade, id_variante, loja_id')
+            .eq('id', saleId)
+            .single();
+
+        if (vendaError) throw vendaError;
+
+        // Verifica se a venda pertence à loja do usuário
+        if (venda.loja_id !== lojaId) {
+            showNotification('Acesso negado', 'Você não tem permissão para excluir esta venda.', 'error');
+            console.error('⚠️ Tentativa de exclusão de venda de outra loja bloqueada!');
+            return;
+        }
+
+        // Busca variante para restaurar estoque
+        const { data: variante } = await supabaseClient
+            .from('variantes')
+            .select('estoque_atual')
+            .eq('id', venda.id_variante)
+            .single();
+
+        // Restaura estoque
+        await supabaseClient
+            .from('variantes')
+            .update({ estoque_atual: variante.estoque_atual + venda.quantidade })
+            .eq('id', venda.id_variante);
+
+        // Exclui venda com validação de loja_id
+        await supabaseClient
+            .from('vendas')
+            .delete()
+            .eq('id', saleId)
+            .eq('loja_id', lojaId); // Segurança extra
 
         showNotification('Venda excluída', 'Estoque restaurado.', 'success');
         await loadProducts();
