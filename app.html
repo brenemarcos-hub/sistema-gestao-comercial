@@ -15,6 +15,11 @@
 
     <title>Sistema de Inventário - Loja de Calçados e Vestuário</title>
 
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <!-- Favicon Placeholder -->
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2897/2897837.png">
 
@@ -1190,8 +1195,14 @@
                 <button id="closeSidebarVenda"><i class="fas fa-times"></i></button>
             </div>
             <form id="saleForm" class="p-6 space-y-4">
-                <input type="text" id="saleEan" placeholder="Bipar Produto"
-                    class="w-full p-4 border-2 border-indigo-100 rounded-xl bg-indigo-50/20">
+                <div class="relative">
+                    <input type="text" id="saleEan" placeholder="Bipar Produto (EAN/BIP)"
+                        class="w-full p-4 border-2 border-indigo-100 rounded-xl bg-indigo-50/20 pr-12">
+                    <button type="button" onclick="scanBarcode()"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-indigo-600 hover:text-indigo-800 transition-colors p-2">
+                        <i class="fas fa-camera text-xl"></i>
+                    </button>
+                </div>
                 <select id="saleProduto" required class="w-full p-3 border rounded-lg">
                     <option value="">Produto *</option>
                 </select>
@@ -1448,6 +1459,103 @@
         </div>
     </div>
 
+    <!-- Modal do Scanner de Código de Barras PWA -->
+    <div id="scannerModal" class="fixed inset-0 z-[300] hidden items-center justify-center bg-black">
+        <video id="scannerVideo" class="w-full h-full object-cover" playsinline></video>
+        <!-- Overlay de leitura -->
+        <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+            <div class="w-64 h-48 border-2 border-amber-500 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] relative">
+                <div class="absolute top-0 left-0 w-full h-0.5 bg-amber-500 animate-[scanLine_2s_linear_infinite]">
+                </div>
+            </div>
+            <p class="text-white font-bold mt-8 text-center px-6">Posicione o código de barras no centro do quadrado</p>
+        </div>
+        <button onclick="stopScanner()"
+            class="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white/20 text-white px-10 py-4 rounded-full backdrop-blur-md font-bold border border-white/30 hover:bg-white/30 transition">
+            <i class="fas fa-times mr-2"></i> FECHAR CÂMERA
+        </button>
+    </div>
+
+    <style>
+        @keyframes scanLine {
+            0% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0;
+            }
+        }
+    </style>
+
+    <script>
+        let scannerStream = null;
+
+        async function scanBarcode() {
+            if (!('BarcodeDetector' in window)) {
+                showNotification('Não suportado', 'Seu navegador não suporta leitura nativa por câmera. Use um leitor USB ou digite o código.', 'warning');
+                return;
+            }
+
+            const modal = document.getElementById('scannerModal');
+            const video = document.getElementById('scannerVideo');
+            modal.classList.remove('hidden');
+
+            try {
+                scannerStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                video.srcObject = scannerStream;
+                video.play();
+
+                const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'qr_code'] });
+
+                const scan = async () => {
+                    if (!scannerStream) return;
+                    try {
+                        const barcodes = await detector.detect(video);
+                        if (barcodes.length > 0) {
+                            const code = barcodes[0].rawValue;
+                            const eanInput = document.getElementById('saleEan');
+                            if (eanInput) {
+                                eanInput.value = code;
+                                if (typeof handleSaleBarcode === 'function') {
+                                    handleSaleBarcode(code);
+                                }
+                            }
+                            stopScanner();
+                        } else {
+                            requestAnimationFrame(scan);
+                        }
+                    } catch (e) {
+                        requestAnimationFrame(scan);
+                    }
+                };
+                requestAnimationFrame(scan);
+
+            } catch (err) {
+                console.error("Erro ao acessar câmera:", err);
+                showNotification('Erro de Câmera', 'Não foi possível acessar a câmera. Verifique as permissões.', 'error');
+                stopScanner();
+            }
+        }
+
+        function stopScanner() {
+            const modal = document.getElementById('scannerModal');
+            const video = document.getElementById('scannerVideo');
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(track => track.stop());
+                scannerStream = null;
+            }
+            if (video) video.srcObject = null;
+            modal.classList.add('hidden');
+        }
+    </script>
+
     <!-- Modal de Configurações da Loja -->
     <div id="modalConfigLoja"
         class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
@@ -1518,26 +1626,26 @@
 
     <!-- Scripts -->
     <script>
-            // Loader inteligente de configuração para evitar erro 404 no console
-            (function () {
-                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const scripts = [];
+        // Loader inteligente de configuração para evitar erro 404 no console
+        (function () {
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const scripts = [];
 
-                // Se for local, tenta carregar o production.js (onde estão suas chaves reais no PC)
-                if (isLocal) {
-                    scripts.push('js/config.production.js');
-                } else {
-                    // Se for Netlify, carrega o netlify.js
-                    scripts.push('js/config.netlify.js');
-                }
+            // Se for local, tenta carregar o production.js (onde estão suas chaves reais no PC)
+            if (isLocal) {
+                scripts.push('js/config.production.js');
+            } else {
+                // Se for Netlify, carrega o netlify.js
+                scripts.push('js/config.netlify.js');
+            }
 
-                scripts.forEach(src => {
-                    const s = document.createElement('script');
-                    s.src = src;
-                    s.async = false;
-                    document.head.appendChild(s);
-                });
-            })();
+            scripts.forEach(src => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.async = false;
+                document.head.appendChild(s);
+            });
+        })();
     </script>
     <script src="js/config.js"></script>
     <script src="js/permissions.js"></script>
@@ -1629,6 +1737,21 @@
 
     <!-- Sistema de Importação XML -->
     <script src="js/import.js"></script>
+
+    <script>
+        // Registro do Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrado com sucesso:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Falha ao registrar o ServiceWorker:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 
 </html>
