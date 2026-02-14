@@ -379,25 +379,75 @@
         // Variáveis globais
         let masterAutenticado = false;
 
+        // Auto-verificação ao carregar: Só permite carregar dados se o usuário logado for MASTER
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkMasterSession();
+        });
+
+        async function checkMasterSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                // Verificar a role diretamente no banco para segurança
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile && profile.role === 'master') {
+                    console.log('👑 Acesso Master detectado via sessão');
+                    // Se for master e estiver logado, entra direto
+                    const passwordField = document.getElementById('masterPassword');
+                    if (passwordField) passwordField.value = 'verum-master';
+                    verifyMasterAccess();
+                }
+            }
+        }
+
         // ============================================
         // VERIFICAÇÃO DE ACESSO MASTER
         // ============================================
-        function verifyMasterAccess() {
+        async function verifyMasterAccess() {
             const password = document.getElementById('masterPassword').value;
 
-            // Senha fixa
+            // 1. Verificação por Chave Mestra
             if (password === 'verum-master') {
-                masterAutenticado = true;
-                document.getElementById('masterLogin').classList.add('hidden');
-                document.getElementById('masterPanel').classList.remove('hidden');
+                const { data: { session } } = await supabase.auth.getSession();
 
-                // Carregar todos os dados
-                carregarDadosMaster();
+                // 🔒 SEGURANÇA ADICIONAL: Mesmo com a chave, precisa estar logado com perfil Master
+                // Ou ser o e-mail do desenvolvedor autorizado
+                if (!session) {
+                    alert('⚠️ Por favor, faça login no sistema principal primeiro.');
+                    window.location.href = 'app.html';
+                    return;
+                }
 
-                // Atualizar relógio
-                setInterval(() => {
-                    document.getElementById('masterTime').textContent = new Date().toLocaleString('pt-BR');
-                }, 1000);
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role, email')
+                    .eq('id', session.user.id)
+                    .single();
+
+                // Lista de emails que podem subir para Master com a chave
+                const autorizados = ['brenemarcos@gmail.com'];
+
+                if (profile && (profile.role === 'master' || autorizados.includes(session.user.email))) {
+                    masterAutenticado = true;
+                    document.getElementById('masterLogin').classList.add('hidden');
+                    document.getElementById('masterPanel').classList.remove('hidden');
+
+                    // Carregar todos os dados
+                    carregarDadosMaster();
+
+                    // Atualizar relógio
+                    setInterval(() => {
+                        const timeEl = document.getElementById('masterTime');
+                        if (timeEl) timeEl.textContent = new Date().toLocaleString('pt-BR');
+                    }, 1000);
+                } else {
+                    alert('❌ Seu usuário não tem permissão para acessar o Painel Master.');
+                    window.location.href = 'app.html';
+                }
             } else {
                 alert('❌ Acesso negado! Chave mestra inválida.');
             }
