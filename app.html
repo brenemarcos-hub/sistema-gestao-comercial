@@ -296,7 +296,7 @@
                     </button>
 
                     <!-- Configurações da Loja -->
-                    <button id="btnConfigLoja" title="Configurações da Loja"
+                    <button id="btnConfigLoja" title="Configurações da Loja" onclick="openStoreConfigModal()"
                         class="hidden p-2 text-gray-500 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all">
                         <i class="fas fa-cog text-xl"></i>
                     </button>
@@ -1672,6 +1672,42 @@
                     <i class="fas fa-check"></i> Salvar Alterações
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Criar Loja Obrigatório (Para Donos sem loja_id) -->
+    <div id="modalCriarLojaObrigatorio"
+        class="fixed inset-0 z-[200] hidden items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center slide-in">
+            <div class="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-store text-amber-500 text-4xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-2">Configure sua Loja</h2>
+            <p class="text-slate-500 dark:text-slate-400 mb-8 text-sm">
+                Detectamos que sua conta de Dono ainda não possui uma loja vinculada. Precisamos criar uma para você
+                começar!
+            </p>
+
+            <form id="formCriarLojaObrigatorio" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nome da sua
+                        Loja</label>
+                    <input type="text" id="obrigatorioNomeLoja" required
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                        placeholder="Ex: Minha Boutique">
+                </div>
+                <button type="submit" id="btnConfirmarCriarLoja"
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-4 rounded-xl shadow-lg shadow-amber-500/20 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <i class="fas fa-rocket"></i>
+                    Criar Minha Loja Agora
+                </button>
+            </form>
+
+            <button onclick="logoutUser()"
+                class="mt-6 text-xs text-slate-400 hover:text-rose-500 transition-colors uppercase font-bold tracking-widest">
+                <i class="fas fa-sign-out-alt"></i> Sair do Sistema
+            </button>
         </div>
     </div>
 

@@ -111,6 +111,18 @@ async function checkSession() {
                 }, 200);
             }
 
+            // 🛡️ VERIFICAÇÃO DE SEGURANÇA: Dono sem Loja (Reparo Automático)
+            const { data: checkProfile } = await supabaseClient
+                .from('profiles')
+                .select('loja_id, role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (checkProfile && (checkProfile.role === 'dono' || checkProfile.role === 'admin') && !checkProfile.loja_id) {
+                console.warn('🚨 Dono sem loja detectado. Iniciando reparo...');
+                showRepairStoreModal();
+            }
+
             console.log('✅ checkSession: Processo completo!');
             await updateStoreHeader(); // Atualiza nome da loja no topo
         } else {
@@ -122,6 +134,71 @@ async function checkSession() {
         console.error("❌ checkSession: Erro ao verificar sessão:", error);
         document.getElementById('loginSection').classList.remove('hidden');
     }
+}
+
+// Funções para Reparo de Loja Faltante
+function showRepairStoreModal() {
+    const modal = document.getElementById('modalCriarLojaObrigatorio');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        const form = document.getElementById('formCriarLojaObrigatorio');
+        if (form) {
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const nomeLoja = document.getElementById('obrigatorioNomeLoja').value.trim();
+                if (!nomeLoja) return;
+
+                const btn = document.getElementById('btnConfirmarCriarLoja');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+
+                try {
+                    await repairMissingStore(nomeLoja);
+                    showNotification('Sucesso', 'Sua loja foi criada com sucesso!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } catch (err) {
+                    console.error(err);
+                    showNotification('Erro', 'Falha ao criar loja: ' + err.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-rocket"></i> Criar Minha Loja Agora';
+                }
+            };
+        }
+    }
+}
+
+async function repairMissingStore(nomeLoja) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) throw new Error("Sessão expirada");
+
+    // 1. Gerar Chave Única
+    const chaveUnica = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    // 2. Criar a Loja
+    const { data: novaLoja, error: lojaError } = await supabaseClient
+        .from('lojas')
+        .insert({
+            nome: nomeLoja,
+            chave_acesso: chaveUnica,
+            dono_id: session.user.id,
+            ativo: true
+        })
+        .select()
+        .single();
+
+    if (lojaError) throw lojaError;
+
+    // 3. Vincular Perfil à Loja
+    const { error: profError } = await supabaseClient
+        .from('profiles')
+        .update({ loja_id: novaLoja.id })
+        .eq('id', session.user.id);
+
+    if (profError) throw profError;
+
+    return novaLoja;
 }
 
 async function loginUser(e) {

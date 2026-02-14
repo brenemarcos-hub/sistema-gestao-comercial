@@ -23,7 +23,8 @@ function loadSettings() {
 function saveSettings() {
     // Função agora vazia ou deletada se não houver mais configs locais
     // As configurações da loja agora são salvas via loja_config.js diretamente no banco
-    document.getElementById('configModal').classList.add('hidden');
+    const modal = document.getElementById('modalConfigLoja');
+    if (modal) modal.classList.add('hidden');
 }
 
 function applyTheme(theme) {
