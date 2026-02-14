@@ -1,34 +1,72 @@
-// Atualiza o cabeçalho com os dados da loja
+// Atualiza o cabeçalho com os dados da loja e do usuário
 async function updateStoreHeader() {
     if (!supabaseClient) return;
 
     try {
-        const lojaId = await getUserLojaId();
-        if (!lojaId) return;
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
 
-        const { data: loja } = await supabaseClient
-            .from('lojas')
-            .select('nome, descricao, logo_url')
-            .eq('id', lojaId)
+        // 1. Buscar dados da Loja
+        const lojaId = await getUserLojaId();
+        if (lojaId) {
+            const { data: loja } = await supabaseClient
+                .from('lojas')
+                .select('nome, descricao, logo_url')
+                .eq('id', lojaId)
+                .single();
+
+            if (loja) {
+                const headerTitle = document.getElementById('headerStoreName');
+                const headerDesc = document.getElementById('headerStoreDesc');
+                const storeLogoImg = document.getElementById('storeLogoImg');
+                const defaultLogoIcon = document.getElementById('defaultLogoIcon');
+
+                if (headerTitle) headerTitle.innerHTML = loja.nome.toUpperCase();
+                if (headerDesc) headerDesc.textContent = loja.descricao || 'Gerenciamento Profissional';
+
+                if (loja.logo_url && storeLogoImg) {
+                    storeLogoImg.src = loja.logo_url;
+                    storeLogoImg.classList.remove('hidden');
+                    if (defaultLogoIcon) defaultLogoIcon.classList.add('hidden');
+                }
+            }
+        }
+
+        // 2. Buscar e Exibir dados do Usuário (Cargo e Email)
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role, email')
+            .eq('id', session.user.id)
             .single();
 
-        if (loja) {
-            const headerTitle = document.getElementById('headerStoreName');
-            const headerDesc = document.getElementById('headerStoreDesc');
-            const storeLogoImg = document.getElementById('storeLogoImg');
-            const defaultLogoIcon = document.getElementById('defaultLogoIcon');
+        if (profile) {
+            const roleEl = document.getElementById('userHeaderRole');
+            const emailEl = document.getElementById('userHeaderEmail');
+            const userBadge = document.getElementById('userProfileBadge');
 
-            if (headerTitle) headerTitle.innerHTML = loja.nome.toUpperCase();
-            if (headerDesc) headerDesc.textContent = loja.descricao || 'Gerenciamento Profissional';
+            if (emailEl) emailEl.textContent = session.user.email;
 
-            if (loja.logo_url && storeLogoImg) {
-                storeLogoImg.src = loja.logo_url;
-                storeLogoImg.classList.remove('hidden');
-                if (defaultLogoIcon) defaultLogoIcon.classList.add('hidden');
+            if (roleEl) {
+                const role = profile.role.toUpperCase();
+
+                // Se for MASTER, transforma o badge em um link para a página master.html
+                if (profile.role === 'master') {
+                    roleEl.innerHTML = `<a href="master.html" class="flex items-center gap-1 text-indigo-500 hover:text-indigo-400 transition-colors">
+                        <i class="fas fa-crown text-[8px]"></i> ${role}
+                    </a>`;
+                    if (userBadge) {
+                        userBadge.classList.add('border-indigo-500/30', 'bg-indigo-500/5');
+                    }
+                } else {
+                    roleEl.textContent = role;
+                    // Cores por cargo
+                    if (profile.role === 'dono') roleEl.classList.add('text-amber-600', 'dark:text-amber-400');
+                    if (profile.role === 'gerente') roleEl.classList.add('text-blue-600', 'dark:text-blue-400');
+                }
             }
         }
     } catch (err) {
-        console.error('Erro ao atualizar cabeçalho da loja:', err);
+        console.error('Erro ao atualizar cabeçalho da loja/usuário:', err);
     }
 }
 
