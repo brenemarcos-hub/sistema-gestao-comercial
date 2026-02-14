@@ -97,10 +97,10 @@ PERMISSIONS.canExportData = PERMISSIONS.canViewSalesReports;
 
 function applyUIPermissions() {
     const userRole = getUserRole();
-    // Exibir botão de configurações apenas para o dono
+    // Exibir botão de configurações para dono e master
     const btnConfig = document.getElementById('btnConfigLoja');
     if (btnConfig) {
-        if (userRole === 'dono') {
+        if (userRole === 'dono' || userRole === 'master') {
             btnConfig.classList.remove('hidden');
         } else {
             btnConfig.classList.add('hidden');
@@ -111,7 +111,7 @@ function applyUIPermissions() {
     console.log('🔐 Aplicando permissões para role:', userRole);
 
     // Limpar estilos inline forçados (do Master) antes de aplicar permissões
-    const allElements = ['addProductBtn', 'addVendaBtn', 'addClientBtn', 'addExpenseBtn', 'usersBtn', 'configBtn', 'navFinancas', 'navRelatorios', 'importXMLBtn'];
+    const allElements = ['addProductBtn', 'addVendaBtn', 'addClientBtn', 'addExpenseBtn', 'usersBtn', 'navFinancas', 'navRelatorios', 'importXMLBtn'];
     allElements.forEach(id => {
         const el = document.getElementById(id);
         if (el && userRole !== 'master') {
@@ -128,7 +128,6 @@ function applyUIPermissions() {
     hideElementIf('addClientBtn', !PERMISSIONS.canCreateClients());
     hideElementIf('addExpenseBtn', !PERMISSIONS.canViewFinancialReports());
     hideElementIf('usersBtn', !PERMISSIONS.canManageEmployees());
-    hideElementIf('configBtn', !PERMISSIONS.canAccessSettings());
     hideElementIf('importXMLBtn', !PERMISSIONS.canManageProducts()); // Gerente+ pode importar
 
     // Navegação (Tabs)
@@ -137,7 +136,7 @@ function applyUIPermissions() {
 
     // Master vê TUDO (Força visibilidade com !important)
     if (userRole === 'master') {
-        const masterElements = ['addProductBtn', 'addVendaBtn', 'addClientBtn', 'addExpenseBtn', 'usersBtn', 'configBtn', 'navFinancas', 'navRelatorios', 'importXMLBtn'];
+        const masterElements = ['addProductBtn', 'addVendaBtn', 'addClientBtn', 'addExpenseBtn', 'usersBtn', 'navFinancas', 'navRelatorios', 'importXMLBtn'];
         masterElements.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -231,6 +230,36 @@ function checkPermissionOrNotify(permission, action = 'realizar esta ação') {
     return true;
 }
 
+// Função para elevar o usuário atual a Master usando uma chave secreta
+async function elevateToMaster() {
+    const key = prompt('Digite a Chave Mestra para elevação de privilégios:');
+    if (!key) return;
+
+    if (key === 'verum-master') {
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) return showNotification('Erro', 'Você precisa estar logado.', 'error');
+
+            const { error } = await supabaseClient
+                .from('profiles')
+                .update({ role: 'master' })
+                .eq('id', session.user.id);
+
+            if (error) throw error;
+
+            localStorage.setItem('userRole', 'master');
+            showNotification('Privilégios Elevados', 'Sua conta agora é MASTER. O sistema será reiniciado.', 'success');
+
+            setTimeout(() => location.reload(), 2000);
+        } catch (err) {
+            console.error(err);
+            showNotification('Erro na Elevação', err.message, 'error');
+        }
+    } else {
+        showNotification('Chave Inválida', 'A chave mestra informada está incorreta.', 'error');
+    }
+}
+
 // Exportar para uso global
 window.PERMISSIONS = PERMISSIONS;
 window.hasMinimumRole = hasMinimumRole;
@@ -240,3 +269,4 @@ window.applyUIPermissions = applyUIPermissions;
 window.checkPermissionOrNotify = checkPermissionOrNotify;
 window.ROLES = ROLES;
 window.resetAllUserRoles = resetAllUserRoles;
+window.elevateToMaster = elevateToMaster;

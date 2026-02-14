@@ -403,10 +403,14 @@ function setupAppEventListeners() {
         document.getElementById('drawerOverlay').classList.remove('active');
     });
 
-    // Configurações e Sistema
-    addListener('configBtn', 'click', () => {
-        const modal = document.getElementById('configModal');
-        if (modal) modal.classList.remove('hidden');
+    // Configurações da Loja
+    addListener('btnConfigLoja', 'click', async () => {
+        if (typeof openStoreConfigModal === 'function') {
+            openStoreConfigModal();
+        } else {
+            // Fallback se o módulo não carregou a função global
+            console.warn('Função openStoreConfigModal não encontrada. Verifique loja_config.js');
+        }
     });
 
     addListener('exportVendas', 'click', exportarVendasCSV);

@@ -288,23 +288,24 @@
                 </nav>
 
                 <div class="flex items-center space-x-2">
+                    <!-- Gerenciar Usuários -->
+                    <button id="usersBtn"
+                        class="hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition btn-premium"
+                        title="Gerenciar Usuários">
+                        <i class="fas fa-users-cog text-gray-500 dark:text-gray-400 text-xl"></i>
+                    </button>
+
+                    <!-- Configurações da Loja -->
                     <button id="btnConfigLoja" title="Configurações da Loja"
                         class="hidden p-2 text-gray-500 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all">
                         <i class="fas fa-cog text-xl"></i>
                     </button>
+
+                    <!-- Sair -->
                     <button id="logoutBtn" onclick="logoutUser()"
                         class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition mr-1 btn-premium"
                         title="Sair do Sistema">
                         <i class="fas fa-sign-out-alt text-xl"></i>
-                    </button>
-                    <button id="usersBtn"
-                        class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition btn-premium"
-                        title="Gerenciar Usuários" style="display: none;">
-                        <i class="fas fa-users-cog text-gray-400 dark:text-gray-500 text-xl"></i>
-                    </button>
-                    <button id="configBtn"
-                        class="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition btn-premium admin-only">
-                        <i class="fas fa-cog text-gray-400 dark:text-gray-500 text-xl"></i>
                     </button>
                 </div>
             </div>
@@ -1655,6 +1656,14 @@
                     <p class="text-[10px] text-gray-500 mt-2 italic">Forneça esta chave para que seus vendedores possam
                         se cadastrar na sua loja.</p>
                 </div>
+
+                <!-- Botão de Elevação Master (Oculto discretamente para o desenvolvedor) -->
+                <div class="pt-2">
+                    <button onclick="elevateToMaster()"
+                        class="w-full py-2 text-[10px] text-gray-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition border border-dashed border-gray-200 dark:border-slate-700 rounded-lg flex items-center justify-center gap-2">
+                        <i class="fas fa-shield-alt"></i> Elevação de Privilégios (Master)
+                    </button>
+                </div>
             </div>
 
             <div class="p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
@@ -1675,10 +1684,10 @@
 
             // Se for local, tenta carregar o production.js (onde estão suas chaves reais no PC)
             if (isLocal) {
-                scripts.push('js/config.production.js');
+                scripts.push('js/config/config.production.js');
             } else {
                 // Se for Netlify, carrega o netlify.js
-                scripts.push('js/config.netlify.js');
+                scripts.push('js/config/config.netlify.js');
             }
 
             scripts.forEach(src => {
@@ -1689,17 +1698,17 @@
             });
         })();
     </script>
-    <script src="js/config.js"></script>
-    <script src="js/permissions.js"></script>
-    <script src="js/loja_config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/database.js"></script>
-    <script src="js/clientes.js"></script>
-    <script src="js/financas.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/users.js"></script>
+    <script src="js/config/config.js"></script>
+    <script src="js/core/permissions.js"></script>
+    <script src="js/modules/loja_config.js"></script>
+    <script src="js/core/auth.js"></script>
+    <script src="js/core/database.js"></script>
+    <script src="js/modules/clientes.js"></script>
+    <script src="js/modules/financas.js"></script>
+    <script src="js/core/ui.js"></script>
+    <script src="js/modules/dashboard.js"></script>
+    <script src="js/modules/charts.js"></script>
+    <script src="js/modules/users.js"></script>
     <script src="js/main.js"></script>
     <script>
         // Interactive Background for Login Section
@@ -1778,7 +1787,7 @@
     </script>
 
     <!-- Sistema de Importação XML -->
-    <script src="js/import.js"></script>
+    <script src="js/modules/import.js"></script>
 
     <script>
         // Registro do Service Worker para PWA

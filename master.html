@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VERUM MASTER - Painel de Controle</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            background: #0a0c10;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(17, 25, 40, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .master-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+
+<body class="text-gray-100">
+
+    <!-- Login Master (protegido) -->
+    <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-50" style="background: #0a0c10;">
+        <div class="glass-card rounded-2xl p-8 w-96 border border-indigo-500/30">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-indigo-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-crown text-3xl text-white"></i>
+                </div>
+                <h2 class="text-2xl font-black">PAINEL MASTER</h2>
+                <p class="text-xs text-gray-500 mt-2">Acesso restrito - Desenvolvedor</p>
+            </div>
+
+            <div class="space-y-4">
+                <input type="password" id="masterPassword" placeholder="Chave Mestra"
+                    class="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+
+                <button onclick="verifyMasterAccess()"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fas fa-lock-open"></i>
+                    ACESSAR PAINEL
+                </button>
+            </div>
+
+            <div class="mt-6 text-center">
+                <a href="app.html" class="text-xs text-gray-600 hover:text-gray-400 transition">
+                    <i class="fas fa-arrow-left"></i> Voltar ao sistema
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel Master (escondido até login) -->
+    <div id="masterPanel" class="hidden">
+        <!-- Header -->
+        <div class="glass-card border-b border-indigo-500/20 sticky top-0 z-50">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-crown text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-black">VERUM MASTER</h1>
+                            <p class="text-xs text-gray-500">Painel de Controle do Fornecedor</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <span id="masterTime" class="text-sm text-gray-400"></span>
+                        <button onclick="logoutMaster()"
+                            class="px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container Principal -->
+        <div class="container mx-auto px-6 py-8">
+            <!-- Stats Globais -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <div class="stat-card glass-card rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">Total Lojas</p>
+                            <h3 id="totalLojas" class="text-3xl font-black mt-2">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-indigo-600/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-store text-indigo-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">Usuários Totais</p>
+                            <h3 id="totalUsuarios" class="text-3xl font-black mt-2">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-users text-green-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">Produtos</p>
+                            <h3 id="totalProdutos" class="text-3xl font-black mt-2">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-amber-600/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-boxes text-amber-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">Vendas Totais</p>
+                            <h3 id="totalVendas" class="text-2xl font-black mt-2">R$ 0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-emerald-600/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-emerald-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card glass-card rounded-xl p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase">Masters</p>
+                            <h3 id="totalMasters" class="text-3xl font-black mt-2">0</h3>
+                        </div>
+                        <div class="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-crown text-purple-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs de Navegação -->
+            <div class="mb-6 border-b border-gray-800">
+                <nav class="flex gap-6">
+                    <button onclick="switchMasterTab('lojas')" id="tabLojas"
+                        class="tab-master active px-4 py-2 text-sm font-medium border-b-2 border-indigo-500 text-indigo-400">
+                        <i class="fas fa-store mr-2"></i>Lojas
+                    </button>
+                    <button onclick="switchMasterTab('usuarios')" id="tabUsuarios"
+                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
+                        <i class="fas fa-users mr-2"></i>Usuários
+                    </button>
+                    <button onclick="switchMasterTab('auditoria')" id="tabAuditoria"
+                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
+                        <i class="fas fa-history mr-2"></i>Auditoria
+                    </button>
+                    <button onclick="switchMasterTab('backup')" id="tabBackup"
+                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
+                        <i class="fas fa-database mr-2"></i>Backup/Export
+                    </button>
+                    <button onclick="switchMasterTab('config')" id="tabConfig"
+                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
+                        <i class="fas fa-cog mr-2"></i>Config Globais
+                    </button>
+                </nav>
+            </div>
+
+            <!-- CONTEÚDO DAS TABS -->
+
+            <!-- TAB LOJAS -->
+            <div id="contentLojas" class="tab-content">
+                <div class="glass-card rounded-xl overflow-hidden">
+                    <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                        <h3 class="font-bold">Todas as Lojas Cadastradas</h3>
+                        <input type="text" id="searchLoja" placeholder="Buscar loja..."
+                            class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm w-64">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-black/50">
+                                <tr class="text-left text-xs text-gray-500">
+                                    <th class="p-4">Loja</th>
+                                    <th class="p-4">Dono</th>
+                                    <th class="p-4">Chave Acesso</th>
+                                    <th class="p-4">Produtos</th>
+                                    <th class="p-4">Vendas (mês)</th>
+                                    <th class="p-4">Usuários</th>
+                                    <th class="p-4">Criação</th>
+                                    <th class="p-4">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lojasTable" class="divide-y divide-gray-800">
+                                <tr>
+                                    <td colspan="8" class="p-8 text-center text-gray-600">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB USUÁRIOS -->
+            <div id="contentUsuarios" class="tab-content hidden">
+                <div class="glass-card rounded-xl overflow-hidden">
+                    <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                        <h3 class="font-bold">Todos os Usuários do Sistema</h3>
+                        <div class="flex gap-2">
+                            <select id="filtroRole"
+                                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm">
+                                <option value="">Todas roles</option>
+                                <option value="vendedor">Vendedor</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="dono">Dono</option>
+                                <option value="master">Master</option>
+                            </select>
+                            <input type="text" id="searchUsuario" placeholder="Buscar usuário..."
+                                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm w-64">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-black/50">
+                                <tr class="text-left text-xs text-gray-500">
+                                    <th class="p-4">Usuário</th>
+                                    <th class="p-4">Email</th>
+                                    <th class="p-4">Role</th>
+                                    <th class="p-4">Loja</th>
+                                    <th class="p-4">Último acesso</th>
+                                    <th class="p-4">Criação</th>
+                                    <th class="p-4">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuariosTable" class="divide-y divide-gray-800">
+                                <tr>
+                                    <td colspan="7" class="p-8 text-center text-gray-600">Carregando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB AUDITORIA -->
+            <div id="contentAuditoria" class="tab-content hidden">
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="font-bold mb-4">Logs de Atividade (últimos 7 dias)</h3>
+                    <div id="logsContainer" class="space-y-2 max-h-96 overflow-y-auto">
+                        <!-- Logs serão inseridos aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB BACKUP -->
+            <div id="contentBackup" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="font-bold mb-4 flex items-center gap-2">
+                            <i class="fas fa-download text-green-400"></i> Exportar Dados
+                        </h3>
+                        <div class="space-y-3">
+                            <button onclick="exportData('lojas')"
+                                class="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-left px-4 py-3 rounded-lg transition">
+                                <i class="fas fa-store mr-3"></i> Exportar todas as lojas (JSON)
+                            </button>
+                            <button onclick="exportData('usuarios')"
+                                class="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-left px-4 py-3 rounded-lg transition">
+                                <i class="fas fa-users mr-3"></i> Exportar todos os usuários (JSON)
+                            </button>
+                            <button onclick="exportData('vendas')"
+                                class="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-left px-4 py-3 rounded-lg transition">
+                                <i class="fas fa-shopping-cart mr-3"></i> Exportar todas as vendas (JSON)
+                            </button>
+                            <button onclick="exportCompleto()"
+                                class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-left px-4 py-3 rounded-lg transition font-bold">
+                                <i class="fas fa-database mr-3"></i> EXPORTAR COMPLETO (Backup)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-xl p-6">
+                        <h3 class="font-bold mb-4 flex items-center gap-2">
+                            <i class="fas fa-chart-pie text-purple-400"></i> Estatísticas do Sistema
+                        </h3>
+                        <div class="h-64">
+                            <canvas id="masterChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONFIG -->
+            <div id="contentConfig" class="tab-content hidden">
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="font-bold mb-6">Configurações Globais do Sistema</h3>
+
+                    <div class="space-y-6 max-w-2xl">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Chave Mestra (acesso master)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="masterKeyConfig" value="verum-master"
+                                    class="flex-1 bg-black/50 border border-gray-700 rounded-lg px-4 py-2">
+                                <button onclick="updateMasterKey()"
+                                    class="px-6 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">
+                                    Alterar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Modo de Manutenção</label>
+                            <div class="flex items-center gap-4">
+                                <button onclick="setMaintenanceMode(true)"
+                                    class="px-6 py-2 bg-red-600/20 hover:bg-red-600/40 rounded-lg transition">
+                                    Ativar
+                                </button>
+                                <button onclick="setMaintenanceMode(false)"
+                                    class="px-6 py-2 bg-green-600/20 hover:bg-green-600/40 rounded-lg transition">
+                                    Desativar
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Quando ativo, bloqueia novos acessos ao sistema</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Ações de Emergência</label>
+                            <div class="space-y-2">
+                                <button onclick="resetAllPasswords()"
+                                    class="w-full text-left px-4 py-3 bg-yellow-600/20 hover:bg-yellow-600/40 rounded-lg transition">
+                                    <i class="fas fa-key mr-3"></i> Resetar todas as senhas (enviar email)
+                                </button>
+                                <button onclick="forceLogoutAll()"
+                                    class="w-full text-left px-4 py-3 bg-orange-600/20 hover:bg-orange-600/40 rounded-lg transition">
+                                    <i class="fas fa-sign-out-alt mr-3"></i> Forçar logout de todos os usuários
+                                </button>
+                                <button onclick="backupAgora()"
+                                    class="w-full text-left px-4 py-3 bg-blue-600/20 hover:bg-blue-600/40 rounded-lg transition">
+                                    <i class="fas fa-sync-alt mr-3"></i> Executar backup agora
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config/config.production.js"></script>
+    <script>
+        // Configuração Supabase (carregada do window.SUPABASE_CONFIG)
+        const supabase = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+
+        // Variáveis globais
+        let masterAutenticado = false;
+
+        // ============================================
+        // VERIFICAÇÃO DE ACESSO MASTER
+        // ============================================
+        function verifyMasterAccess() {
+            const password = document.getElementById('masterPassword').value;
+
+            // Senha fixa
+            if (password === 'verum-master') {
+                masterAutenticado = true;
+                document.getElementById('masterLogin').classList.add('hidden');
+                document.getElementById('masterPanel').classList.remove('hidden');
+
+                // Carregar todos os dados
+                carregarDadosMaster();
+
+                // Atualizar relógio
+                setInterval(() => {
+                    document.getElementById('masterTime').textContent = new Date().toLocaleString('pt-BR');
+                }, 1000);
+            } else {
+                alert('❌ Acesso negado! Chave mestra inválida.');
+            }
+        }
+
+        // ============================================
+        // CARREGAR TODOS OS DADOS DO SISTEMA
+        // ============================================
+        async function carregarDadosMaster() {
+            try {
+                // 1. Contar lojas
+                const { count: totalLojas } = await supabase
+                    .from('lojas')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('totalLojas').textContent = totalLojas || 0;
+
+                // 2. Contar usuários
+                const { count: totalUsuarios } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
+
+                // 3. Contar produtos (todas as lojas)
+                const { count: totalProdutos } = await supabase
+                    .from('produtos')
+                    .select('*', { count: 'exact', head: true });
+                document.getElementById('totalProdutos').textContent = totalProdutos || 0;
+
+                // 4. Somar todas as vendas
+                const { data: vendas } = await supabase
+                    .from('vendas')
+                    .select('total');
+                const totalVendas = vendas?.reduce((acc, v) => acc + (v.total || 0), 0) || 0;
+                document.getElementById('totalVendas').textContent = totalVendas.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                });
+
+                // 5. Contar masters
+                const { count: totalMasters } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('role', 'master');
+                document.getElementById('totalMasters').textContent = totalMasters || 0;
+
+                // Carregar tabelas
+                await carregarLojas();
+                await carregarUsuarios();
+                await carregarLogs();
+
+            } catch (error) {
+                console.error('Erro ao carregar dados master:', error);
+            }
+        }
+
+        // ============================================
+        // CARREGAR LOJAS (COM DETALHES)
+        // ============================================
+        async function carregarLojas() {
+            const { data: lojas } = await supabase
+                .from('lojas')
+                .select('*')
+                .order('criado_em', { ascending: false });
+
+            const tbody = document.getElementById('lojasTable');
+            tbody.innerHTML = '';
+
+            for (const loja of lojas || []) {
+                // Buscar dono da loja
+                const { data: dono } = await supabase
+                    .from('profiles')
+                    .select('nome, email')
+                    .eq('loja_id', loja.id)
+                    .eq('role', 'dono')
+                    .single();
+
+                // Contar produtos da loja
+                const { count: produtos } = await supabase
+                    .from('produtos')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('loja_id', loja.id);
+
+                // Contar usuários da loja
+                const { count: usuarios } = await supabase
+                    .from('profiles')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('loja_id', loja.id);
+
+                // Vendas do mês
+                const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+                const { data: vendasMes } = await supabase
+                    .from('vendas')
+                    .select('total')
+                    .eq('loja_id', loja.id)
+                    .gte('criado_em', inicioMes);
+
+                const totalMes = vendasMes?.reduce((acc, v) => acc + (v.total || 0), 0) || 0;
+
+                tbody.innerHTML += `
+            <tr class="hover:bg-white/5 transition">
+                <td class="p-4">
+                    <div class="font-bold">${loja.nome}</div>
+                    <div class="text-xs text-gray-500">${loja.descricao || 'Sem descrição'}</div>
+                </td>
+                <td class="p-4">
+                    <div>${dono?.nome || 'N/A'}</div>
+                    <div class="text-xs text-gray-500">${dono?.email || ''}</div>
+                </td>
+                <td class="p-4 font-mono text-xs">${loja.chave_acesso}</td>
+                <td class="p-4">${produtos || 0}</td>
+                <td class="p-4 text-emerald-400">${totalMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                <td class="p-4">${usuarios || 0}</td>
+                <td class="p-4 text-xs text-gray-500">${new Date(loja.criado_em).toLocaleDateString('pt-BR')}</td>
+                <td class="p-4">
+                    <button onclick="acessarComoLoja('${loja.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2" title="Acessar como esta loja">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                    <button onclick="verDetalhesLoja('${loja.id}')" class="text-blue-400 hover:text-blue-300 mr-2" title="Detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+            }
+        }
+
+        // ============================================
+        // CARREGAR USUÁRIOS
+        // ============================================
+        async function carregarUsuarios() {
+            const { data: usuarios } = await supabase
+                .from('profiles')
+                .select('*, lojas!inner(nome)')
+                .order('criado_em', { ascending: false });
+
+            const tbody = document.getElementById('usuariosTable');
+            tbody.innerHTML = '';
+
+            for (const user of usuarios || []) {
+                // Último acesso
+                const ultimoAcesso = user.ultimo_acesso ? new Date(user.ultimo_acesso).toLocaleString('pt-BR') : 'Nunca';
+
+                const roleClass = {
+                    'master': 'bg-purple-600/20 text-purple-400',
+                    'dono': 'bg-amber-600/20 text-amber-400',
+                    'gerente': 'bg-blue-600/20 text-blue-400',
+                    'vendedor': 'bg-gray-600/20 text-gray-400'
+                }[user.role] || 'bg-gray-600/20 text-gray-400';
+
+                tbody.innerHTML += `
+            <tr class="hover:bg-white/5 transition">
+                <td class="p-4">
+                    <div class="font-bold">${user.nome || 'N/A'}</div>
+                </td>
+                <td class="p-4">${user.email || '-'}</td>
+                <td class="p-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold ${roleClass}">
+                        ${user.role?.toUpperCase()}
+                    </span>
+                </td>
+                <td class="p-4">${user.lojas?.nome || 'Sem loja'}</td>
+                <td class="p-4 text-xs text-gray-500">${ultimoAcesso}</td>
+                <td class="p-4 text-xs text-gray-500">${new Date(user.criado_em).toLocaleDateString('pt-BR')}</td>
+                <td class="p-4">
+                    <button onclick="editarRole('${user.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2" title="Alterar Role">
+                        <i class="fas fa-user-tag"></i>
+                    </button>
+                    <button onclick="impersonate('${user.id}')" class="text-emerald-400 hover:text-emerald-300" title="Acessar como">
+                        <i class="fas fa-mask"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+            }
+        }
+
+        // ============================================
+        // FUNÇÕES DE AÇÃO MASTER
+        // ============================================
+
+        function acessarComoLoja(lojaId) {
+            localStorage.setItem('master_impersonating', lojaId);
+            window.open('app.html?master_impersonate=' + lojaId, '_blank');
+        }
+
+        async function impersonate(userId) {
+            if (confirm('Acessar o sistema como este usuário?')) {
+                localStorage.setItem('master_impersonate', userId);
+                window.open('app.html?master_user=' + userId, '_blank');
+            }
+        }
+
+        async function editarRole(userId) {
+            const novaRole = prompt('Nova role (vendedor/gerente/dono/master):');
+            if (novaRole && ['vendedor', 'gerente', 'dono', 'master'].includes(novaRole)) {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ role: novaRole })
+                    .eq('id', userId);
+
+                if (!error) {
+                    alert('Role atualizada!');
+                    carregarUsuarios();
+                }
+            }
+        }
+
+        async function exportData(tipo) {
+            let data, filename;
+            switch (tipo) {
+                case 'lojas': data = await supabase.from('lojas').select('*'); filename = 'lojas.json'; break;
+                case 'usuarios': data = await supabase.from('profiles').select('*'); filename = 'usuarios.json'; break;
+                case 'vendas': data = await supabase.from('vendas').select('*, produtos(*), profiles(*)'); filename = 'vendas.json'; break;
+            }
+            const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+        }
+
+        async function exportCompleto() {
+            const tables = ['lojas', 'profiles', 'produtos', 'variantes', 'vendas', 'clientes', 'despesas'];
+            const backup = { date: new Date().toISOString() };
+            for (const t of tables) {
+                const { data } = await supabase.from(t).select('*');
+                backup[t] = data;
+            }
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `backup_verum_${new Date().toISOString().split('T')[0]}.json`; a.click();
+        }
+
+        function switchMasterTab(tab) {
+            document.querySelectorAll('.tab-master').forEach(t => {
+                t.classList.remove('active', 'border-indigo-500', 'text-indigo-400');
+                t.classList.add('text-gray-500');
+            });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active', 'border-indigo-500', 'text-indigo-400');
+            document.getElementById(`content${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
+        }
+
+        function logoutMaster() {
+            masterAutenticado = false;
+            document.getElementById('masterPanel').classList.add('hidden');
+            document.getElementById('masterLogin').classList.remove('hidden');
+            document.getElementById('masterPassword').value = '';
+        }
+
+        async function carregarLogs() {
+            document.getElementById('logsContainer').innerHTML = '<p class="text-xs text-gray-600">Logs em tempo real sendo integrados...</p>';
+        }
+    </script>
+</body>
+
+</html>
