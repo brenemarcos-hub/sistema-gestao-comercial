@@ -10,6 +10,92 @@ const categoryColors = {
     'Acessórios': 'bg-orange-900 text-orange-100'
 };
 
+// --- AUTO-SAVE LOGIC ---
+let autoSaveInterval;
+
+function startAutoSave() {
+    if (autoSaveInterval) return;
+    console.log('📝 Auto-save iniciado');
+    autoSaveInterval = setInterval(() => {
+        const variants = [];
+        document.querySelectorAll('.variant-item').forEach(item => {
+            variants.push({
+                tamanho: item.querySelector('.variant-tamanho').value,
+                cor: item.querySelector('.variant-cor').value,
+                estoque: item.querySelector('.variant-estoque').value,
+                alerta: item.querySelector('.variant-alerta').value,
+                custo: item.querySelector('.variant-custo').value
+            });
+        });
+
+        const formData = {
+            ean: document.getElementById('ean').value,
+            sku: document.getElementById('sku').value,
+            nome: document.getElementById('nome').value,
+            categoria: document.getElementById('categoria').value,
+            preco_venda: document.getElementById('preco_venda').value,
+            variantes: variants,
+            timestamp: new Date().getTime()
+        };
+
+        // Só salva se houver pelo menos um nome ou SKU
+        if (formData.nome || formData.sku || formData.ean) {
+            localStorage.setItem('productDraft', JSON.stringify(formData));
+            console.log('💾 Rascunho salvo automaticamente');
+        }
+    }, 10000); // 10 segundos para teste, mude para 30000 se preferir
+}
+
+function stopAutoSave() {
+    clearInterval(autoSaveInterval);
+    autoSaveInterval = null;
+    console.log('⏹️ Auto-save parado');
+}
+
+function restoreDraft() {
+    const draft = localStorage.getItem('productDraft');
+    if (!draft) return false;
+
+    try {
+        const data = JSON.parse(draft);
+        // Só oferece restaurar se for recente (últimas 2 horas)
+        if (new Date().getTime() - data.timestamp > 7200000) {
+            localStorage.removeItem('productDraft');
+            return false;
+        }
+
+        if (confirm(`Encontramos um rascunho de "${data.nome || 'Produto Sem Nome'}" do dia ${new Date(data.timestamp).toLocaleTimeString()}. Deseja restaurar?`)) {
+            document.getElementById('ean').value = data.ean || '';
+            document.getElementById('sku').value = data.sku || '';
+            document.getElementById('nome').value = data.nome || '';
+            document.getElementById('categoria').value = data.categoria || '';
+            document.getElementById('preco_venda').value = data.preco_venda || '';
+
+            const container = document.getElementById('variantsContainer');
+            container.innerHTML = '';
+            if (data.variantes && data.variantes.length > 0) {
+                data.variantes.forEach(v => {
+                    addVariant();
+                    const last = container.lastElementChild;
+                    last.querySelector('.variant-tamanho').value = v.tamanho;
+                    last.querySelector('.variant-cor').value = v.cor;
+                    last.querySelector('.variant-estoque').value = v.estoque;
+                    last.querySelector('.variant-alerta').value = v.alerta;
+                    last.querySelector('.variant-custo').value = v.custo;
+                });
+            } else {
+                addVariant();
+            }
+            return true;
+        } else {
+            localStorage.removeItem('productDraft');
+        }
+    } catch (e) {
+        console.error('Erro ao restaurar rascunho:', e);
+    }
+    return false;
+}
+
 function switchTab(tab) {
     if (activeTab === tab) return;
     activeTab = tab;
@@ -304,6 +390,7 @@ function resetForm() {
     document.getElementById('variantsContainer').innerHTML = '';
     addVariant();
     selectedProductId = null;
+    localStorage.removeItem('productDraft'); // Limpa rascunho ao resetar manual ou salvar
 }
 
 function addVariant() {

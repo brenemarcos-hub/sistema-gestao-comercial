@@ -36,8 +36,36 @@ var selectedExpenseId = null;
 var lojaIdCache = null;
 var appListenersInitialized = false;
 
+// =====================================================
+// SISTEMA DE UTILITÁRIOS GLOBAIS
+// =====================================================
+
+// 23. SISTEMA DE FEATURE FLAGS
+window.FEATURES = {
+    IMPORTACAO_XML: true,
+    get RELATORIO_AVANCADO() {
+        return typeof getUserRole === 'function' ? getUserRole() === 'master' : false;
+    },
+    get SCANNER_CAMERA() {
+        return 'BarcodeDetector' in window;
+    },
+    get PWA() {
+        return location.protocol === 'https:' || location.hostname === 'localhost';
+    }
+};
+
+// 24. LOGS ESTRUTURADOS
+window.logger = {
+    info: (action, data) => {
+        console.log(`📘 [%c${new Date().toISOString()}%c] %c${action}`, "color: #4f46e5; font-weight: bold", "color: inherit", "font-weight: bold", data || '');
+    },
+    error: (action, error) => {
+        console.error(`❌ [%c${new Date().toISOString()}%c] %c${action}`, "color: #ef4444; font-weight: bold", "color: inherit", "font-weight: bold", error || '');
+    }
+};
+
 // INICIALIZAÇÃO IMEDIATA (Para evitar erros nos outros scripts)
 if (window.supabase) {
     supabaseClient = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
-    console.log('⚡ Supabase Client inicializado globalmente.');
+    logger.info('Supabase Client inicializado globalmente.');
 }

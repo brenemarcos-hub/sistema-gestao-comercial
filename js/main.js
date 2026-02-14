@@ -244,7 +244,15 @@ function setupAppEventListeners() {
     addListener('addProductBtn', 'click', () => {
         document.getElementById('sidebar').classList.add('open');
         document.getElementById('drawerOverlay').classList.add('active');
-        resetForm();
+
+        // Tenta restaurar rascunho, senão reseta
+        const restored = restoreDraft();
+        if (!restored) {
+            resetForm();
+        }
+
+        startAutoSave(); // Inicia salvamento automático
+
         setTimeout(() => {
             const eanField = document.getElementById('ean');
             if (eanField) eanField.focus();
@@ -254,14 +262,17 @@ function setupAppEventListeners() {
     addListener('cancelBtn', 'click', () => {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('drawerOverlay').classList.remove('active');
+        stopAutoSave();
     });
     addListener('closeSidebar', 'click', () => {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('drawerOverlay').classList.remove('active');
+        stopAutoSave();
     });
     addListener('drawerOverlay', 'click', () => {
         document.querySelectorAll('.sidebar').forEach(s => s.classList.remove('open'));
         document.getElementById('drawerOverlay').classList.remove('active');
+        stopAutoSave();
     });
     addListener('addVariantBtn', 'click', addVariant);
     addListener('searchInput', 'input', (e) => {

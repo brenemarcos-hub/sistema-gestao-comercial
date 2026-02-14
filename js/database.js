@@ -176,13 +176,30 @@ async function saveProduct(e) {
 
         if (targetProductId) {
             const lojaId = await getUserLojaId();
+
+            // --- HISTÓRICO DE PREÇOS ---
+            const { data: oldProd } = await supabaseClient.from('produtos').select('preco_venda').eq('id', targetProductId).single();
+            const pNovo = parseFloat(preco_venda);
+            const pAntigo = oldProd ? parseFloat(oldProd.preco_venda) : 0;
+
+            if (pNovo !== pAntigo) {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                await supabaseClient.from('historico_precos').insert({
+                    loja_id: lojaId,
+                    produto_id: targetProductId,
+                    preco_antigo: pAntigo,
+                    preco_novo: pNovo,
+                    alterado_por: user?.id
+                });
+            }
+
             await supabaseClient.from('produtos').update({
                 sku: cleanSku,
                 ean: ean,
                 nome: nome.trim(),
                 categoria: categoria.trim(),
-                preco_venda: parseFloat(preco_venda)
-            }).eq('id', targetProductId).eq('loja_id', lojaId); // Segurança extra: garante que só edite o produto da sua loja
+                preco_venda: pNovo
+            }).eq('id', targetProductId).eq('loja_id', lojaId);
 
             const { data: dbVariants } = await supabaseClient.from('variantes').select('*').eq('id_produto', targetProductId);
 
@@ -239,6 +256,7 @@ async function saveProduct(e) {
         }
 
         document.getElementById('sidebar').classList.remove('open');
+        stopAutoSave();
         resetForm();
         loadProducts();
 

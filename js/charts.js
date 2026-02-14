@@ -11,6 +11,77 @@ let reportEndDate = null;
 let currentMeta = 10000;
 let currentBreakEven = 5000;
 
+// --- IA FORECAST FUNCTIONS ---
+function forecastSales(salesData) {
+    if (!salesData || salesData.length < 5) {
+        return {
+            previsao_proximo_mes: 0,
+            tendencia: 'Sem dados',
+            sugestao: 'Realize mais vendas para desbloquear insights de IA.'
+        };
+    }
+
+    // Pega os últimos 30 dias de vendas reais (baseado no faturamento diário)
+    const today = new Date();
+    const last30DaysDate = new Date();
+    last30DaysDate.setDate(today.getDate() - 30);
+
+    const recentSales = salesData.filter(v => new Date(v.criado_em) >= last30DaysDate);
+    const totalRecent = recentSales.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
+    const averageDaily = totalRecent / 30;
+
+    // Cálculo de Tendência (compara primeiros 15 dias vs últimos 15 dias do período de 30)
+    const midPoint = new Date();
+    midPoint.setDate(today.getDate() - 15);
+
+    const firstHalf = recentSales.filter(v => new Date(v.criado_em) < midPoint);
+    const secondHalf = recentSales.filter(v => new Date(v.criado_em) >= midPoint);
+
+    const totalFirst = firstHalf.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
+    const totalSecond = secondHalf.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
+
+    const trend = totalSecond - totalFirst;
+    const trendPercent = totalFirst > 0 ? (trend / totalFirst) * 100 : 0;
+
+    // Sugestões Estratégicas
+    let sugestao = "Mantenha o ritmo! Sua operação está estável.";
+    if (trendPercent > 10) {
+        sugestao = "📈 Demanda em ALTA! Considere reforçar o estoque dos produtos mais vendidos.";
+    } else if (trendPercent < -10) {
+        sugestao = "📉 Alerta de QUEDA. Que tal criar uma promoção para os itens parados?";
+    } else if (totalRecent > 0 && totalRecent < currentBreakEven) {
+        sugestao = "⚠️ Faturamento abaixo do Ponto de Equilíbrio. Foque em novos clientes.";
+    }
+
+    return {
+        previsao_proximo_mes: averageDaily * 30,
+        trendValue: trend,
+        tendencia: trend >= 0 ? '📈 Alta' : '📉 Queda',
+        trendColor: trend >= 0 ? 'text-emerald-400' : 'text-rose-400',
+        sugestao: sugestao,
+        confianca: salesData.length > 50 ? '92%' : '75%'
+    };
+}
+
+function updateIATrends(salesData) {
+    const forecast = forecastSales(salesData);
+
+    const valEl = document.getElementById('forecastValue');
+    const trendEl = document.getElementById('trendStatus');
+    const suggEl = document.getElementById('aiSuggestion');
+    const detailEl = document.getElementById('trendDetail');
+
+    if (valEl) valEl.textContent = forecast.previsao_proximo_mes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    if (trendEl) {
+        trendEl.textContent = forecast.tendencia;
+        trendEl.className = `text-2xl font-black flex items-center gap-2 ${forecast.trendColor || 'text-white'}`;
+    }
+    if (suggEl) suggEl.textContent = `"${forecast.sugestao}"`;
+    if (detailEl && forecast.trendValue !== undefined) {
+        detailEl.textContent = forecast.trendValue >= 0 ? 'Crescimento detectado no período' : 'Retração detectada no período';
+    }
+}
+
 // Função auxiliar global para formatar data local como YYYY-MM-DD
 function formatLocalYMD(date) {
     const year = date.getFullYear();
@@ -123,6 +194,9 @@ function renderCharts(startDate = null, endDate = null, customSalesList = null) 
 
     // 6. Meta
     updateMetaProgress(filteredSales, sourceData);
+
+    // 7. IA Trends (Usa todos os dados para melhor previsão, não só o filtro)
+    updateIATrends(sourceData);
 }
 
 function filterSalesByDate(salesList, start, end) {
