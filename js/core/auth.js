@@ -163,6 +163,12 @@ async function checkSession() {
 
             console.log('✅ checkSession: Processo completo!');
             await updateStoreHeader(); // Atualiza nome da loja no topo
+
+            // 🎁 WELCOME TOUR: Se não houver produtos, mostra o boas-vindas
+            if (produtos.length === 0) {
+                const welcomeModal = document.getElementById('welcomeModal');
+                if (welcomeModal) welcomeModal.classList.remove('hidden');
+            }
         } else {
             console.log('ℹ️ checkSession: Sem sessão, mostrando tela de login');
             document.getElementById('loginSection').classList.remove('hidden');

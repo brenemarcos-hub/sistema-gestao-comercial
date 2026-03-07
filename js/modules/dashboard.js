@@ -13,7 +13,9 @@ function updateDashboardMetrics() {
     produtos.forEach(p => {
         let valorProduto = 0, temEstoque = false;
         p.variantes.forEach(v => {
-            const vVal = (Number(v.estoque_atual) || 0) * (Number(p.preco_venda) || 0);
+            // Usa custo da variante ou fallback de 70% do preço de venda
+            const custoItem = parseFloat(v.custo_unitario) || (parseFloat(p.preco_venda) * 0.7);
+            const vVal = (Number(v.estoque_atual) || 0) * custoItem;
             valorProduto += vVal;
             if (v.estoque_atual > 0) temEstoque = true;
             if (v.estoque_atual <= v.estoque_minimo && v.estoque_atual > 0) totalEstoqueCritico++;

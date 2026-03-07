@@ -116,7 +116,7 @@ async function loadProducts() {
         produtos = produtosComVariantes;
         updateSummaryCards();
         renderProductsTable();
-        loadClientes();
+        await loadClientes();
         if (activeTab === 'relatorios') renderCharts();
 
     } catch (error) {
@@ -334,6 +334,10 @@ async function loadSales() {
         vendas = (data || []).map(venda => {
             const produto = produtos.find(p => p.id == venda.id_produto);
             const variante = produto ? produto.variantes.find(v => v.id == venda.id_variante) : null;
+            
+            // Suporte para ambos os nomes de coluna (id_cliente ou cliente_id)
+            const idC = venda.id_cliente || venda.cliente_id;
+            const cliente = clientes.find(c => c.id == idC);
 
             return {
                 ...venda,
@@ -341,7 +345,8 @@ async function loadSales() {
                 variantes: {
                     tamanho: variante ? variante.tamanho : '-',
                     cor: variante ? variante.cor : '-'
-                }
+                },
+                cliente_nome: cliente ? cliente.nome : 'Venda Direta'
             };
         });
 
@@ -369,6 +374,8 @@ async function saveSale(e) {
         if (!lojaId) {
             throw new Error('Não foi possível identificar sua loja. Faça login novamente.');
         }
+
+        setLoading('btnFinalizeSale', true, 'Faturando...');
 
         // 🔒 PROTEÇÃO CONTRA RACE CONDITION
         // Usar transação atômica via RPC para cada item do carrinho

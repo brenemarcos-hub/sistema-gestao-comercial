@@ -61,6 +61,9 @@ function renderClientesTable() {
             <td class="px-6 py-4 text-sm text-gray-500">${cliente.cpf_cnpj || '-'}</td>
             <td class="px-6 py-4 text-sm text-gray-500">${dataCadastro}</td>
             <td class="px-6 py-4 text-sm font-medium">
+                <button onclick="openClientHistory('${cliente.id}')" class="text-amber-600 hover:text-amber-900 mr-3" title="Histórico">
+                    <i class="fas fa-history"></i>
+                </button>
                 <button onclick="editCliente('${cliente.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -153,6 +156,60 @@ function closeSidebarCliente() {
     selectedClientId = null;
     document.getElementById('clientSidebarTitle').textContent = 'Cadastrar Novo Cliente';
 }
+
+// Histórico de Compras do Cliente
+function openClientHistory(id) {
+    const cliente = clientes.find(c => c.id === id);
+    if (!cliente) return;
+
+    const modal = document.getElementById('clientHistoryModal');
+    const tableBody = document.getElementById('clientHistoryTableBody');
+    const nameEl = document.getElementById('historyClientName');
+    const summaryEl = document.getElementById('historyClientSummary');
+    const totalEl = document.getElementById('historyClientTotal');
+
+    if (!modal || !tableBody) return;
+
+    nameEl.textContent = `Compras de ${cliente.nome}`;
+    
+    // Filtro flexível para evitar erros de tipo e nome de coluna
+    const compras = vendas.filter(v => (v.id_cliente == id || v.cliente_id == id));
+    let totalGeral = 0;
+
+    tableBody.innerHTML = '';
+    if (compras.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-500">Nenhuma compra registrada para este cliente.</td></tr>';
+    } else {
+        compras.forEach(v => {
+            const valorVenda = parseFloat(v.total) || 0;
+            totalGeral += valorVenda;
+            
+            // Garantir que temos os dados do produto, mesmo que parciais
+            const nomeProd = v.produtos?.nome || 'Produto Removido';
+            const infoVar = `${v.variantes?.tamanho || '-'} / ${v.variantes?.cor || '-'}`;
+            
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors';
+            row.innerHTML = `
+                <td class="p-4 text-sm text-gray-500">${new Date(v.criado_em).toLocaleDateString('pt-BR')}</td>
+                <td class="p-4">
+                    <div class="text-sm font-bold text-gray-900 dark:text-white">${nomeProd}</div>
+                    <div class="text-[10px] text-gray-400 capitalize">${infoVar}</div>
+                </td>
+                <td class="p-4 text-sm">${v.quantidade}</td>
+                <td class="p-4 text-sm font-bold text-indigo-600">R$ ${valorVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    summaryEl.textContent = `${compras.length} pedido(s) realizados desde o cadastro.`;
+    totalEl.textContent = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    modal.classList.remove('hidden');
+}
+
+window.openClientHistory = openClientHistory;
 
 // Atualizar dropdown de clientes na venda
 function updateSaleClienteDropdown() {

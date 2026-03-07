@@ -90,7 +90,7 @@ function formatLocalYMD(date) {
     return `${year}-${month}-${day}`;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initChartsModule() {
     const today = new Date();
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
 
@@ -128,7 +128,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Tentar carregar dados em cache para exibição imediata
     loadCachedReport();
-});
+}
+
+// Inicialização automática ou via chamada manual
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChartsModule);
+} else {
+    initChartsModule();
+}
 
 function loadCachedReport() {
     const cached = localStorage.getItem('dashboardCacheVendas');

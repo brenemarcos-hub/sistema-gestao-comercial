@@ -281,6 +281,31 @@ function setupAppEventListeners() {
         renderProductsTable();
     });
 
+    // Modal de Detalhes do Produto (Olhinho)
+    addListener('closeModal', 'click', () => {
+        document.getElementById('productModal').classList.add('hidden');
+    });
+
+    addListener('productModal', 'click', (e) => {
+        if (e.target.id === 'productModal') {
+            document.getElementById('productModal').classList.add('hidden');
+        }
+    });
+
+    addListener('editProductBtn', 'click', () => {
+        if (selectedProductId) {
+            document.getElementById('productModal').classList.add('hidden');
+            editProduct(selectedProductId);
+        }
+    });
+
+    addListener('deleteProductBtn', 'click', () => {
+        if (selectedProductId) {
+            deleteProduct(selectedProductId);
+            document.getElementById('productModal').classList.add('hidden');
+        }
+    });
+
     // Clientes
     addListener('addClientBtn', 'click', () => {
         document.getElementById('sidebarCliente').classList.add('open');
@@ -296,6 +321,17 @@ function setupAppEventListeners() {
     addListener('cancelClientBtn', 'click', closeSidebarCliente);
     addListener('searchClientInput', 'input', renderClientesTable);
 
+    // Histórico de Cliente
+    addListener('closeClientHistoryModal', 'click', () => {
+        document.getElementById('clientHistoryModal').classList.add('hidden');
+    });
+
+    addListener('clientHistoryModal', 'click', (e) => {
+        if (e.target.id === 'clientHistoryModal') {
+            document.getElementById('clientHistoryModal').classList.add('hidden');
+        }
+    });
+
     // Finanças
     addListener('addExpenseBtn', 'click', () => {
         document.getElementById('sidebarDespesa').classList.add('open');
@@ -307,11 +343,26 @@ function setupAppEventListeners() {
     addListener('closeSidebarDespesa', 'click', closeSidebarExpense);
     addListener('cancelExpenseBtn', 'click', closeSidebarExpense);
 
+    // Filtros de Finanças
+    addListener('finPeriodo', 'change', () => {
+        renderExpensesTable();
+        updateFinancialDashboard();
+    });
+    addListener('finStatusFilter', 'change', () => {
+        renderExpensesTable();
+        updateFinancialDashboard();
+    });
+    addListener('finCategoriaFilter', 'change', () => {
+        renderExpensesTable();
+        updateFinancialDashboard();
+    });
+
     // Vendas
     addListener('addVendaBtn', 'click', () => {
         document.getElementById('sidebarVenda').classList.add('open');
         document.getElementById('drawerOverlay').classList.add('active');
         updateSaleProductDropdown();
+        if (typeof updateSaleClienteDropdown === 'function') updateSaleClienteDropdown(); // Garante que a lista de clientes esteja atualizada
         // Resetar carrinho e UI
         carrinho = [];
         renderCart();

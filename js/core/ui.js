@@ -10,6 +10,90 @@ const categoryColors = {
     'Acessórios': 'bg-orange-900 text-orange-100'
 };
 
+function setLoading(btnId, isLoading, text = 'Aguarde...') {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    
+    if (isLoading) {
+        btn.disabled = true;
+        btn.dataset.originalHtml = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> ${text}`;
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+    } else {
+        btn.disabled = false;
+        if (btn.dataset.originalHtml) btn.innerHTML = btn.dataset.originalHtml;
+        btn.classList.remove('opacity-70', 'cursor-not-allowed');
+    }
+}
+window.setLoading = setLoading;
+
+async function loadDemoData() {
+    if (!confirm('Deseja carregar dados de exemplo? Isso adicionará produtos, clientes e vendas fictícias para teste.')) return;
+    
+    const startBtn = document.getElementById('startWelcomeBtn');
+    if (startBtn) startBtn.disabled = true;
+
+    try {
+        const lojaId = await getUserLojaId();
+        if (!lojaId) throw new Error('Loja não identificada. Faça login novamente.');
+
+        showNotification('🚀 Iniciando...', 'Gerando dados de demonstração no banco de dados.', 'info');
+
+        // 1. Inserir Cliente Demo se não houver
+        const { data: demoClient } = await supabaseClient.from('clientes').insert({
+            nome: 'Cliente Demonstrativo',
+            whatsapp: '(11) 99999-9999',
+            loja_id: lojaId
+        }).select().single();
+
+        // 2. Inserir Produtos Demo
+        const demoProds = [
+            { nome: 'Tênis Running XP', categoria: 'Tênis', sku: 'TN-XP-01', preco_venda: 299.90, loja_id: lojaId },
+            { nome: 'Camiseta Dry Fit', categoria: 'Camisetas', sku: 'CM-DF-02', preco_venda: 89.90, loja_id: lojaId },
+            { nome: 'Calça Jeans Slim', categoria: 'Calças', sku: 'CJ-SL-03', preco_venda: 159.90, loja_id: lojaId }
+        ];
+
+        for (const p of demoProds) {
+            const { data: prod } = await supabaseClient.from('produtos').insert(p).select().single();
+            if (prod) {
+                // Inserir Variantes
+                const { data: variantList, error: errVar } = await supabaseClient.from('variantes').insert({
+                    id_produto: prod.id,
+                    tamanho: 'M',
+                    cor: 'Azul',
+                    estoque_atual: 10,
+                    estoque_minimo: 3,
+                    custo_unitario: p.preco_venda * 0.5,
+                    loja_id: lojaId
+                }).select();
+
+                const variant = variantList ? variantList[0] : null;
+
+                // Registrar Venda se tiver cliente
+                if (demoClient && variant) {
+                    await supabaseClient.rpc('vender_produto', {
+                        p_variant_id: variant.id,
+                        p_quantidade: 1,
+                        p_produto_id: prod.id,
+                        p_preco_unitario: p.preco_venda,
+                        p_cliente_id: demoClient.id,
+                        p_loja_id: lojaId
+                    });
+                }
+            }
+        }
+
+        showNotification('✅ Sucesso!', 'Dados de demonstração carregados. Recarregando sistema...', 'success');
+        setTimeout(() => window.location.reload(), 2000);
+        
+    } catch (err) {
+        console.error('Erro no Demo Data:', err);
+        showNotification('Erro', 'Não foi possível carregar o demo: ' + err.message, 'error');
+        if (startBtn) startBtn.disabled = false;
+    }
+}
+window.loadDemoData = loadDemoData;
+
 // --- AUTO-SAVE LOGIC ---
 let autoSaveInterval;
 
@@ -169,7 +253,7 @@ function switchTab(tab) {
     } else if (tab === 'relatorios') {
         sectionRelatorios.classList.remove('hidden');
         updateDashboardMetrics();
-        renderCharts();
+        if (typeof renderCharts === 'function') renderCharts();
     }
 }
 
@@ -219,7 +303,7 @@ function updateSummaryCards() {
         categorias.add(produto.categoria);
         produto.variantes.forEach(variante => {
             totalEstoque += variante.estoque_atual;
-            if (variante.estoque_atual <= variante.alerta_minimo) estoqueBaixo++;
+            if (variante.estoque_atual <= variante.estoque_minimo) estoqueBaixo++;
         });
     });
 
@@ -239,7 +323,7 @@ function updateSummaryCards() {
     safeText('insightMaiorEstoque', topEstoque ? `Top: ${topEstoque.nome}` : 'Nenhum');
 
     // Lista de itens baixos
-    const itensBaixos = produtos.filter(p => p.variantes.some(v => v.estoque_atual <= v.alerta_minimo))
+    const itensBaixos = produtos.filter(p => p.variantes.some(v => v.estoque_atual <= v.estoque_minimo))
         .map(p => p.nome).slice(0, 2).join(', ') + (estoqueBaixo > 2 ? '...' : '');
     safeText('insightEstoqueBaixo', estoqueBaixo > 0 ? `Itens: ${itensBaixos}` : 'Tudo em dia!');
 }
@@ -284,13 +368,22 @@ function renderProductsTable() {
     tableBody.innerHTML = '';
 
     if (paginated.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Nenhum produto encontrado</td></tr>';
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center opacity-40">
+                        <i class="fas fa-box-open text-5xl mb-4"></i>
+                        <p class="text-lg font-bold">Inicie seu catálogo!</p>
+                        <p class="text-sm">Clique em "+ Novo Produto" para começar.</p>
+                    </div>
+                </td>
+            </tr>`;
         return;
     }
 
     paginated.forEach(produto => {
         const estoqueTotal = produto.variantes.reduce((acc, v) => acc + v.estoque_atual, 0);
-        const temBaixo = produto.variantes.some(v => v.estoque_atual <= v.alerta_minimo);
+        const temBaixo = produto.variantes.some(v => v.estoque_atual <= v.estoque_minimo);
 
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50';
@@ -316,7 +409,21 @@ function renderSalesTable() {
     const searchTerm = document.getElementById('searchVendasInput')?.value.toLowerCase() || '';
 
     let filtered = vendas.filter(v => (v.produtos?.nome || '').toLowerCase().includes(searchTerm));
-    tableBody.innerHTML = filtered.length === 0 ? '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Nenhuma venda encontrada</td></tr>' : '';
+    
+    if (filtered.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="8" class="px-6 py-12 text-center text-gray-400">
+                    <div class="flex flex-col items-center justify-center opacity-40">
+                        <i class="fas fa-shopping-cart text-5xl mb-4"></i>
+                        <p class="text-lg font-bold">Nenhuma venda realizada</p>
+                        <p class="text-sm">Abra o PDV ("Nova Venda") e comece a faturar!</p>
+                    </div>
+                </td>
+            </tr>`;
+        return;
+    }
+    tableBody.innerHTML = '';
 
     filtered.forEach(v => {
         const row = document.createElement('tr');
@@ -324,8 +431,10 @@ function renderSalesTable() {
         row.innerHTML = `
             <td class="px-6 py-4 text-gray-500">${new Date(v.criado_em).toLocaleString('pt-BR')}</td>
             <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">${v.produtos?.nome || 'Excluído'}</td>
+            <td class="px-6 py-4 text-gray-500">${v.cliente_nome || 'Venda Direta'}</td>
             <td class="px-6 py-4 text-gray-500">${v.variantes?.tamanho || '-'} / ${v.variantes?.cor || '-'}</td>
             <td class="px-6 py-4">${v.quantidade}</td>
+            <td class="px-6 py-4 text-gray-500">R$ ${v.preco_unitario ? parseFloat(v.preco_unitario).toFixed(2).replace('.', ',') : (parseFloat(v.total) / v.quantidade).toFixed(2).replace('.', ',')}</td>
             <td class="px-6 py-4 text-emerald-600 font-bold">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
             <td class="px-6 py-4">
                 ${PERMISSIONS.canDeleteSales() ? `<button onclick="deleteSale('${v.id}')" class="text-rose-600 hover:text-rose-900 delete-sale-btn" title="Excluir Venda"><i class="fas fa-trash"></i></button>` : ''}
@@ -430,7 +539,7 @@ async function viewProductDetails(id) {
     if (table) {
         table.innerHTML = '';
         p.variantes.forEach(v => {
-            const row = `<tr><td class="px-4 py-2">${v.tamanho}</td><td class="px-4 py-2">${v.cor}</td><td class="px-4 py-2">${v.estoque_atual}</td><td class="px-4 py-2">${v.alerta_minimo}</td></tr>`;
+            const row = `<tr><td class="px-4 py-2">${v.tamanho}</td><td class="px-4 py-2">${v.cor}</td><td class="px-4 py-2">${v.estoque_atual}</td><td class="px-4 py-2">${v.estoque_minimo}</td></tr>`;
             table.innerHTML += row;
         });
     }
@@ -457,7 +566,7 @@ function editProduct(id) {
         last.querySelector('.variant-tamanho').value = v.tamanho;
         last.querySelector('.variant-cor').value = v.cor;
         last.querySelector('.variant-estoque').value = v.estoque_atual;
-        last.querySelector('.variant-alerta').value = v.alerta_minimo;
+        last.querySelector('.variant-alerta').value = v.estoque_minimo;
         last.querySelector('.variant-custo').value = v.preco_custo || 0;
     });
 
