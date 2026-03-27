@@ -51,23 +51,14 @@ async function updateStoreHeader() {
 
                 // Se for MASTER, transforma o badge em um link para a página master.html
                 if (profile.role === 'master') {
-                    roleEl.innerHTML = `
-                        <div class="flex items-center gap-2">
-                            <a href="master-auditoria.html" class="flex items-center gap-1 text-emerald-500 hover:text-emerald-400 font-black transition-colors">
-                                <i class="fas fa-shield-halved text-[8px]"></i> AUDITORIA
-                            </a>
-                            <button onclick="leaveMasterMode()" class="p-1 hover:bg-rose-500/10 rounded group" title="Sair do Modo Master">
-                                <i class="fas fa-power-off text-[8px] text-gray-400 group-hover:text-rose-500"></i>
-                            </button>
-                        </div>
-                    `;
+                    roleEl.textContent = '👑 MASTER';
+                    roleEl.classList.add('text-emerald-500', 'font-black');
                     
-                    // Mostrar botão Auditoria no menu
                     const navAudit = document.getElementById('navAuditoria');
                     if (navAudit) navAudit.classList.remove('hidden');
 
                     if (userBadge) {
-                        userBadge.classList.add('border-indigo-500/30', 'bg-indigo-500/5');
+                        userBadge.classList.add('border-emerald-500/30', 'bg-emerald-500/5');
                     }
                 } else {
                     roleEl.textContent = role;
@@ -281,8 +272,10 @@ async function loginUser(e) {
         if (error) throw error;
         
         // Registrar Acesso com Sucesso
-        const { data: { user } } = data;
-        registrarAcesso(user.id, user.email, user.email.split('@')[0], 'login', true);
+        const user = data?.user;
+        if (user) {
+            registrarAcesso(user.id, user.email, user.email.split('@')[0], 'login', true);
+        }
 
         showNotification('Bem-vindo!', 'Acesso concedido com sucesso.', 'success');
         await checkSession(); // checkSession chamará loadUserRole

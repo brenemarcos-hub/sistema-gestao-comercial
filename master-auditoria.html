@@ -141,10 +141,11 @@
 
             <!-- Tabs Navigation -->
             <div class="flex items-center gap-6 border-b border-white/5 mb-8">
-                <button onclick="switchTab('acessos')" class="tab-btn active px-4 py-4 text-sm font-bold transition">ACESSOS</button>
-                <button onclick="switchTab('erros')" class="tab-btn px-4 py-4 text-sm font-bold transition">ERROS</button>
-                <button onclick="switchTab('acoes')" class="tab-btn px-4 py-4 text-sm font-bold transition">AÇÕES</button>
-                <button onclick="switchTab('analise')" class="tab-btn px-4 py-4 text-sm font-bold transition">ANÁLISE</button>
+                <button onclick="switchTab('acessos')" class="tab-btn active px-4 py-4 text-sm font-bold transition text-gray-500">ACESSOS</button>
+                <button onclick="switchTab('usuarios')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">USUÁRIOS</button>
+                <button onclick="switchTab('erros')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ERROS</button>
+                <button onclick="switchTab('acoes')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">AÇÕES</button>
+                <button onclick="switchTab('analise')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ANÁLISE</button>
                 <div class="ml-auto pb-2 flex gap-2">
                     <button onclick="limparLogsAntigos()" class="text-[10px] text-gray-600 hover:text-red-400 transition flex items-center gap-1 border border-white/5 px-3 py-1.5 rounded-lg">
                         <i class="fas fa-broom"></i> Limpar Logs (+90 dias)
@@ -163,7 +164,7 @@
                         <option value="logout">Logouts</option>
                         <option value="falha_login">Falhas</option>
                     </select>
-                    <button onclick="carregarAcessos()" class="p-2 bg-emerald-600 rounded-xl hover:bg-emerald-700 transition">
+                    <button onclick="animateSync(this); carregarAcessos();" class="p-2 bg-emerald-600 rounded-xl hover:bg-emerald-700 transition">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                     <button onclick="exportarCSV('acessos')" class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
@@ -189,6 +190,35 @@
                 </div>
             </div>
 
+            <!-- Tab: Usuários -->
+            <div id="tabUsuarios" class="tab-content hidden">
+                <div class="flex flex-wrap gap-4 mb-6">
+                    <input type="text" id="searchUsuarios" placeholder="Buscar por nome ou e-mail..." 
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64">
+                    <button onclick="animateSync(this); carregarUsuarios();" class="p-2 bg-blue-600 rounded-xl hover:bg-blue-700 transition">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs text-gray-500 uppercase tracking-widest border-b border-white/5">
+                                <th class="p-4">Identificação</th>
+                                <th class="p-4">Cargo</th>
+                                <th class="p-4">Loja Vinculada</th>
+                                <th class="p-4">Atividade</th>
+                                <th class="p-4">Criado em</th>
+                                <th class="p-4 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTableBody">
+                            <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Tab: Erros -->
             <div id="tabErros" class="tab-content hidden">
                 <div class="flex flex-wrap gap-4 mb-6">
@@ -198,7 +228,7 @@
                         <option value="todos">Mostrar Todos</option>
                         <option value="resolvido">Apenas Resolvidos</option>
                     </select>
-                    <button onclick="carregarErros()" class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="animateSync(this); carregarErros()" class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="exportarCSV('erros')" class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
                         <i class="fas fa-download"></i> Exportar CSV
                     </button>
@@ -230,7 +260,7 @@
                         <option value="cliente">Clientes</option>
                         <option value="despesa">Despesas</option>
                     </select>
-                    <button onclick="carregarAcoes()" class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="animateSync(this); carregarAcoes()" class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
                     <button onclick="exportarCSV('acoes')" class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
                         <i class="fas fa-download"></i> Exportar CSV
                     </button>
@@ -369,6 +399,14 @@
             if (e.key === 'Enter') verifyMasterAccess();
         });
 
+        function animateSync(btn) {
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.classList.add('fa-spin');
+                setTimeout(() => icon.classList.remove('fa-spin'), 1500);
+            }
+        }
+
         function logout() {
             window.location.reload();
         }
@@ -382,6 +420,7 @@
             
             activeTabCurrent = tab;
             if (tab === 'acessos') carregarAcessos();
+            if (tab === 'usuarios') carregarUsuarios();
             if (tab === 'erros') carregarErros();
             if (tab === 'acoes') carregarAcoes();
             if (tab === 'analise') carregarAnalise();
@@ -418,6 +457,85 @@
         // ===================================
         // CARREGAMENTO DE DADOS (ABAS)
         // ===================================
+        async function carregarUsuarios() {
+            const search = document.getElementById('searchUsuarios').value.toLowerCase();
+            
+            // Buscar perfis com o último acesso (usando join limitado ao mais recente)
+            const { data: profiles, error } = await db
+                .from('profiles')
+                .select('*, lojas(nome), logs_acessos(criado_em, acao)')
+                .order('nome', { ascending: true });
+            
+            if (error) {
+                console.error('Erro ao carregar perfis:', error);
+                return;
+            }
+
+            const tbody = document.getElementById('usuariosTableBody');
+            tbody.innerHTML = '';
+
+            profiles.filter(p => (p.email?.toLowerCase().includes(search) || p.nome?.toLowerCase().includes(search))).forEach(user => {
+                const roleClass = user.role === 'master' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-400';
+                
+                // Pegar o acesso mais recente do array (o Supabase traz todos os logs se não houver RPC, então pegamos o último do array ordenado)
+                const logsSorted = user.logs_acessos?.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)) || [];
+                const ultimoAcesso = logsSorted[0];
+                let ultimaAtvStr = 'Nunca acessou';
+                
+                if (ultimoAcesso) {
+                    const dataAtv = new Date(ultimoAcesso.criado_em);
+                    const agora = new Date();
+                    const hoje = dataAtv.toLocaleDateString() === agora.toLocaleDateString();
+                    
+                    ultimaAtvStr = hoje 
+                        ? `Hoje às ${dataAtv.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}`
+                        : dataAtv.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'});
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/5 border-b border-white/5 transition-colors">
+                        <td class="p-4">
+                            <div class="text-xs font-bold text-white">${user.nome || 'Usuário sem nome'}</div>
+                            <div class="text-[10px] text-gray-500 font-mono">${user.email || 'Email não disponível'}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${roleClass}">${user.role || 'user'}</span>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-[11px] text-gray-400">${user.lojas?.nome || 'Nenhuma'}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-[10px] ${ultimoAcesso ? 'text-emerald-400 font-bold' : 'text-gray-600 italic'}">${ultimaAtvStr}</div>
+                            ${ultimoAcesso ? `<div class="text-[8px] text-gray-700 uppercase">${ultimoAcesso.acao}</div>` : ''}
+                        </td>
+                        <td class="p-4 text-xs text-gray-600">${new Date(user.criado_at || user.created_at).toLocaleDateString()}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="redefinirSenha('${user.email}')" class="text-blue-400 hover:text-blue-300 text-[10px] font-bold uppercase tracking-wider bg-blue-500/5 px-3 py-2 rounded-lg transition-all">
+                                <i class="fas fa-key mr-1"></i> Redefinir Senha
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function redefinirSenha(email) {
+            if (!email || email === 'Email não disponível') return alert('E-mail não encontrado para este usuário.');
+            
+            if (!confirm(`Deseja enviar um e-mail de redefinição de senha para ${email}? O usuário receberá um link oficial do sistema.`)) return;
+
+            try {
+                const { error } = await db.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/app.html',
+                });
+
+                if (error) throw error;
+                alert('🚀 E-mail enviado com sucesso! Instruções enviadas para ' + email);
+            } catch (err) {
+                alert('Erro ao solicitar redefinição: ' + err.message);
+            }
+        }
+
         async function carregarAcessos() {
             const search = document.getElementById('searchAcessos').value.toLowerCase();
             const filterAcao = document.getElementById('filterAcaoAcessos').value;
