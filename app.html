@@ -281,6 +281,11 @@
                     <button id="navRelatorios" class="nav-pill-btn">
                         <i class="fas fa-chart-pie"></i><span>Relatórios</span>
                     </button>
+                    <!-- Somente Master -->
+                    <a href="master-auditoria.html" id="navAuditoria"
+                        class="nav-pill-btn hidden !text-emerald-500 !bg-emerald-500/10">
+                        <i class="fas fa-shield-halved"></i><span>Auditoria</span>
+                    </a>
                 </nav>
 
                 <div class="flex items-center space-x-2">
@@ -1093,12 +1098,16 @@
                     </div>
                     <!-- Filtros e Gráficos Rápidos -->
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
-                            <h4 class="text-sm font-bold text-gray-800 dark:text-white mb-4"><i class="fas fa-filter text-indigo-500 mr-2"></i> Filtros</h4>
+                        <div
+                            class="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
+                            <h4 class="text-sm font-bold text-gray-800 dark:text-white mb-4"><i
+                                    class="fas fa-filter text-indigo-500 mr-2"></i> Filtros</h4>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Período</label>
-                                    <select id="finPeriodo" class="w-full p-2 text-sm border rounded-lg bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700">
+                                    <label
+                                        class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Período</label>
+                                    <select id="finPeriodo"
+                                        class="w-full p-2 text-sm border rounded-lg bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700">
                                         <option value="mes">Este Mês</option>
                                         <option value="hoje">Hoje</option>
                                         <option value="7d">Últimos 7 dias</option>
@@ -1107,16 +1116,20 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Status de Pagamento</label>
-                                    <select id="finStatusFilter" class="w-full p-2 text-sm border rounded-lg bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700">
+                                    <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Status de
+                                        Pagamento</label>
+                                    <select id="finStatusFilter"
+                                        class="w-full p-2 text-sm border rounded-lg bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700">
                                         <option value="todos">Todos</option>
                                         <option value="pago">Apenas Pagos</option>
                                         <option value="pendente">Apenas Pendentes</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Categoria</label>
-                                    <select id="finCategoriaFilter" class="w-full p-2 text-sm border rounded-lg bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700">
+                                    <label
+                                        class="block text-[10px] uppercase font-bold text-gray-400 mb-1">Categoria</label>
+                                    <select id="finCategoriaFilter"
+                                        class="w-full p-2 text-sm border rounded-lg bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-700">
                                         <option value="todas">Todas</option>
                                         <option value="Aluguel">Aluguel</option>
                                         <option value="Energia/Água">Energia/Água</option>
@@ -1132,15 +1145,21 @@
                             </div>
                         </div>
 
-                        <div class="lg:col-span-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
-                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <div
+                            class="lg:col-span-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
+                            <div
+                                class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                                 <div>
-                                    <h4 class="text-sm font-bold text-gray-800 dark:text-white"><i class="fas fa-chart-pie text-rose-500 mr-2"></i> Distribuição de Despesas</h4>
-                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Onde seu dinheiro está indo</p>
+                                    <h4 class="text-sm font-bold text-gray-800 dark:text-white"><i
+                                            class="fas fa-chart-pie text-rose-500 mr-2"></i> Distribuição de Despesas
+                                    </h4>
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Onde seu
+                                        dinheiro está indo</p>
                                 </div>
                                 <div id="finExpenseSummaryText" class="text-right">
                                     <span class="text-xs text-gray-400">Total em Despesas:</span>
-                                    <p id="finTotalExpensesFormatted" class="text-lg font-black text-rose-600">R$ 0,00</p>
+                                    <p id="finTotalExpensesFormatted" class="text-lg font-black text-rose-600">R$ 0,00
+                                    </p>
                                 </div>
                             </div>
                             <div class="h-[200px] w-full flex items-center justify-center">
@@ -1263,7 +1282,8 @@
                     </div>
                 </div>
                 <div class="pt-4">
-                    <button type="submit" id="btnSaveProduct" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2">
+                    <button type="submit" id="btnSaveProduct"
+                        class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2">
                         <span>Salvar Produto</span>
                     </button>
                 </div>
@@ -1448,15 +1468,18 @@
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg max-w-4xl w-full mx-4 p-8">
             <div class="flex justify-between mb-6 border-b pb-4 dark:border-slate-700">
                 <div>
-                    <h2 id="historyClientName" class="text-2xl font-black text-gray-900 dark:text-white">Histórico de Compras</h2>
+                    <h2 id="historyClientName" class="text-2xl font-black text-gray-900 dark:text-white">Histórico de
+                        Compras</h2>
                     <p id="historyClientSummary" class="text-sm text-gray-500"></p>
                 </div>
-                <button id="closeClientHistoryModal" class="text-2xl text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                <button id="closeClientHistoryModal" class="text-2xl text-gray-400 hover:text-gray-600"><i
+                        class="fas fa-times"></i></button>
             </div>
-            
+
             <div class="overflow-x-auto max-h-[60vh]">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-slate-700 text-xs uppercase font-bold text-gray-500 dark:text-gray-400">
+                    <thead
+                        class="bg-gray-50 dark:bg-slate-700 text-xs uppercase font-bold text-gray-500 dark:text-gray-400">
                         <tr>
                             <th class="p-4">Data</th>
                             <th class="p-4">Produto</th>
@@ -1472,7 +1495,8 @@
 
             <div class="mt-6 flex justify-between items-center p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
                 <span class="font-bold text-indigo-900 dark:text-indigo-300">Total Acumulado:</span>
-                <span id="historyClientTotal" class="text-xl font-black text-indigo-600 dark:text-indigo-400">R$ 0,00</span>
+                <span id="historyClientTotal" class="text-xl font-black text-indigo-600 dark:text-indigo-400">R$
+                    0,00</span>
             </div>
         </div>
     </div>
@@ -1796,17 +1820,8 @@
     </div>
 
     <!-- Scripts -->
-    <script>
-        // Loader síncrono para garantir que as credenciais carreguem antes do banco de dados
-        (function () {
-            const isLocal = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' || 
-                           window.location.hostname === '';
-            const scriptSrc = isLocal ? 'js/config/config.production.js' : 'js/config/config.netlify.js';
-            document.write('<script src="' + scriptSrc + '"><\/script>');
-        })();
-    </script>
     <script src="js/config/config.js"></script>
+    <script src="js/auditoria.js"></script>
     <script src="js/core/permissions.js"></script>
     <script src="js/modules/loja_config.js"></script>
     <script src="js/core/auth.js"></script>

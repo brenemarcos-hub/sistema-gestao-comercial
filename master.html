@@ -67,8 +67,8 @@
             </div>
 
             <div class="mt-6 text-center">
-                <a href="app.html" class="text-xs text-gray-600 hover:text-gray-400 transition">
-                    <i class="fas fa-arrow-left"></i> Voltar ao sistema
+                <a href="master-auditoria.html" class="text-xs text-gray-600 hover:text-gray-400 transition">
+                    <i class="fas fa-arrow-left"></i> Voltar à Auditoria
                 </a>
             </div>
         </div>
@@ -92,6 +92,9 @@
 
                     <div class="flex items-center gap-3">
                         <span id="masterTime" class="text-sm text-gray-400"></span>
+                        <a href="master-auditoria.html" class="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fas fa-list-check"></i> Auditoria
+                        </a>
                         <button onclick="logoutMaster()"
                             class="px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-xl text-sm transition flex items-center gap-2">
                             <i class="fas fa-sign-out-alt"></i> Sair
@@ -371,7 +374,8 @@
         </div>
     </div>
 
-    <script src="js/config/config.production.js"></script>
+    <script src="js/config/config.js"></script>
+    <script src="js/auditoria.js"></script>
     <script>
         // Configuração Supabase (carregada do window.SUPABASE_CONFIG)
         const supabase = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
@@ -386,21 +390,9 @@
 
         async function checkMasterSession() {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                // Verificar a role diretamente no banco para segurança
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single();
-
-                if (profile && profile.role === 'master') {
-                    console.log('👑 Acesso Master detectado via sessão');
-                    // Se for master e estiver logado, entra direto
-                    const passwordField = document.getElementById('masterPassword');
-                    if (passwordField) passwordField.value = 'verum-master';
-                    verifyMasterAccess();
-                }
+            if (!session) {
+                alert('⚠️ Faça login primeiro no sistema.');
+                window.location.href = 'app.html';
             }
         }
 
@@ -411,7 +403,7 @@
             const password = document.getElementById('masterPassword').value;
 
             // 1. Verificação por Chave Mestra
-            if (password === 'verum-master') {
+            if (password === '1706') {
                 const { data: { session } } = await supabase.auth.getSession();
 
                 // 🔒 SEGURANÇA ADICIONAL: Mesmo com a chave, precisa estar logado com perfil Master

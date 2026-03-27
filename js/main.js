@@ -12,6 +12,19 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 });
 
+// --- CAPTURA GLOBAL DE ERROS ---
+window.addEventListener('error', (event) => {
+    if (typeof capturarErro === 'function') {
+        capturarErro(event.error, { rota: window.location.href, tipo: 'runtime' });
+    }
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    if (typeof capturarErro === 'function') {
+        capturarErro(event.reason, { rota: window.location.href, tipo: 'promise' });
+    }
+});
+
 // ... (rest of the file until loadSettings)
 
 // Funções de carregamento de configurações

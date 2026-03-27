@@ -1,23 +1,17 @@
 // =====================================================
-// CONFIGURAÇÕES DO SUPABASE
-// =====================================================
-// ⚠️ DESENVOLVIMENTO LOCAL: Carrega js/config.production.js
-// ⚠️ PRODUÇÃO (Netlify): Usa js/config.netlify.js
+// CONFIGURAÇÃO DO SUPABASE (CENTRALIZADA)
 // =====================================================
 
-// O config.production.js ou config.netlify.js já definem window.SUPABASE_CONFIG
-// Este arquivo apenas garante que existe um fallback
-
-window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
-    url: '',
-    key: ''
+window.SUPABASE_CONFIG = {
+    url: 'https://tfpxfdyifvqgwstxmugk.supabase.co',
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmcHhmZHlpZnZxZ3dzdHhtdWdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NzA5MTksImV4cCI6MjA4NTA0NjkxOX0.3Ldm9Olwj5KUhS7SGU2QsIgZlll2mPpDrkjxtIl7_fs'
 };
 
-// Avisar se não foi configurado
+// Log de Inicialização
 if (!window.SUPABASE_CONFIG.url || !window.SUPABASE_CONFIG.key) {
     console.error('❌ SUPABASE_CONFIG não configurado!');
-    console.warn('📝 Local: Carregue js/config.production.js no HTML');
-    console.warn('☁️ Netlify: Carregue js/config.netlify.js no HTML');
+} else {
+    console.log('✅ Configuração do Supabase carregada.');
 }
 
 // VARIÁVEIS GLOBAIS DO SISTEMA

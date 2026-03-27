@@ -111,23 +111,30 @@ async function saveExpense(e) {
     if (!descricao || valor <= 0 || !categoria) return showNotification('Aviso', 'Preencha descrição, valor e categoria.', 'warning');
 
     try {
+        const lojaId = await getUserLojaId();
         const expenseData = { descricao, valor, data_vencimento, categoria, pago };
 
         if (selectedExpenseId) {
             const { error } = await supabaseClient.from('despesas').update(expenseData).eq('id', selectedExpenseId);
             if (error) throw error;
             showNotification('Sucesso', 'Despesa atualizada.', 'success');
+
+            // Registrar Ação: Edição
+            registrarAcao(null, null, 'editou_despesa', 'despesa', selectedExpenseId, { descricao: descricao });
         } else {
-            const lojaId = await getUserLojaId();
-            const { error } = await supabaseClient.from('despesas').insert({ ...expenseData, loja_id: lojaId });
+            const { data: newD, error } = await supabaseClient.from('despesas').insert({ ...expenseData, loja_id: lojaId }).select().single();
             if (error) throw error;
             showNotification('Sucesso', 'Despesa registrada.', 'success');
+
+            // Registrar Ação: Criação
+            registrarAcao(null, null, 'criou_despesa', 'despesa', newD.id, { descricao: descricao });
         }
 
         closeSidebarExpense();
         loadExpenses();
     } catch (error) {
         console.error('Erro ao salvar despesa:', error);
+        capturarErro(error, { funcao: 'saveExpense', descricao: descricao });
         showNotification('Erro', 'Erro ao salvar despesa.', 'error');
     }
 }
@@ -155,6 +162,7 @@ async function deleteExpense(id) {
         showNotification('Sucesso', 'Despesa excluída.', 'success');
         loadExpenses();
     } catch (error) {
+        capturarErro(error, { funcao: 'deleteExpense', id: id });
         showNotification('Erro', 'Não foi possível excluir.', 'error');
     }
 }

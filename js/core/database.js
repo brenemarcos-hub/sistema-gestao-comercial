@@ -228,6 +228,13 @@ async function saveProduct(e) {
                 }
             }
             showNotification('Sucesso', shouldSumStock ? 'Estoque somado.' : 'Produto atualizado.', 'success');
+            
+            // Registrar Ação: Edição
+            registrarAcao(null, null, 'editou_produto', 'produto', targetProductId, { 
+                sku: cleanSku, 
+                nome: nome,
+                isSummingStock: shouldSumStock
+            });
         } else {
             const lojaId = await getUserLojaId();
             if (!lojaId) throw new Error("Loja não identificada. Faça login novamente.");
@@ -253,6 +260,12 @@ async function saveProduct(e) {
                 });
             }
             showNotification('Cadastrado', 'Novo produto adicionado.', 'success');
+
+            // Registrar Ação: Criação
+            registrarAcao(null, null, 'criou_produto', 'produto', newP[0].id, {
+                sku: cleanSku,
+                nome: nome.trim()
+            });
         }
 
         document.getElementById('sidebar').classList.remove('open');
@@ -262,6 +275,7 @@ async function saveProduct(e) {
 
     } catch (error) {
         console.error('Erro ao salvar:', error);
+        capturarErro(error, { funcao: 'saveProduct', sku: ean || sku });
         showNotification('Erro ao salvar', 'Ocorreu um problema técnico.', 'error');
     }
 }
@@ -306,9 +320,14 @@ async function deleteProduct(productId) {
         if (error) throw error;
 
         showNotification('Produto excluído', 'Sucesso.', 'success');
+        
+        // Registrar Ação: Exclusão
+        registrarAcao(null, null, 'excluiu_produto', 'produto', productId);
+
         loadProducts();
     } catch (error) {
         console.error('Erro ao excluir:', error);
+        capturarErro(error, { funcao: 'deleteProduct', productId: productId });
         showNotification('Erro', 'Não foi possível excluir.', 'error');
     }
 }
@@ -427,6 +446,12 @@ async function saveSale(e) {
             showNotification('Sucesso!', `${carrinho.length} itens vendidos com sucesso.`, 'success');
         }
 
+        // Registrar Ação: Venda
+        registrarAcao(null, null, 'vendeu', 'venda', null, { 
+            quantidade_itens: carrinho.length,
+            ids_itens: carrinho.map(i => i.productId)
+        });
+
         // Fechar sidebar e resetar
         document.getElementById('sidebarVenda').classList.remove('open');
         document.getElementById('drawerOverlay').classList.remove('active');
@@ -439,6 +464,7 @@ async function saveSale(e) {
 
     } catch (error) {
         console.error('Erro na venda multi-item:', error);
+        capturarErro(error, { funcao: 'saveSale', itensNoCarrinho: carrinho.length });
         showNotification('Erro ao finalizar', error.message || 'Problema na transação.', 'error');
     }
 }

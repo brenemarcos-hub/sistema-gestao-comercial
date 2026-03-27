@@ -51,9 +51,21 @@ async function updateStoreHeader() {
 
                 // Se for MASTER, transforma o badge em um link para a página master.html
                 if (profile.role === 'master') {
-                    roleEl.innerHTML = `<a href="master.html" class="flex items-center gap-1 text-indigo-500 hover:text-indigo-400 transition-colors">
-                        <i class="fas fa-crown text-[8px]"></i> ${role}
-                    </a>`;
+                    roleEl.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <a href="master-auditoria.html" class="flex items-center gap-1 text-emerald-500 hover:text-emerald-400 font-black transition-colors">
+                                <i class="fas fa-shield-halved text-[8px]"></i> AUDITORIA
+                            </a>
+                            <button onclick="leaveMasterMode()" class="p-1 hover:bg-rose-500/10 rounded group" title="Sair do Modo Master">
+                                <i class="fas fa-power-off text-[8px] text-gray-400 group-hover:text-rose-500"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Mostrar botão Auditoria no menu
+                    const navAudit = document.getElementById('navAuditoria');
+                    if (navAudit) navAudit.classList.remove('hidden');
+
                     if (userBadge) {
                         userBadge.classList.add('border-indigo-500/30', 'bg-indigo-500/5');
                     }
@@ -267,12 +279,23 @@ async function loginUser(e) {
         });
 
         if (error) throw error;
+        
+        // Registrar Acesso com Sucesso
+        const { data: { user } } = data;
+        registrarAcesso(user.id, user.email, user.email.split('@')[0], 'login', true);
 
         showNotification('Bem-vindo!', 'Acesso concedido com sucesso.', 'success');
         await checkSession(); // checkSession chamará loadUserRole
 
     } catch (error) {
         console.error("Erro no login:", error);
+        
+        // Registrar Falha de Acesso
+        registrarAcesso(null, email, null, 'falha_login', false);
+        
+        // Capturar Erro
+        capturarErro(error, { funcao: 'loginUser', email: email });
+
         showNotification('Erro de Acesso', error.message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : error.message, 'error');
     } finally {
         btn.disabled = false;
@@ -284,8 +307,14 @@ async function logoutUser() {
     if (!confirm('Deseja realmente sair do sistema?')) return;
 
     try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        const user = session?.user;
+
         const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
+
+        // Registrar Logout
+        registrarAcesso(user?.id, user?.email, null, 'logout', true);
 
         localStorage.removeItem('userRole');
         lojaIdCache = null; // Limpa o cache para segurança
@@ -301,6 +330,7 @@ async function logoutUser() {
         showNotification('Sessão Encerrada', 'Você saiu do sistema com segurança.', 'info');
     } catch (error) {
         console.error("Erro ao deslogar:", error);
+        capturarErro(error, { funcao: 'logoutUser' });
         showNotification('Erro ao sair', 'Tente novamente.', 'error');
     }
 }
@@ -564,3 +594,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check Session on Load
     checkSession();
 });
+
+/**
+ * 🔓 SAIR DO MODO MASTER
+ * Reverte o cargo do usuário para 'dono' no banco de dados.
+ */
+async function leaveMasterMode() {
+    if (!confirm('Deseja sair do Modo Auditoria? Sua conta voltará ao nível de Dono comum.')) return;
+
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+
+        const { error } = await supabaseClient
+            .from('profiles')
+            .update({ role: 'owner' })
+            .eq('id', session.user.id);
+
+        if (error) throw error;
+
+        showNotification('Modo Master Desativado', 'Sua conta agora é nível Dono.', 'info');
+        
+        // Recarrega para aplicar mudanças visuais
+        setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+        console.error('Erro ao sair do modo master:', err);
+        showNotification('Erro', 'Não foi possível desativar o modo master.', 'error');
+    }
+}

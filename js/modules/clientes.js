@@ -97,19 +97,28 @@ async function saveCliente(e) {
                 .eq('id', selectedClientId);
             if (error) throw error;
             showNotification('Sucesso', 'Cliente atualizado.', 'success');
+
+            // Registrar Ação: Edição
+            registrarAcao(null, null, 'editou_cliente', 'cliente', selectedClientId, { nome: nome });
         } else {
             const lojaId = await getUserLojaId();
-            const { error } = await supabaseClient
+            const { data: newC, error } = await supabaseClient
                 .from('clientes')
-                .insert({ ...clientData, loja_id: lojaId });
+                .insert({ ...clientData, loja_id: lojaId })
+                .select()
+                .single();
             if (error) throw error;
             showNotification('Sucesso', 'Cliente cadastrado com sucesso.', 'success');
+
+            // Registrar Ação: Criação
+            registrarAcao(null, null, 'criou_cliente', 'cliente', newC.id, { nome: nome });
         }
 
         closeSidebarCliente();
         loadClientes();
     } catch (error) {
         console.error('Erro ao salvar cliente:', error);
+        capturarErro(error, { funcao: 'saveCliente', nome: nome });
         showNotification('Erro', 'Não foi possível salvar os dados do cliente.', 'error');
     }
 }
@@ -142,9 +151,14 @@ async function deleteCliente(id) {
 
         if (error) throw error;
         showNotification('Excluído', 'Cliente removido da base.', 'success');
+        
+        // Registrar Ação: Exclusão
+        registrarAcao(null, null, 'excluiu_cliente', 'cliente', id);
+
         loadClientes();
     } catch (error) {
         console.error('Erro ao excluir cliente:', error);
+        capturarErro(error, { funcao: 'deleteCliente', clienteId: id });
         showNotification('Erro', 'Não foi possível excluir o cliente.', 'error');
     }
 }
