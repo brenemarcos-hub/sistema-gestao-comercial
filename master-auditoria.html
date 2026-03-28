@@ -31,11 +31,24 @@
             border-bottom: 2px solid #6366f1;
             color: #818cf8;
         }
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
     </style>
 </head>
 
@@ -53,16 +66,16 @@
             </div>
 
             <div class="space-y-4">
-                <input type="password" id="masterPassword" placeholder="Chave Mestra" 
+                <input type="password" id="masterPassword" placeholder="Chave Mestra"
                     class="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none">
-                
+
                 <button onclick="verifyMasterAccess()"
                     class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
                     <i class="fas fa-unlock"></i>
                     AUTENTICAR
                 </button>
             </div>
-            
+
             <div class="mt-6 text-center">
                 <a href="app.html" class="text-xs text-gray-600 hover:text-gray-400 transition">
                     <i class="fas fa-arrow-left"></i> Voltar ao Sistema Principal
@@ -91,7 +104,8 @@
                         <p id="currentTime" class="text-sm font-medium"></p>
                         <p class="text-[10px] text-gray-500">Monitoramento Ativo</p>
                     </div>
-                    <button onclick="logout()" class="p-3 bg-white/5 hover:bg-red-600/20 text-gray-400 hover:text-red-400 rounded-xl transition">
+                    <button onclick="logout()"
+                        class="p-3 bg-white/5 hover:bg-red-600/20 text-gray-400 hover:text-red-400 rounded-xl transition">
                         <i class="fas fa-power-off"></i>
                     </button>
                 </div>
@@ -100,7 +114,7 @@
 
         <main class="container mx-auto px-6 py-8">
             <!-- Dashboard Quick Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="glass-card p-6 rounded-2xl border-l-4 border-blue-500">
                     <div class="flex justify-between items-start">
                         <div>
@@ -141,13 +155,19 @@
 
             <!-- Tabs Navigation -->
             <div class="flex items-center gap-6 border-b border-white/5 mb-8">
-                <button onclick="switchTab('acessos')" class="tab-btn active px-4 py-4 text-sm font-bold transition text-gray-500">ACESSOS</button>
-                <button onclick="switchTab('usuarios')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">USUÁRIOS</button>
-                <button onclick="switchTab('erros')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ERROS</button>
-                <button onclick="switchTab('acoes')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">AÇÕES</button>
-                <button onclick="switchTab('analise')" class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ANÁLISE</button>
+                <button onclick="switchTab('acessos')"
+                    class="tab-btn active px-4 py-4 text-sm font-bold transition text-gray-500">ACESSOS</button>
+                <button onclick="switchTab('usuarios')"
+                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">USUÁRIOS</button>
+                <button onclick="switchTab('erros')"
+                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ERROS</button>
+                <button onclick="switchTab('acoes')"
+                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">AÇÕES</button>
+                <button onclick="switchTab('analise')"
+                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ANÁLISE</button>
                 <div class="ml-auto pb-2 flex gap-2">
-                    <button onclick="limparLogsAntigos()" class="text-[10px] text-gray-600 hover:text-red-400 transition flex items-center gap-1 border border-white/5 px-3 py-1.5 rounded-lg">
+                    <button onclick="limparLogsAntigos()"
+                        class="text-[10px] text-gray-600 hover:text-red-400 transition flex items-center gap-1 border border-white/5 px-3 py-1.5 rounded-lg">
                         <i class="fas fa-broom"></i> Limpar Logs (+90 dias)
                     </button>
                 </div>
@@ -156,18 +176,21 @@
             <!-- Tab: Acessos -->
             <div id="tabAcessos" class="tab-content">
                 <div class="flex flex-wrap gap-4 mb-6">
-                    <input type="text" id="searchAcessos" placeholder="Buscar usuário ou IP..." 
+                    <input type="text" id="searchAcessos" placeholder="Buscar usuário ou IP..."
                         class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 w-full sm:w-64">
-                    <select id="filterAcaoAcessos" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none">
+                    <select id="filterAcaoAcessos"
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none">
                         <option value="todos">Todas Ações</option>
                         <option value="login">Logins</option>
                         <option value="logout">Logouts</option>
                         <option value="falha_login">Falhas</option>
                     </select>
-                    <button onclick="animateSync(this); carregarAcessos();" class="p-2 bg-emerald-600 rounded-xl hover:bg-emerald-700 transition">
+                    <button onclick="animateSync(this); carregarAcessos();"
+                        class="p-2 bg-emerald-600 rounded-xl hover:bg-emerald-700 transition">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <button onclick="exportarCSV('acessos')" class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
+                    <button onclick="exportarCSV('acessos')"
+                        class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
                         <i class="fas fa-download"></i> Exportar CSV
                     </button>
                 </div>
@@ -193,9 +216,10 @@
             <!-- Tab: Usuários -->
             <div id="tabUsuarios" class="tab-content hidden">
                 <div class="flex flex-wrap gap-4 mb-6">
-                    <input type="text" id="searchUsuarios" placeholder="Buscar por nome ou e-mail..." 
+                    <input type="text" id="searchUsuarios" placeholder="Buscar por nome ou e-mail..."
                         class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64">
-                    <button onclick="animateSync(this); carregarUsuarios();" class="p-2 bg-blue-600 rounded-xl hover:bg-blue-700 transition">
+                    <button onclick="animateSync(this); carregarUsuarios();"
+                        class="p-2 bg-blue-600 rounded-xl hover:bg-blue-700 transition">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
@@ -222,14 +246,18 @@
             <!-- Tab: Erros -->
             <div id="tabErros" class="tab-content hidden">
                 <div class="flex flex-wrap gap-4 mb-6">
-                    <input type="text" id="searchErros" placeholder="Buscar na mensagem..." class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none w-64">
-                    <select id="filterErrosResolvidos" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm">
+                    <input type="text" id="searchErros" placeholder="Buscar na mensagem..."
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none w-64">
+                    <select id="filterErrosResolvidos"
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm">
                         <option value="pendente">Apenas Pendentes</option>
                         <option value="todos">Mostrar Todos</option>
                         <option value="resolvido">Apenas Resolvidos</option>
                     </select>
-                    <button onclick="animateSync(this); carregarErros()" class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
-                    <button onclick="exportarCSV('erros')" class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
+                    <button onclick="animateSync(this); carregarErros()"
+                        class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="exportarCSV('erros')"
+                        class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
                         <i class="fas fa-download"></i> Exportar CSV
                     </button>
                 </div>
@@ -251,8 +279,9 @@
 
             <!-- Tab: Ações -->
             <div id="tabAcoes" class="tab-content hidden">
-                 <div class="flex flex-wrap gap-4 mb-6">
-                    <input type="text" id="searchAcoes" placeholder="Buscar ação ou entidade..." class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none w-64">
+                <div class="flex flex-wrap gap-4 mb-6">
+                    <input type="text" id="searchAcoes" placeholder="Buscar ação ou entidade..."
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none w-64">
                     <select id="filterEntidade" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm">
                         <option value="todos">Todas Entidades</option>
                         <option value="produto">Produtos</option>
@@ -260,8 +289,10 @@
                         <option value="cliente">Clientes</option>
                         <option value="despesa">Despesas</option>
                     </select>
-                    <button onclick="animateSync(this); carregarAcoes()" class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
-                    <button onclick="exportarCSV('acoes')" class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
+                    <button onclick="animateSync(this); carregarAcoes()"
+                        class="p-2 bg-emerald-600 rounded-xl transition"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="exportarCSV('acoes')"
+                        class="ml-auto bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
                         <i class="fas fa-download"></i> Exportar CSV
                     </button>
                 </div>
@@ -305,7 +336,7 @@
                             <canvas id="chartTopUsers"></canvas>
                         </div>
                     </div>
-                     <!-- Horários de Pico -->
+                    <!-- Horários de Pico -->
                     <div class="glass-card p-6 rounded-2xl">
                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-4">Acessos por Hora do Dia</h4>
                         <div class="h-64">
@@ -322,25 +353,29 @@
         <div class="glass-card w-full max-w-2xl rounded-2xl overflow-hidden max-h-[90vh] flex flex-col">
             <div class="p-6 border-b border-white/5 flex justify-between items-center">
                 <h3 class="text-lg font-black text-rose-500">Detalhes Técnicos do Erro</h3>
-                <button onclick="fecharModalErro()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
+                <button onclick="fecharModalErro()" class="text-gray-500 hover:text-white"><i
+                        class="fas fa-times"></i></button>
             </div>
             <div id="modalErroContent" class="p-6 overflow-y-auto space-y-4">
                 <!-- JS Injection -->
             </div>
             <div class="p-6 border-t border-white/5 flex gap-3">
-                <button id="btnMarcarResolvido" class="bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-xl text-sm font-bold transition">Marcar como Resolvido</button>
-                <button onclick="fecharModalErro()" class="bg-white/5 hover:bg-white/10 px-6 py-2 rounded-xl text-sm font-bold transition">Fechar</button>
+                <button id="btnMarcarResolvido"
+                    class="bg-emerald-600 hover:bg-emerald-700 px-6 py-2 rounded-xl text-sm font-bold transition">Marcar
+                    como Resolvido</button>
+                <button onclick="fecharModalErro()"
+                    class="bg-white/5 hover:bg-white/10 px-6 py-2 rounded-xl text-sm font-bold transition">Fechar</button>
             </div>
         </div>
     </div>
 
     <!-- Scripts de Configuração -->
     <script src="js/config/config.js"></script>
-    
+
     <script>
         // Usar o Supabase Client já inicializado no config.js
-        const db = window.supabaseClient; 
-        
+        const db = window.supabaseClient;
+
         // Estado
         let activeTabCurrent = 'acessos';
         let charts = {};
@@ -362,11 +397,11 @@
         async function verifyMasterAccess() {
             const password = document.getElementById('masterPassword').value.trim();
             console.log('🔑 Tentativa de acesso manual com senha...');
-            
+
             if (password === '1706') {
                 try {
                     const { data: { session } } = await db.auth.getSession();
-                    
+
                     if (!session) {
                         alert('⚠️ Por favor, faça login no sistema principal primeiro (app.html).');
                         // window.location.href = 'app.html';
@@ -393,7 +428,7 @@
                 alert('❌ Chave mestra inválida.');
             }
         }
-        
+
         // Suporte a tecla Enter
         document.getElementById('masterPassword')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') verifyMasterAccess();
@@ -414,10 +449,10 @@
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            
+
             event.target.classList.add('active');
             document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
-            
+
             activeTabCurrent = tab;
             if (tab === 'acessos') carregarAcessos();
             if (tab === 'usuarios') carregarUsuarios();
@@ -431,7 +466,7 @@
         // ===================================
         async function atualizarStats() {
             const hoje = new Date();
-            hoje.setHours(0,0,0,0);
+            hoje.setHours(0, 0, 0, 0);
             const hojeISO = hoje.toISOString();
 
             // Acessos Hoje
@@ -459,13 +494,13 @@
         // ===================================
         async function carregarUsuarios() {
             const search = document.getElementById('searchUsuarios').value.toLowerCase();
-            
+
             // Buscar perfis com o último acesso (usando join limitado ao mais recente)
             const { data: profiles, error } = await db
                 .from('profiles')
                 .select('*, lojas(nome), logs_acessos(criado_em, acao)')
                 .order('nome', { ascending: true });
-            
+
             if (error) {
                 console.error('Erro ao carregar perfis:', error);
                 return;
@@ -476,20 +511,20 @@
 
             profiles.filter(p => (p.email?.toLowerCase().includes(search) || p.nome?.toLowerCase().includes(search))).forEach(user => {
                 const roleClass = user.role === 'master' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-400';
-                
+
                 // Pegar o acesso mais recente do array (o Supabase traz todos os logs se não houver RPC, então pegamos o último do array ordenado)
                 const logsSorted = user.logs_acessos?.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em)) || [];
                 const ultimoAcesso = logsSorted[0];
                 let ultimaAtvStr = 'Nunca acessou';
-                
+
                 if (ultimoAcesso) {
                     const dataAtv = new Date(ultimoAcesso.criado_em);
                     const agora = new Date();
                     const hoje = dataAtv.toLocaleDateString() === agora.toLocaleDateString();
-                    
-                    ultimaAtvStr = hoje 
-                        ? `Hoje às ${dataAtv.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}`
-                        : dataAtv.toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'});
+
+                    ultimaAtvStr = hoje
+                        ? `Hoje às ${dataAtv.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`
+                        : dataAtv.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
                 }
 
                 tbody.innerHTML += `
@@ -521,7 +556,7 @@
 
         async function redefinirSenha(email) {
             if (!email || email === 'Email não disponível') return alert('E-mail não encontrado para este usuário.');
-            
+
             if (!confirm(`Deseja enviar um e-mail de redefinição de senha para ${email}? O usuário receberá um link oficial do sistema.`)) return;
 
             try {
@@ -542,14 +577,14 @@
 
             let query = db.from('logs_acessos').select('*').order('criado_em', { ascending: false }).limit(100);
             if (filterAcao !== 'todos') query = query.eq('acao', filterAcao);
-            
+
             const { data, error } = await query;
             if (error) return;
 
             const tbody = document.getElementById('acessosTableBody');
             tbody.innerHTML = '';
 
-            const filteredData = data.filter(item => 
+            const filteredData = data.filter(item =>
                 (item.usuario_email?.toLowerCase().includes(search) || item.ip?.includes(search))
             );
 
@@ -680,7 +715,7 @@
             const seteDiasAtras = new Date();
             seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
             const { data: rawAcessos } = await db.from('logs_acessos').select('criado_em').gte('criado_em', seteDiasAtras.toISOString());
-            
+
             const acessosMap = {};
             rawAcessos?.forEach(a => {
                 const dia = new Date(a.criado_em).toLocaleDateString('pt-BR');
@@ -703,7 +738,7 @@
             rawUsers?.forEach(u => {
                 if (u.usuario_email) userActMap[u.usuario_email] = (userActMap[u.usuario_email] || 0) + 1;
             });
-            const top5 = Object.entries(userActMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            const top5 = Object.entries(userActMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
             renderBarChart('chartTopUsers', top5.map(t => t[0].split('@')[0]), top5.map(t => t[1]), 'Ações Realizadas', '#10b981');
 
             // 4. Horários de Pico
@@ -712,7 +747,7 @@
                 const hour = new Date(a.criado_em).getHours();
                 hoursMap[hour]++;
             });
-            renderBarChart('chartPeakHours', Array.from({length: 24}, (_, i) => `${i}h`), hoursMap, 'Acessos/Hora', '#f59e0b');
+            renderBarChart('chartPeakHours', Array.from({ length: 24 }, (_, i) => `${i}h`), hoursMap, 'Acessos/Hora', '#f59e0b');
         }
 
         // ===================================
@@ -743,8 +778,8 @@
         }
 
         function renderBarChart(id, labels, values, label, color) {
-             if (charts[id]) charts[id].destroy();
-             charts[id] = new Chart(document.getElementById(id), {
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(document.getElementById(id), {
                 type: 'bar',
                 data: {
                     labels,
@@ -810,7 +845,7 @@
 
         async function limparLogsAntigos() {
             if (!confirm('ATENÇÃO: Deseja realmente excluir permanentemente todos os logs com mais de 90 dias? Esta ação não pode ser desfeita.')) return;
-            
+
             const limite = new Date();
             limite.setDate(limite.getDate() - 90);
             const limiteISO = limite.toISOString();
@@ -820,7 +855,7 @@
                 await db.from('logs_acessos').delete().lt('criado_em', limiteISO);
                 await db.from('logs_erros').delete().lt('criado_em', limiteISO);
                 await db.from('logs_acoes').delete().lt('criado_em', limiteISO);
-                
+
                 alert('🧹 Limpeza concluída! Espaço liberado no banco de dados.');
                 window.location.reload();
             } catch (err) {
@@ -833,7 +868,7 @@
             if (aba === 'acessos') table = 'acessosTableBody';
             if (aba === 'erros') table = 'errosTableBody';
             if (aba === 'acoes') table = 'acoesTableBody';
-            
+
             const rows = document.querySelectorAll(`#${table} tr`);
             let csv = [];
             rows.forEach(row => {
@@ -842,7 +877,7 @@
                 cols.forEach(col => data.push('"' + col.innerText.replace(/"/g, '""').replace(/\n/g, ' ') + '"'));
                 csv.push(data.join(';'));
             });
-            
+
             const blob = new Blob(['\ufeff' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');

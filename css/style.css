@@ -71,8 +71,9 @@ body {
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 0;
     border-radius: 0;
-    height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .sidebar.open {
@@ -171,6 +172,7 @@ body {
     border-radius: 0.75rem;
     display: flex;
     gap: 0.25rem;
+    flex-wrap: wrap;
 }
 
 .dark .nav-pill-container {
