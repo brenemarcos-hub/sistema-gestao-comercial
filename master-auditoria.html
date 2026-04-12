@@ -66,34 +66,36 @@
     <div id="auditPanel" class="hidden">
         <!-- Header -->
         <header class="glass-card border-b border-white/5 sticky top-0 z-50">
-            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-list-check text-white"></i>
+            <div class="container mx-auto px-4 sm:px-6 py-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-list-check text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-lg sm:text-xl font-black uppercase tracking-tighter">SISTEMA DE AUDITORIA</h1>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest leading-none">Logs em Tempo Real</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 class="text-xl font-black">SISTEMA DE AUDITORIA</h1>
-                        <p class="text-xs text-gray-500 uppercase tracking-widest">Logs em Tempo Real</p>
-                    </div>
-                </div>
 
-                <div class="flex items-center gap-4">
-                    <nav class="hidden md:flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
-                        <a href="app.html" class="px-4 py-2 text-[10px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg mr-2">
-                            <i class="fas fa-rocket mr-1"></i> Ir para o App
-                        </a>
-                        <a href="master.html" class="px-4 py-2 text-[10px] font-black text-gray-400 hover:text-indigo-400 transition uppercase tracking-widest">Painel</a>
-                        <a href="master-clientes.html" class="px-4 py-2 text-[10px] font-black text-gray-400 hover:text-blue-400 transition uppercase tracking-widest">Clientes</a>
-                        <a href="master-auditoria.html" class="px-4 py-2 text-[10px] font-black text-emerald-400 transition uppercase tracking-widest">Auditoria</a>
-                    </nav>
-                    <div class="text-right hidden sm:block">
-                        <p id="currentTime" class="text-sm font-medium"></p>
-                        <p class="text-[10px] text-gray-500">Monitoramento Ativo</p>
+                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+                        <nav class="flex items-center gap-2 whitespace-nowrap">
+                            <a href="app.html" class="px-3 py-1.5 text-[9px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg border border-rose-500/20">
+                                <i class="fas fa-rocket"></i> App
+                            </a>
+                            <a href="master.html" class="px-3 py-1.5 text-[9px] font-black text-gray-400 hover:text-indigo-400 transition uppercase tracking-widest">Painel</a>
+                            <a href="master-clientes.html" class="px-3 py-1.5 text-[9px] font-black text-gray-400 hover:text-blue-400 transition uppercase tracking-widest">Clientes</a>
+                        </nav>
+                        <div class="flex items-center gap-2 border-l border-white/10 pl-3">
+                            <div class="text-right hidden lg:block">
+                                <p id="currentTime" class="text-[10px] font-mono text-gray-500"></p>
+                            </div>
+                            <button onclick="logout()"
+                                class="p-2 bg-white/5 hover:bg-red-600/20 text-gray-400 hover:text-red-400 rounded-xl transition">
+                                <i class="fas fa-power-off text-sm"></i>
+                            </button>
+                        </div>
                     </div>
-                    <button onclick="logout()"
-                        class="p-3 bg-white/5 hover:bg-red-600/20 text-gray-400 hover:text-red-400 rounded-xl transition">
-                        <i class="fas fa-power-off"></i>
-                    </button>
                 </div>
             </div>
         </header>
@@ -140,23 +142,23 @@
             </div>
 
             <!-- Tabs Navigation -->
-            <div class="flex items-center gap-6 border-b border-white/5 mb-8">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-6 border-b border-white/5 mb-8 overflow-x-auto scrollbar-hide whitespace-nowrap">
                 <button onclick="switchTab('acessos')"
-                    class="tab-btn active px-4 py-4 text-sm font-bold transition text-gray-500">ACESSOS</button>
+                    class="tab-btn active px-4 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition text-gray-500">ACESSOS</button>
                 <button onclick="switchTab('usuarios')"
-                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">USUÁRIOS</button>
+                    class="tab-btn px-4 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition text-gray-500">USUÁRIOS</button>
                 <button onclick="switchTab('lojas')"
-                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500 uppercase">Lojas</button>
+                    class="tab-btn px-4 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition text-gray-500 uppercase">Lojas</button>
                 <button onclick="switchTab('erros')"
-                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ERROS</button>
+                    class="tab-btn px-4 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition text-gray-500">ERROS</button>
                 <button onclick="switchTab('acoes')"
-                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">AÇÕES</button>
+                    class="tab-btn px-4 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition text-gray-500">AÇÕES</button>
                 <button onclick="switchTab('analise')"
-                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ANÁLISE</button>
-                <div class="ml-auto pb-2 flex gap-2">
+                    class="tab-btn px-4 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest transition text-gray-500">ANÁLISE</button>
+                <div class="ml-auto flex items-center gap-2 py-2">
                     <button onclick="limparLogsAntigos()"
-                        class="text-[10px] text-gray-600 hover:text-red-400 transition flex items-center gap-1 border border-white/5 px-3 py-1.5 rounded-lg">
-                        <i class="fas fa-broom"></i> Limpar Logs (+90 dias)
+                        class="text-[9px] font-black uppercase text-gray-600 hover:text-rose-400 transition flex items-center gap-1 border border-white/5 px-3 py-2 rounded-lg bg-white/5">
+                        <i class="fas fa-broom"></i> <span class="hidden sm:inline">Limpar Antigos</span>
                     </button>
                 </div>
             </div>

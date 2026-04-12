@@ -55,46 +55,48 @@
     <!-- Painel Master (escondido até login) -->
     <div id="masterPanel" class="hidden">
         <!-- Header -->
-        <div class="glass-card border-b border-indigo-500/20 sticky top-0 z-50">
-            <div class="container mx-auto px-6 py-4">
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-crown text-white"></i>
+        <header class="glass-card border-b border-indigo-500/20 sticky top-0 z-50">
+            <div class="container mx-auto px-4 sm:px-6 py-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4 w-full sm:w-auto">
+                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                            <i class="fas fa-crown text-white text-lg"></i>
                         </div>
                         <div>
-                            <h1 class="text-xl font-black">VERUM MASTER</h1>
-                            <p class="text-xs text-gray-500">Painel de Controle do Fornecedor</p>
+                            <h1 class="text-lg sm:text-xl font-black tracking-tight">VERUM <span class="text-indigo-400">MASTER</span></h1>
+                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest leading-none">Control Center</p>
+                        </div>
+                        <!-- Relógio Mobile -->
+                        <div class="ml-auto sm:hidden text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">
+                            <span id="masterTimeMobile"></span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <span id="masterTime" class="text-sm text-gray-400 mr-2"></span>
-                        <nav class="flex items-center gap-2">
-                            <a href="app.html" class="px-4 py-2 text-[10px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg mr-2 border border-rose-500/20">
-                                <i class="fas fa-home mr-1"></i> Ir para o App
+                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+                        <nav class="flex items-center gap-2 whitespace-nowrap">
+                            <a href="app.html" class="px-3 py-1.5 text-[9px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg border border-rose-500/20">
+                                <i class="fas fa-home"></i> App
                             </a>
                             <a href="master.html"
-                                class="px-4 py-2 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition hover:bg-indigo-600 hover:text-white uppercase">
-                                <i class="fas fa-crown mr-1"></i> Painel
+                                class="px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-[9px] font-bold transition hover:bg-indigo-600 hover:text-white uppercase">
+                                <i class="fas fa-chart-pie"></i> Painel
                             </a>
                             <a href="master-clientes.html"
-                                class="px-4 py-2 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-xl text-xs font-bold transition hover:bg-blue-600 hover:text-white uppercase">
-                                <i class="fas fa-id-card mr-1"></i> Clientes
-                            </a>
-                            <a href="master-auditoria.html"
-                                class="px-4 py-2 bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold transition hover:bg-emerald-600 hover:text-white uppercase">
-                                <i class="fas fa-list-check mr-1"></i> Auditoria
+                                class="px-3 py-1.5 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-xl text-[9px] font-bold transition hover:bg-blue-600 hover:text-white uppercase">
+                                <i class="fas fa-users"></i> Clientes
                             </a>
                         </nav>
-                        <button onclick="logoutMaster()"
-                            class="ml-2 p-2.5 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white rounded-xl transition">
-                            <i class="fas fa-power-off"></i>
-                        </button>
+                        <div class="flex items-center gap-2 border-l border-white/10 pl-3">
+                            <span id="masterTime" class="hidden sm:block text-xs font-mono text-gray-500"></span>
+                            <button onclick="logoutMaster()"
+                                class="p-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white rounded-xl transition">
+                                <i class="fas fa-power-off text-sm"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <!-- Container Principal -->
         <div class="container mx-auto px-6 py-8">
@@ -162,27 +164,27 @@
             </div>
 
             <!-- Tabs de Navegação -->
-            <div class="mb-6 border-b border-gray-800">
-                <nav class="flex gap-6">
+            <div class="mb-6 border-b border-gray-800 overflow-x-auto scrollbar-hide">
+                <nav class="flex gap-2 sm:gap-6 whitespace-nowrap min-w-max">
                     <button onclick="switchMasterTab('lojas')" id="tabLojas"
-                        class="tab-master active px-4 py-2 text-sm font-medium border-b-2 border-indigo-500 text-indigo-400">
+                        class="tab-master active px-4 py-3 text-xs sm:text-sm font-bold border-b-2 border-indigo-500 text-indigo-400 transition-all uppercase tracking-widest">
                         <i class="fas fa-store mr-2"></i>Lojas
                     </button>
                     <button onclick="switchMasterTab('usuarios')" id="tabUsuarios"
-                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
+                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
                         <i class="fas fa-users mr-2"></i>Usuários
                     </button>
                     <button onclick="switchMasterTab('auditoria')" id="tabAuditoria"
-                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
+                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
                         <i class="fas fa-history mr-2"></i>Auditoria
                     </button>
                     <button onclick="switchMasterTab('backup')" id="tabBackup"
-                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
-                        <i class="fas fa-database mr-2"></i>Backup/Export
+                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
+                        <i class="fas fa-database mr-2"></i>Backup
                     </button>
                     <button onclick="switchMasterTab('config')" id="tabConfig"
-                        class="tab-master px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300">
-                        <i class="fas fa-cog mr-2"></i>Config Globais
+                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
+                        <i class="fas fa-cog mr-2"></i>Config
                     </button>
                 </nav>
             </div>
@@ -475,8 +477,11 @@
                     
                     // Relógio
                     setInterval(() => {
+                        const timeStr = new Date().toLocaleString('pt-BR');
                         const timeEl = document.getElementById('masterTime');
-                        if (timeEl) timeEl.textContent = new Date().toLocaleString('pt-BR');
+                        const timeElMob = document.getElementById('masterTimeMobile');
+                        if (timeEl) timeEl.textContent = timeStr;
+                        if (timeElMob) timeElMob.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                     }, 1000);
 
                     carregarDadosMaster();
