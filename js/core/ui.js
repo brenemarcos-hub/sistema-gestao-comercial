@@ -27,6 +27,21 @@ function setLoading(btnId, isLoading, text = 'Aguarde...') {
 }
 window.setLoading = setLoading;
 
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('productImagePreview');
+            const placeholder = document.getElementById('imagePlaceholder');
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+window.previewImage = previewImage;
+
 async function loadDemoData() {
     if (!confirm('Deseja carregar dados de exemplo? Isso adicionará produtos, clientes e vendas fictícias para teste.')) return;
     
@@ -382,22 +397,54 @@ function renderProductsTable() {
     }
 
     paginated.forEach(produto => {
-        const estoqueTotal = produto.variantes.reduce((acc, v) => acc + v.estoque_atual, 0);
-        const temBaixo = produto.variantes.some(v => v.estoque_atual <= v.estoque_minimo);
+        const estoqueTotal = (produto.variantes || []).reduce((acc, v) => acc + (Number(v.estoque_atual) || 0), 0);
+        const temBaixo = (produto.variantes || []).some(v => (Number(v.estoque_atual) || 0) <= (Number(v.estoque_minimo) || 5));
 
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50';
         row.innerHTML = `
-            <td class="px-6 py-4"><div class="text-sm font-medium text-gray-900 dark:text-white">${produto.nome}</div></td>
-            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${categoryColors[produto.categoria] || 'bg-gray-100 text-gray-800'}">${produto.categoria}</span></td>
-            <td class="px-6 py-4 text-sm text-gray-500">${produto.sku}</td>
-            <td class="px-6 py-4 text-sm font-medium">R$ ${parseFloat(produto.preco_venda).toFixed(2).replace('.', ',')}</td>
-            <td class="px-6 py-4 text-sm ${estoqueTotal === 0 ? 'text-red-500' : 'text-gray-500'}">${estoqueTotal}</td>
-            <td class="px-6 py-4">${estoqueTotal === 0 ? '<span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">Esgotado</span>' : temBaixo ? '<span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">Baixo</span>' : '<span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">OK</span>'}</td>
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-slate-600 cursor-zoom-in" onclick="openImageModal('${produto.imagem_url}')">
+                        ${produto.imagem_url ? `<img src="${produto.imagem_url}" class="w-full h-full object-cover">` : `<i class="fas fa-image text-gray-300"></i>`}
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-gray-900 dark:text-white">${produto.nome}</div>
+                        <div class="text-[10px] text-gray-400 uppercase tracking-widest">${produto.sku}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4">
+                <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm border
+                ${categoryColors[produto.categoria] || 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}">
+                    ${produto.categoria}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-sm font-bold text-gray-500 uppercase tracking-tighter">
+                ${produto.sku}
+            </td>
+            <td class="px-6 py-4 text-sm font-black text-indigo-600 dark:text-indigo-400">
+                R$ ${parseFloat(produto.preco_venda).toFixed(2).replace('.', ',')}
+            </td>
+            <td class="px-6 py-4 text-sm font-bold ${estoqueTotal === 0 ? 'text-rose-500' : 'text-slate-500'}">
+                ${estoqueTotal}
+            </td>
+            <td class="px-6 py-4">
+                ${estoqueTotal === 0 ? 
+                    '<span class="px-2 py-1 text-[9px] font-black bg-rose-100 text-rose-700 rounded-full border border-rose-200 uppercase">Esgotado</span>' : 
+                    temBaixo ? 
+                    '<span class="px-2 py-1 text-[9px] font-black bg-amber-100 text-amber-700 rounded-full border border-amber-200 uppercase">Baixo</span>' : 
+                    '<span class="px-2 py-1 text-[9px] font-black bg-emerald-100 text-emerald-700 rounded-full border border-emerald-200 uppercase">Em Dia</span>'
+                }
+            </td>
             <td class="px-6 py-4 text-sm font-medium">
-                <button onclick="viewProductDetails('${produto.id}')" class="text-indigo-600 hover:text-indigo-900 mr-2" title="Ver Detalhes"><i class="fas fa-eye"></i></button>
-                ${PERMISSIONS.canEditProducts() ? `<button onclick="editProduct('${produto.id}')" class="text-emerald-600 hover:text-emerald-900 mr-2 edit-product-btn" title="Editar"><i class="fas fa-edit"></i></button>` : ''}
-                ${PERMISSIONS.canDeleteProducts() ? `<button onclick="deleteProduct('${produto.id}')" class="text-rose-600 hover:text-rose-900 delete-product-btn" title="Excluir"><i class="fas fa-trash"></i></button>` : ''}
+                <button onclick="viewProductDetails('${produto.id}')" class="text-indigo-600 hover:text-indigo-900 mr-2" title="Ver Detalhes">
+                    <i class="fas fa-eye text-lg"></i>
+                </button>
+                ${(typeof PERMISSIONS !== 'undefined' && PERMISSIONS.canEditProducts()) ? 
+                    `<button onclick="editProduct('${produto.id}')" class="text-emerald-600 hover:text-emerald-900 mr-2" title="Editar"><i class="fas fa-edit text-lg"></i></button>` : ''}
+                ${(typeof PERMISSIONS !== 'undefined' && PERMISSIONS.canDeleteProducts()) ? 
+                    `<button onclick="deleteProduct('${produto.id}')" class="text-rose-600 hover:text-rose-900" title="Excluir"><i class="fas fa-trash text-lg"></i></button>` : ''}
             </td>
         `;
         tableBody.appendChild(row);
@@ -430,12 +477,34 @@ function renderSalesTable() {
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50 text-sm';
         row.innerHTML = `
             <td class="px-6 py-4 text-gray-500">${new Date(v.criado_em).toLocaleString('pt-BR')}</td>
-            <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">${v.produtos?.nome || 'Excluído'}</td>
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded bg-gray-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-slate-600 cursor-zoom-in" onclick="openImageModal('${v.produtos?.imagem_url}')">
+                        ${v.produtos?.imagem_url ? `<img src="${v.produtos?.imagem_url}" class="w-full h-full object-cover">` : `<i class="fas fa-image text-[10px] text-gray-300"></i>`}
+                    </div>
+                    <div class="font-medium text-gray-900 dark:text-white">${v.produtos?.nome || 'Excluído'}</div>
+                </div>
+            </td>
             <td class="px-6 py-4 text-gray-500">${v.cliente_nome || 'Venda Direta'}</td>
             <td class="px-6 py-4 text-gray-500">${v.variantes?.tamanho || '-'} / ${v.variantes?.cor || '-'}</td>
             <td class="px-6 py-4">${v.quantidade}</td>
             <td class="px-6 py-4 text-gray-500">R$ ${v.preco_unitario ? parseFloat(v.preco_unitario).toFixed(2).replace('.', ',') : (parseFloat(v.total) / v.quantidade).toFixed(2).replace('.', ',')}</td>
             <td class="px-6 py-4 text-emerald-600 font-bold">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
+            <td class="px-6 py-4 text-xs">
+                <div class="font-bold text-gray-700 dark:text-gray-200">${v.metodo_pagamento || 'N/A'}</div>
+                ${v.parcelas > 1 ? `<div class="text-[9px] text-gray-500">${v.parcelas}x${v.data_proximo ? ` • Prox: ${new Date(v.data_proximo).toLocaleDateString('pt-BR')}` : ''}</div>` : ''}
+            </td>
+            <td class="px-6 py-4">
+                <select onchange="changeSaleStatus('${v.id}', this.value)" 
+                    class="px-2 py-1 text-[10px] font-bold rounded-full uppercase border-none cursor-pointer focus:ring-0
+                    ${v.status_pagamento === 'pago' ? 'bg-emerald-100 text-emerald-700' : 
+                      v.status_pagamento === 'pago (atrasado)' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-amber-100 text-amber-700'}">
+                    <option value="pago" ${v.status_pagamento === 'pago' ? 'selected' : ''}>PAGO EM DIA</option>
+                    <option value="pago (atrasado)" ${v.status_pagamento === 'pago (atrasado)' ? 'selected' : ''}>PAGO ATRASADO</option>
+                    <option value="pendente" ${v.status_pagamento === 'pendente' ? 'selected' : ''}>PENDENTE</option>
+                </select>
+            </td>
             <td class="px-6 py-4">
                 ${PERMISSIONS.canDeleteSales() ? `<button onclick="deleteSale('${v.id}')" class="text-rose-600 hover:text-rose-900 delete-sale-btn" title="Excluir Venda"><i class="fas fa-trash"></i></button>` : ''}
             </td>
@@ -509,11 +578,11 @@ function addVariant() {
         <div class="grid grid-cols-3 gap-3 mb-3">
             <input type="text" class="variant-tamanho w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-indigo-500" placeholder="Tam">
             <input type="text" class="variant-cor w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-indigo-500" placeholder="Cor">
-            <input type="number" class="variant-estoque w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-indigo-500" value="0" min="0" placeholder="Estoque">
+            <input type="number" class="variant-estoque w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-indigo-500" min="0" placeholder="Qtd Estoque">
         </div>
         <div class="grid grid-cols-2 gap-3">
-            <input type="number" class="variant-alerta w-full px-3 py-2 border rounded-lg" value="5" min="1" placeholder="Alerta Mín">
-            <input type="number" class="variant-custo w-full px-3 py-2 border rounded-lg" value="0" min="0" step="0.01" placeholder="Preço de Custo">
+            <input type="number" class="variant-alerta w-full px-3 py-2 border rounded-lg" min="1" placeholder="Alerta Mínimo">
+            <input type="number" class="variant-custo w-full px-3 py-2 border rounded-lg ${!PERMISSIONS.canViewProfit() ? 'hidden' : ''}" min="0" step="0.01" placeholder="Custo (R$) ${!PERMISSIONS.canViewProfit() ? '(Bloqueado)' : ''}" ${!PERMISSIONS.canViewProfit() ? 'disabled' : ''}>
         </div>
         <button type="button" class="mt-2 remove-variant text-rose-500 hover:bg-rose-50 p-2 rounded-lg w-full" onclick="this.closest('.variant-item').remove()"><i class="fas fa-trash mr-2"></i>Remover Variante</button>
     `;
@@ -535,13 +604,32 @@ async function viewProductDetails(id) {
     setSafeText('modalProductCategory', p.categoria);
     setSafeText('modalProductPrice', `R$ ${parseFloat(p.preco_venda).toFixed(2).replace('.', ',')}`);
 
-    const table = document.getElementById('modalVariantsTable');
-    if (table) {
-        table.innerHTML = '';
-        p.variantes.forEach(v => {
-            const row = `<tr><td class="px-4 py-2">${v.tamanho}</td><td class="px-4 py-2">${v.cor}</td><td class="px-4 py-2">${v.estoque_atual}</td><td class="px-4 py-2">${v.estoque_minimo}</td></tr>`;
-            table.innerHTML += row;
-        });
+    const tableContainer = document.getElementById('modalVariantsTable');
+    if (tableContainer) {
+        tableContainer.innerHTML = `
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-gray-50 dark:bg-slate-700 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <tr>
+                        <th class="px-4 py-3">Tamanho</th>
+                        <th class="px-4 py-3">Cor</th>
+                        <th class="px-4 py-3">Estoque</th>
+                        <th class="px-4 py-3">Min. Alerta</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
+                    ${p.variantes.map(v => `
+                        <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <td class="px-4 py-4 font-bold text-gray-900 dark:text-white">${v.tamanho}</td>
+                            <td class="px-4 py-4 text-gray-600 dark:text-gray-300">${v.cor}</td>
+                            <td class="px-4 py-4 font-black ${v.estoque_atual <= v.estoque_minimo ? 'text-rose-500' : 'text-emerald-600'}">
+                                ${v.estoque_atual}
+                            </td>
+                            <td class="px-4 py-4 text-gray-400 text-xs">${v.estoque_minimo}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
     }
 
     const modal = document.getElementById('productModal');
@@ -557,6 +645,20 @@ function editProduct(id) {
     document.getElementById('nome').value = p.nome;
     document.getElementById('categoria').value = p.categoria;
     document.getElementById('preco_venda').value = p.preco_venda;
+    document.getElementById('ean').value = p.ean || '';
+
+    // Carregar Imagem na Prévia
+    const preview = document.getElementById('productImagePreview');
+    const placeholder = document.getElementById('imagePlaceholder');
+    if (p.imagem_url) {
+        preview.src = p.imagem_url;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+    } else {
+        preview.src = "";
+        preview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+    }
 
     const container = document.getElementById('variantsContainer');
     container.innerHTML = '';
@@ -567,7 +669,7 @@ function editProduct(id) {
         last.querySelector('.variant-cor').value = v.cor;
         last.querySelector('.variant-estoque').value = v.estoque_atual;
         last.querySelector('.variant-alerta').value = v.estoque_minimo;
-        last.querySelector('.variant-custo').value = v.preco_custo || 0;
+        last.querySelector('.variant-custo').value = v.custo_unitario || 0;
     });
 
     selectedProductId = id;
@@ -712,3 +814,70 @@ function renderCharts() {
         console.warn('Chart.js não pôde ser inicializado:', e);
     }
 }
+
+function openImageModal(url) {
+    if (!url) return;
+    const modal = document.getElementById('imageZoomModal');
+    const img = document.getElementById('imageZoomContent');
+    if (modal && img) {
+        img.src = url;
+        modal.classList.remove('hidden');
+    }
+}
+function generateRandomEAN() {
+    // Gera um código de 12 dígitos aleatórios + dígito verificador simples
+    const randomBody = Math.floor(Math.random() * 900000000000) + 100000000000;
+    document.getElementById('ean').value = randomBody.toString();
+    showNotification('Código Gerado', 'Um código EAN temporário foi criado.', 'info');
+}
+window.generateRandomEAN = generateRandomEAN;
+
+function printProductLabel(id) {
+    const p = produtos.find(item => item.id == id);
+    if (!p || !p.ean) {
+        showNotification('Erro', 'Este produto não possui código de barras (EAN).', 'warning');
+        return;
+    }
+
+    // Janela de impressão customizada
+    const printWindow = window.open('', '_blank');
+    const css = `
+        <style>
+            @page { size: 50mm 30mm; margin: 0; }
+            body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; padding: 5px; box-sizing: border-box; }
+            .label-container { border: 1px solid #eee; padding: 10px; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; }
+            .name { font-size: 10px; font-bold; margin-bottom: 2px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+            .price { font-size: 14px; font-weight: 900; margin-bottom: 5px; }
+            svg { max-width: 100%; height: auto; }
+        </style>
+    `;
+
+    printWindow.document.write(`
+        <html>
+            <head>${css}</head>
+            <body>
+                <div class="label-container">
+                    <div class="name">${p.nome}</div>
+                    <div class="price">R$ ${parseFloat(p.preco_venda).toFixed(2).replace('.', ',')}</div>
+                    <svg id="barcode"></svg>
+                </div>
+                <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+                <script>
+                    setTimeout(() => {
+                        JsBarcode("#barcode", "${p.ean}", {
+                            format: "CODE128",
+                            width: 2,
+                            height: 40,
+                            displayValue: true,
+                            fontSize: 10
+                        });
+                        window.print();
+                        window.close();
+                    }, 500);
+                </script>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+window.printProductLabel = printProductLabel;

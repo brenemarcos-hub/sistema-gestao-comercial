@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GESTÃO DE CLIENTES MASTER - VERUM GESTÃO</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            background: #0a0c10;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(17, 25, 40, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+
+<body class="text-gray-100 min-h-screen">
+
+    <!-- Autenticação Automática Master -->
+    <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-[100] bg-[#0a0c10]">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-black">Validando Acesso Master...</p>
+        </div>
+    </div>
+
+    <!-- Painel de Gestão -->
+    <div id="clientPanel" class="hidden">
+        <!-- Header -->
+        <header class="glass-card border-b border-white/5 sticky top-0 z-50">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-id-card text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black uppercase tracking-tighter">Gestão de Clientes</h1>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest">Contratos e Assinaturas</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <nav class="hidden md:flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
+                        <a href="app.html" class="px-4 py-2 text-[10px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg mr-2">
+                            <i class="fas fa-rocket mr-1"></i> Ir para o App
+                        </a>
+                        <a href="master.html" class="px-4 py-2 text-[10px] font-black text-gray-400 hover:text-indigo-400 transition uppercase tracking-widest">Painel</a>
+                        <a href="master-clientes.html" class="px-4 py-2 text-[10px] font-black text-blue-400 transition uppercase tracking-widest">Clientes</a>
+                        <a href="master-auditoria.html" class="px-4 py-2 text-[10px] font-black text-gray-400 hover:text-emerald-400 transition uppercase tracking-widest">Auditoria</a>
+                    </nav>
+                    <div class="text-right hidden sm:block">
+                        <p id="currentTime" class="text-sm font-medium"></p>
+                    </div>
+                    <button onclick="logout()"
+                        class="p-3 bg-white/5 hover:bg-red-600/20 text-gray-400 hover:text-red-400 rounded-xl transition">
+                        <i class="fas fa-power-off"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-6 py-8">
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-indigo-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Planos Premium</p>
+                            <h3 id="statPremium" class="text-3xl font-black">--</h3>
+                        </div>
+                        <i class="fas fa-star text-indigo-500/20 text-4xl"></i>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-emerald-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Planos Standard</p>
+                            <h3 id="statStand" class="text-3xl font-black">--</h3>
+                        </div>
+                        <i class="fas fa-certificate text-emerald-500/20 text-4xl"></i>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-gray-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Planos Básicos</p>
+                            <h3 id="statBasica" class="text-3xl font-black">--</h3>
+                        </div>
+                        <i class="fas fa-shield-halved text-gray-500/20 text-4xl"></i>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-amber-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Receita Mensal Est.</p>
+                            <h3 id="statReceitaEstimada" class="text-3xl font-black text-amber-500">--</h3>
+                        </div>
+                        <i class="fas fa-sack-dollar text-amber-500/20 text-4xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex flex-wrap gap-4">
+                    <input type="text" id="searchClient" placeholder="Buscar cliente ou loja..."
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64">
+                    <select id="filterPlano"
+                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="todos">Todos os Planos</option>
+                        <option value="premium">Premium</option>
+                        <option value="stand">Standard</option>
+                        <option value="basica">Básica</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="abrirModalNovaLoja()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-emerald-500/20">
+                        <i class="fas fa-plus"></i> NOVO CLIENTE
+                    </button>
+                    <button onclick="carregarDados()" class="p-2.5 bg-white/5 rounded-xl hover:bg-white/10 transition">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button onclick="exportarCSV()" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                        <i class="fas fa-download"></i> EXPORTAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="glass-card rounded-2xl overflow-hidden border border-white/5">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white/5 text-gray-400 text-[10px] uppercase font-bold tracking-widest">
+                                <th class="p-5">Cliente / Store Name</th>
+                                <th class="p-5">Plano Atual</th>
+                                <th class="p-5">Valor Mensal</th>
+                                <th class="p-5">Data Renovação</th>
+                                <th class="p-5">Cobrança Rápida</th>
+                                <th class="p-5 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assinaturasTableBody">
+                            <tr>
+                                <td colspan="6" class="p-20 text-center">
+                                    <div class="flex flex-col items-center gap-4 text-gray-600">
+                                        <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-500"></i>
+                                        <p class="font-bold uppercase tracking-widest text-xs">Carregando base de clientes...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Editar -->
+    <div id="modalEditAssinatura" class="fixed inset-0 bg-black/90 hidden z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-indigo-500/30">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-black text-white italic">EDITAR CONTRATO</h3>
+                    <p id="editLojaNome" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-1"></p>
+                </div>
+                <button onclick="cerrarModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="editLojaId">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Nome Identificador da Loja</label>
+                    <input type="text" id="editNomeInput" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Nível de Conta</label>
+                    <select id="editPlano" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="basica">Básica (Start)</option>
+                        <option value="stand">Standard (Mid)</option>
+                        <option value="premium">Premium (Full)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Valor da Assinatura (BRL)</label>
+                    <input type="number" id="editValor" step="0.01" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Dia de Vencimento</label>
+                        <input type="number" id="editDiaVencimento" min="1" max="28" placeholder="Ex: 10" 
+                            class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                            oninput="calcularProximaRenovacao()">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Renovação Calculada</label>
+                        <input type="date" id="editRenovacao" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-[11px] font-bold text-indigo-400 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Forma de Pagto.</label>
+                    <select id="editPagamento" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="pix">PIX</option>
+                        <option value="cartao">Cartão de Crédito</option>
+                        <option value="boleto">Boleto Bancário</option>
+                        <option value="dinheiro">Outro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="p-6 border-t border-white/5 flex gap-3">
+                <button onclick="salvarAlteracoes()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition shadow-lg shadow-indigo-600/20">
+                    ATUALIZAR CONTRATO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config/config.js"></script>
+    <script>
+        // Inicialização Robusta do Client
+        let db = window.supabaseClient || window.supabase?.activeClient;
+        
+        async function getDb() {
+            if (db) return db;
+            if (window.supabaseClient) return window.supabaseClient;
+            if (window.supabase && window.SUPABASE_CONFIG) {
+                return window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+            }
+            return null;
+        }
+
+        let lojasCache = [];
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Inicializando Painel Gestão...');
+            
+            // Timeout de segurança: Se em 7s não carregar, avisa o usuário
+            const timeout = setTimeout(() => {
+                const loader = document.getElementById('masterLogin');
+                if (loader && !loader.classList.contains('hidden')) {
+                    alert('⚠️ A verificação de segurança está demorando mais que o esperado. Verifique sua conexão ou login.');
+                }
+            }, 7000);
+
+            db = await getDb();
+            if (!db) {
+                alert('❌ Erro Crítico: Conexão com Supabase não encontrada.');
+                window.location.href = 'app.html';
+                return;
+            }
+            
+            await autoVerifyMaster();
+            clearTimeout(timeout);
+
+            setInterval(() => {
+                const el = document.getElementById('currentTime');
+                if (el) el.textContent = new Date().toLocaleString('pt-BR');
+            }, 1000);
+
+            document.getElementById('searchClient')?.addEventListener('input', renderAssinaturas);
+            document.getElementById('filterPlano')?.addEventListener('change', renderAssinaturas);
+        });
+
+        async function autoVerifyMaster() {
+            try {
+                console.log('🔐 Validando credenciais...');
+                const { data: { session }, error: authErr } = await db.auth.getSession();
+                if (authErr) throw authErr;
+                
+                if (!session) {
+                    alert('⚠️ Sessão expirada. Por favor, faça login novamente.');
+                    window.location.href = 'app.html';
+                    return;
+                }
+
+                const { data: profile, error: profErr } = await db.from('profiles').select('role, email').eq('id', session.user.id).single();
+                if (profErr) throw profErr;
+                
+                const autorizados = ['brenemarcos@gmail.com'];
+
+                if (profile?.role === 'master' || autorizados.includes(session.user.email)) {
+                    console.log('✅ Acesso Master concedido.');
+                    document.getElementById('masterLogin').classList.add('hidden');
+                    document.getElementById('clientPanel').classList.remove('hidden');
+                    carregarDados();
+                } else {
+                    alert('❌ Acesso negado! Este painel é restrito para administradores.');
+                    window.location.href = 'app.html';
+                }
+            } catch (e) { 
+                console.error('Falha na autenticação:', e); 
+                alert('Erro de Autenticação: ' + (e.message || 'Erro de conexão com o servidor'));
+                window.location.href = 'app.html';
+            }
+        }
+
+        async function carregarDados() {
+            try {
+                console.log('📡 Buscando dados atualizados das lojas...');
+                const { data, error } = await db.from('lojas').select('*').order('nome');
+                if (error) throw error;
+                
+                lojasCache = []; 
+                lojasCache = data || [];
+                
+                console.table(lojasCache.map(l => ({ Nome: l.nome, Plano: l.plano, Valor: l.valor_assinatura })));
+                
+                renderAssinaturas();
+            } catch (e) { 
+                console.error('Erro ao carregar lojas:', e);
+                alert('Erro ao carregar dados: ' + (e.message || e));
+            }
+        }
+
+        function renderAssinaturas() {
+            const tbody = document.getElementById('assinaturasTableBody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            const search = document.getElementById('searchClient').value.toLowerCase();
+            const filter = document.getElementById('filterPlano').value;
+
+            let p = 0, s = 0, b = 0, r = 0;
+            lojasCache.forEach(l => {
+                const plano = (l.plano || '').toLowerCase();
+                if (plano === 'premium') p++;
+                else if (plano === 'stand' || plano === 'standard') s++;
+                else if (plano === 'basica') b++;
+                r += parseFloat(l.valor_assinatura || 0);
+            });
+
+            document.getElementById('statPremium').textContent = p;
+            document.getElementById('statStand').textContent = s;
+            document.getElementById('statBasica').textContent = b;
+            document.getElementById('statReceitaEstimada').textContent = r.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            const filtered = lojasCache.filter(l => {
+                const ms = (l.nome || '').toLowerCase().includes(search) || String(l.id).includes(search);
+                const mf = filter === 'todos' || (l.plano || '').toLowerCase() === filter.toLowerCase();
+                return ms && mf;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-20 text-center text-gray-600 text-xs italic">Nenhum cliente encontrado...</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(loja => {
+                const plano = (loja.plano || '').toLowerCase();
+                const planoStyle = {
+                    'premium': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+                    'stand': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                    'standard': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                    'basica': 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                }[plano] || 'bg-white/5 text-gray-500 border-white/5';
+
+                const valor = parseFloat(loja.valor_assinatura || 0);
+                const vencimento = loja.data_renovacao ? new Date(loja.data_renovacao + 'T12:00:00') : null;
+                const hoje = new Date();
+                let vencido = vencimento && vencimento < hoje;
+                let proximo = vencimento && (vencimento - hoje) / (1000*60*60*24) <= 5;
+
+                const isTrial = valor === 0;
+                
+                return `
+                    <tr class="hover:bg-white/5 border-b border-white/5 transition-colors group">
+                        <td class="p-5">
+                            <div class="flex items-center gap-2">
+                                <div class="text-sm font-bold text-white group-hover:text-indigo-400 transition">${loja.nome || 'Sem Nome'}</div>
+                                ${isTrial ? '<span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-500 text-[8px] font-black rounded border border-amber-500/20 animate-pulse">TESTE</span>' : ''}
+                            </div>
+                            <div class="text-[9px] text-gray-600 font-mono mt-0.5">${loja.id}</div>
+                        </td>
+                        <td class="p-5">
+                            <span class="px-2.5 py-1 rounded text-[9px] font-black border uppercase ${planoStyle}">
+                                ${loja.plano || 'Nenhum'}
+                            </span>
+                        </td>
+                        <td class="p-5 text-xs font-bold text-gray-300">
+                            ${valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </td>
+                        <td class="p-5">
+                            <div class="text-[11px] ${vencido ? 'text-rose-500 font-black' : proximo ? 'text-amber-500 font-bold' : 'text-gray-400'}">
+                                ${loja.data_renovacao ? new Date(loja.data_renovacao + 'T12:00:00').toLocaleDateString('pt-BR') : '--/--/----'}
+                                ${vencido ? ' <i class="fas fa-triangle-exclamation ml-1"></i>' : ''}
+                            </div>
+                        </td>
+                        <td class="p-5">
+                            <div class="flex items-center gap-2">
+                                <button onclick="enviarCobranca('${loja.id}', 'whats')" title="Avisar via WhatsApp" 
+                                    class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center">
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+                                <button onclick="enviarCobranca('${loja.id}', 'email')" title="Avisar via E-mail" 
+                                    class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition flex items-center justify-center">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                                <button onclick="acessarLoja('${loja.id}')" title="Acessar como Suporte" 
+                                    class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 hover:bg-purple-600 hover:text-white transition flex items-center justify-center">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="abrirModal('${loja.id}')" class="text-indigo-400 hover:text-indigo-300 text-xs font-bold uppercase tracking-widest bg-indigo-500/5 px-4 py-2 rounded-lg transition-all border border-indigo-500/20">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button onclick="deleteLoja('${loja.id}', '${loja.nome}')" class="text-rose-500 hover:text-rose-400 text-xs font-bold uppercase tracking-widest bg-rose-500/5 px-4 py-2 rounded-lg transition-all border border-rose-500/20">
+                                <i class="fas fa-trash-alt"></i> Excluir
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function abrirModal(id) {
+            const l = lojasCache.find(x => x.id === id);
+            if (!l) {
+                alert('Erro ao localizar loja no cache.');
+                return;
+            }
+
+            const modal = document.getElementById('modalEditAssinatura');
+            if (!modal) {
+                alert('Modal não encontrado!');
+                return;
+            }
+
+            document.getElementById('editLojaId').value = l.id;
+            
+            const nomeInput = document.getElementById('editNomeInput');
+            if (nomeInput) nomeInput.value = l.nome;
+            
+            const nomeEl = document.getElementById('editLojaNome');
+            if (nomeEl) nomeEl.textContent = 'Editando: ' + l.nome;
+
+            document.getElementById('editPlano').value = (l.plano || 'basica').toLowerCase();
+            document.getElementById('editValor').value = l.valor_assinatura || 0;
+            document.getElementById('editDiaVencimento').value = l.dia_vencimento || 10;
+            document.getElementById('editRenovacao').value = l.data_renovacao || '';
+            document.getElementById('editPagamento').value = l.forma_pagamento || 'pix';
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function calcularProximaRenovacao() {
+            const dia = parseInt(document.getElementById('editDiaVencimento').value);
+            if (!dia || dia < 1 || dia > 31) return;
+
+            const hoje = new Date();
+            const diaHoje = hoje.getDate();
+            let mes = hoje.getMonth();
+            let ano = hoje.getFullYear();
+
+            // Se o dia escolhido já passou este mês, pula para o mês que vem
+            if (dia <= diaHoje) {
+                mes++;
+                if (mes > 11) {
+                    mes = 0;
+                    ano++;
+                }
+            }
+
+            // Formata YYYY-MM-DD para o input date
+            const dataFinal = new Date(ano, mes, dia);
+            const yyyy = dataFinal.getFullYear();
+            const mm = String(dataFinal.getMonth() + 1).padStart(2, '0');
+            const dd = String(dataFinal.getDate()).padStart(2, '0');
+            
+            document.getElementById('editRenovacao').value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('modalEditAssinatura');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        async function salvarAlteracoes() {
+            const id = document.getElementById('editLojaId').value;
+            const btn = document.querySelector('button[onclick="salvarAlteracoes()"]');
+            
+            const updates = {
+                nome: document.getElementById('editNomeInput').value.trim(),
+                plano: document.getElementById('editPlano').value,
+                valor_assinatura: parseFloat(document.getElementById('editValor').value.toString().replace(',', '.')) || 0,
+                dia_vencimento: parseInt(document.getElementById('editDiaVencimento').value) || 10,
+                data_renovacao: document.getElementById('editRenovacao').value || null,
+                forma_pagamento: document.getElementById('editPagamento').value
+            };
+
+            console.log('📤 Tentando atualizar loja ID:', id, 'com dados:', updates);
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SALVANDO NO BANCO...';
+
+                // Usamos select() para confirmar que o dado realmente foi gravado e retornado
+                const { error, data } = await db.from('lojas').update(updates).eq('id', id).select();
+                
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    console.error('❌ Nenhuma linha afetada. Verifique se o ID existe:', id);
+                    alert('⚠️ ALERTA: O banco de dados recebeu o comando, mas nenhuma alteração foi feita. Isso acontece se o ID da loja não for encontrado no banco.');
+                    return;
+                }
+                
+                console.log('✅ Sucesso! Dados gravados:', data[0]);
+                
+                alert('✨ CONTRATO ATUALIZADO COM SUCESSO!');
+                cerrarModal();
+                await carregarDados(); // Recarrega a lista para mostrar a mudança
+                
+            } catch (e) { 
+                console.error('Falha crítica ao salvar:', e);
+                alert('❌ Erro Técnico ao Salvar: ' + (e.message || 'Verifique o console (F12)')); 
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> ATUALIZAR CONTRATO';
+            }
+        }
+
+        async function enviarCobranca(id, tipo) {
+            const l = lojasCache.find(x => x.id === id);
+            if (!l) return;
+
+            const dataVenc = l.data_renovacao ? new Date(l.data_renovacao + 'T12:00:00') : null;
+            const hoje = new Date();
+            const diasFaltando = dataVenc ? Math.ceil((dataVenc - hoje) / (1000 * 60 * 60 * 24)) : 0;
+            
+            // Textos simpáticos
+            const msgSimpatica = `Olá! Tudo bem com a equipe da ${l.nome}? 🌟 Passando para lembrar que o prazo da sua assinatura vence em ${diasFaltando} dias. Para garantir que seu acesso não seja interrompido, você pode realizar a renovação via PIX ou Cartão. Qualquer dúvida, conte comigo!`;
+            
+            const msgVencido = `Olá ${l.nome}! Notamos que sua assinatura vence hoje (${l.data_renovacao}). 🚀 Já deixamos tudo pronto para sua renovação. Aqui está o contato direto para agilizar seu acesso e evitar o bloqueio automático. Vamos renovar?`;
+
+            const textoFinal = diasFaltando <= 0 ? msgVencido : msgSimpatica;
+
+            if (tipo === 'whats') {
+                const fone = "5511999999999"; // Substitua pelo fone do cliente se tiver no banco
+                window.open(`https://wa.me/${fone}?text=${encodeURIComponent(textoFinal)}`, '_blank');
+            } else {
+                const email = l.email_contato || "cliente@email.com"; // Substitua pelo email do cliente se tiver no banco
+                window.open(`mailto:${email}?subject=Renovação de Assinatura - Verum Gestão&body=${encodeURIComponent(textoFinal)}`, '_blank');
+            }
+        }
+
+        /**
+         * 🎭 MODO SUPORTE: Entrar na visualização da loja
+         */
+        function acessarLoja(id) {
+            const l = lojasCache.find(x => x.id === id);
+            if (!l) return;
+            
+            localStorage.setItem('master_impersonate_id', id);
+            localStorage.setItem('master_impersonate_name', l.nome);
+            localStorage.setItem('master_impersonate_plan', (l.plano || 'basica').toLowerCase());
+            
+            window.location.href = 'app.html';
+        }
+
+        // EXCLUSÃO DE LOJA (OPERAÇÃO LIMPEZA TOTAL SEQUENCIAL)
+        async function deleteLoja(id, nome) {
+            const confirmar = confirm(`⚠️ ATENÇÃO: Deseja apagar a loja "${nome.toUpperCase()}" e TODOS os seus dados? \n\nEsta ação é irreversível e tentará limpar todos os vínculos no banco de dados.`);
+            
+            if (!confirmar) return;
+
+            try {
+                console.log('🚀 Iniciando Operação Sequencial na loja:', id);
+
+                // 1. Obter Perfis e Produtos para limpeza de dependências
+                const { data: profiles } = await db.from('profiles').select('id, email').eq('loja_id', id);
+                const { data: prods } = await db.from('produtos').select('id').eq('loja_id', id);
+                
+                const uIds = profiles ? profiles.map(u => u.id) : [];
+                const uEmails = profiles ? profiles.map(u => u.email) : [];
+                const pIds = prods ? prods.map(p => p.id) : [];
+
+                console.log(`📊 Dados encontrados: ${uIds.length} usuários e ${pIds.length} produtos.`);
+
+                // 2. Função auxiliar para deletar com segurança
+                const safeDelete = async (tabela, coluna, valores) => {
+                    try {
+                        console.log(`🧹 Limpando ${tabela} onde ${coluna} está na lista...`);
+                        const { error } = await db.from(tabela).delete().in(coluna, Array.isArray(valores) ? valores : [valores]);
+                        if (error) console.warn(`ℹ️ Pulando ${tabela}: ${error.message}`);
+                    } catch (e) {
+                        console.warn(`❌ Erro técnico em ${tabela}, continuando...`);
+                    }
+                };
+
+                // 3. LIMPEZA DE SEGUNDO NÍVEL (Dependências das Tabelas Principais)
+                if (pIds.length > 0) {
+                    await safeDelete('variantes', 'id_produto', pIds);
+                    await safeDelete('variantes', 'produto_id', pIds);
+                    await safeDelete('historico_precos', 'produto_id', pIds);
+                    await safeDelete('venda_itens', 'produto_id', pIds);
+                    await safeDelete('vendas', 'id_produto', pIds);
+                }
+
+                // 4. LIMPEZA DE AUDITORIA (Por usuário e e-mail)
+                if (uIds.length > 0) {
+                    await safeDelete('logs_acessos', 'usuario_id', uIds);
+                    await safeDelete('logs_acoes', 'usuario_id', uIds);
+                    await safeDelete('logs_erros', 'usuario_id', uIds);
+                }
+                if (uEmails.length > 0) {
+                    await safeDelete('logs_acessos', 'usuario_email', uEmails);
+                    await safeDelete('logs_acoes', 'usuario_email', uEmails);
+                    await safeDelete('logs_erros', 'usuario_email', uEmails);
+                }
+
+                // 5. LIMPEZA POR LOJA_ID (Tabelas Diretas)
+                const tabelasLoja = [
+                    'vendas', 'clientes', 'despesas', 'movimentacoes', 
+                    'movimentacao_estoque', 'historico_estoque', 'logs_acessos', 
+                    'logs_acoes', 'logs_erros', 'historico_precos'
+                ];
+                for (const t of tabelasLoja) {
+                    try {
+                        console.log(`🧹 Limpando ${t} por loja_id...`);
+                        await db.from(t).delete().eq('loja_id', id);
+                    } catch (e) { /* pula */ }
+                }
+
+                // 6. LIMPEZA DE CADASTROS (Produtos e Perfis)
+                await safeDelete('produtos', 'loja_id', id);
+                await safeDelete('profiles', 'loja_id', id);
+
+                // 7. O GOLPE FINAL (Apagar a loja)
+                console.log('🏛️ Apagando registro oficial da loja...');
+                const { error: finalError } = await db.from('lojas').delete().eq('id', id);
+
+                if (finalError) throw finalError;
+
+                alert('✅ EXCLUSÃO CONCLUÍDA: A loja foi removida com sucesso.');
+                carregarDados();
+
+            } catch (err) {
+                console.error('Falha na operação final:', err);
+                alert('Ocorreu um problema ao apagar o registro principal. Verifique o console.');
+            }
+        }
+
+        async function createMarcosMasterStore() {
+            if (!confirm('Deseja criar a loja oficial "Marcos Master" vinculada à sua conta agora?')) return;
+
+            try {
+                const { data: { session } } = await db.auth.getSession();
+                if (!session) return alert('Sessão expirada. Entre novamente.');
+
+                const chave = 'MASTER-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                
+                // 1. Criar a Loja
+                const { data: novaLoja, error: lError } = await db.from('lojas').insert({
+                    nome: 'Marcos Master',
+                    chave_acesso: chave,
+                    dono_id: session.user.id,
+                    plano: 'full',
+                    valor_assinatura: 0,
+                    data_renovacao: '2099-12-31', // Vitalício
+                    ativo: true
+                }).select().single();
+
+                if (lError) throw lError;
+
+                // 2. Vincular ao seu Perfil
+                await db.from('profiles').update({ loja_id: novaLoja.id }).eq('id', session.user.id);
+
+                alert('👑 SUCESSO! Loja "Marcos Master" criada com privilégios vitalícios. Recarregando...');
+                carregarDados();
+
+            } catch (err) {
+                alert('Erro ao criar loja master: ' + err.message);
+            }
+        }
+
+        async function logout() { 
+            await db.auth.signOut();
+            window.location.href = 'index.html'; 
+        }
+
+        // --- NOVAS FUNÇÕES PARA CADASTRO DE CLIENTE ---
+        function abrirModalNovaLoja() {
+            const modal = document.getElementById('modalNovoCliente');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Sugerir 7 dias por padrão
+            const dataTrial = new Date();
+            dataTrial.setDate(dataTrial.getDate() + 7);
+            const yyyy = dataTrial.getFullYear();
+            const mm = String(dataTrial.getMonth() + 1).padStart(2, '0');
+            const dd = String(dataTrial.getDate()).padStart(2, '0');
+            document.getElementById('newRenovacao').value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function cerrarModalNovo() {
+            document.getElementById('modalNovoCliente').classList.add('hidden');
+            document.getElementById('modalNovoCliente').classList.remove('flex');
+        }
+
+        async function salvarNovaLoja() {
+            const btn = document.getElementById('btnSalvarNovo');
+            const nome = document.getElementById('newNome').value.trim();
+            const plano = document.getElementById('newPlano').value;
+            const renovacao = document.getElementById('newRenovacao').value;
+
+            if (!nome) return alert('Dê um nome para a loja.');
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CRIANDO...';
+                
+                const chave = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+                const { data, error } = await db.from('lojas').insert({
+                    nome: nome,
+                    plano: plano,
+                    data_renovacao: renovacao,
+                    chave_acesso: chave,
+                    ativo: true,
+                    valor_assinatura: plano === 'basica' ? 49.9 : 97.0 // Sugestão
+                }).select().single();
+
+                if (error) throw error;
+
+                alert('🚀 Cliente cadastrado! Chave de Acesso: ' + chave);
+                cerrarModalNovo();
+                carregarDados();
+
+            } catch (err) {
+                alert('Erro ao cadastrar: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'CADASTRAR CLIENTE';
+            }
+        }
+        
+        function exportarCSV() {
+            let csv = 'Store ID,Name,Plan,Value,Renewal,Payment\n';
+            lojasCache.forEach(l => {
+                csv += `${l.id},"${l.nome}",${l.plano},${l.valor_assinatura},${l.data_renovacao},${l.forma_pagamento}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'clientes_master.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+    <!-- Modal Novo Cliente -->
+    <div id="modalNovoCliente" class="fixed inset-0 bg-black/80 hidden z-[110] items-center justify-center p-4">
+        <div class="glass-card w-full max-w-lg rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-indigo-600/10">
+                <h3 class="text-lg font-black text-white italic">CADASTRAR NOVO CLIENTE <span class="text-[10px] ml-2 text-indigo-400 opacity-50 font-mono">/NEW_STORE</span></h3>
+                <button onclick="cerrarModalNovo()" class="text-gray-500 hover:text-white transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-8 space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Nome Identificador da Loja</label>
+                    <input type="text" id="newNome" placeholder="Ex: Boutique da Maria"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Plano Inicial</label>
+                        <select id="newPlano" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="basica">Bronze (Básico)</option>
+                            <option value="stand">Silver (Standard)</option>
+                            <option value="premium">Gold (Premium)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Vencimento do Teste</label>
+                        <input type="date" id="newRenovacao"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div class="p-4 bg-amber-500/5 rounded-xl border border-amber-500/10">
+                    <p class="text-[10px] text-amber-400 font-bold leading-relaxed">
+                        <i class="fas fa-info-circle mr-1"></i> A chave de acesso será gerada automaticamente. 
+                        O cliente terá 7 dias de teste grátis por padrão.
+                    </p>
+                </div>
+            </div>
+            <div class="p-6 border-t border-white/5 flex gap-3">
+                <button id="btnSalvarNovo" onclick="salvarNovaLoja()"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20">
+                    CADASTRAR CLIENTE
+                </button>
+                <button onclick="cerrarModalNovo()"
+                    class="px-6 py-4 bg-white/5 hover:bg-white/10 text-gray-400 rounded-2xl font-bold text-xs uppercase tracking-widest transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

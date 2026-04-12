@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     // O cliente já é inicializado no config.js
     if (supabaseClient) {
         await checkSession();
+        // --- NOVO: Auditoria mestre de acessos ---
+        if (typeof registrarAcessoAuditoria === 'function') registrarAcessoAuditoria();
     }
 });
 
@@ -447,6 +449,35 @@ function setupAppEventListeners() {
     addListener('saleForm', 'submit', saveSale);
     addListener('saleProduto', 'change', (e) => updateSaleVariantDropdown(e.target.value));
     addListener('saleVariante', 'change', updateSalePriceAndStock);
+
+    // Lógica de Pagamento na Venda
+    addListener('saleMetodoPagamento', 'change', (e) => {
+        const metodo = e.target.value;
+        const statusSelect = document.getElementById('saleStatusPagamento');
+        const installmentFields = document.getElementById('saleInstallmentFields');
+        
+        // Mostrar campos de parcelas se for Crédito Parcelado ou Combinado/Fiado
+        if (metodo === 'Crédito Parcelado' || metodo === 'Combinado') {
+            installmentFields.classList.remove('hidden');
+            if (metodo === 'Combinado') {
+                statusSelect.value = 'pendente';
+                statusSelect.dispatchEvent(new Event('change'));
+            }
+        } else {
+            installmentFields.classList.add('hidden');
+            statusSelect.value = 'pago';
+            statusSelect.dispatchEvent(new Event('change'));
+        }
+    });
+
+    addListener('saleStatusPagamento', 'change', (e) => {
+        const select = e.target;
+        if (select.value === 'pago') {
+            select.className = 'p-3 border rounded-lg bg-emerald-50 text-emerald-700 font-bold';
+        } else {
+            select.className = 'p-3 border rounded-lg bg-amber-50 text-amber-700 font-bold';
+        }
+    });
 
     addListener('saleQuantidade', 'input', () => {
         const pId = document.getElementById('saleProduto').value;

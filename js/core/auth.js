@@ -21,6 +21,8 @@ async function updateStoreHeader() {
                 const storeLogoImg = document.getElementById('storeLogoImg');
                 const defaultLogoIcon = document.getElementById('defaultLogoIcon');
 
+                window.getUserRole = getUserRole;
+                window.getStorePlan = getStorePlan;
                 if (headerTitle) headerTitle.innerHTML = loja.nome.toUpperCase();
                 if (headerDesc) headerDesc.textContent = loja.descricao || 'Gerenciamento Profissional';
 
@@ -55,7 +57,12 @@ async function updateStoreHeader() {
                     roleEl.classList.add('text-emerald-500', 'font-black');
                     
                     const navAudit = document.getElementById('navAuditoria');
+                    const navMaster = document.getElementById('navMasterPanel');
+                    const navClientes = document.getElementById('navMasterClientes');
+                    
                     if (navAudit) navAudit.classList.remove('hidden');
+                    if (navMaster) navMaster.classList.remove('hidden');
+                    if (navClientes) navClientes.classList.remove('hidden');
 
                     if (userBadge) {
                         userBadge.classList.add('border-emerald-500/30', 'bg-emerald-500/5');
@@ -85,41 +92,62 @@ async function checkSession() {
 
         if (session) {
             console.log('✅ checkSession: Usuário autenticado, carregando perfil...');
-            // Carregar perfil do usuário
-            const { data: profile } = await supabaseClient
+            
+            // Carregar perfil do usuário (Consolidado)
+            let { data: profile } = await supabaseClient
                 .from('profiles')
-                .select('role')
+                .select('role, email')
                 .eq('id', session.user.id)
                 .single();
+
+            // 🛡️ SISTEMA DE RESGATE MASTER AUTOMÁTICO
+            const AUTHORIZED_EMAILS = ['brenemarcos@gmail.com'];
+            if (AUTHORIZED_EMAILS.includes(session.user.email)) {
+                console.log('👑 Master reconhecido! Restaurando poderes...');
+                await supabaseClient.from('profiles').upsert({ 
+                    id: session.user.id, 
+                    email: session.user.email, 
+                    role: 'master' 
+                }, { onConflict: 'id' });
+                localStorage.setItem('userRole', 'master');
+                profile = { role: 'master', email: session.user.email };
+            }
+
+            if (!profile) {
+                console.log('🆕 Criando perfil para novo usuário...');
+                const { data: newProfile } = await supabaseClient.from('profiles').insert([{ 
+                    id: session.user.id, 
+                    email: session.user.email, 
+                    role: 'dono' 
+                }]).select().single();
+                profile = newProfile;
+            }
 
             if (profile) {
                 localStorage.setItem('userRole', profile.role);
                 console.log('✅ checkSession: Perfil carregado, role:', profile.role);
-            } else {
-                console.warn('⚠️ checkSession: Perfil ausente. Criando perfil padrão...');
-                // Auto-repair: Create a default profile for existing user
-                const { data: newProfile, error: createErr } = await supabaseClient
-                    .from('profiles')
-                    .insert({
-                        id: session.user.id,
-                        nome: session.user.email.split('@')[0],
-                        role: 'dono'
-                    })
-                    .select()
-                    .single();
-
-                if (newProfile) {
-                    localStorage.setItem('userRole', newProfile.role);
-                    console.log('✅ checkSession: Novo perfil criado');
-                } else {
-                    console.error('❌ checkSession: Falha ao criar perfil:', createErr);
-                }
             }
-
 
             console.log('🔄 checkSession: Escondendo login e mostrando app...');
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
+
+            // --- NOVO: Verificador de Assinatura Master ---
+            const { data: profileCheck } = await supabaseClient.from('profiles').select('role').eq('id', session.user.id).single();
+            const role = profileCheck?.role || profile?.role;
+            
+            // 🔓 REVELAR BOTÕES MASTER
+            if (role === 'master') {
+                ['navMasterPanel', 'navMasterClientes', 'navAuditoria', 'btnConfigLoja'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('hidden');
+                });
+                // No Master, as engrenagens podem levar ao painel de controle geral
+                const configBtn = document.getElementById('btnConfigLoja');
+                if (configBtn) configBtn.title = "Painel de Controle Master";
+            }
+
+            await checkSubscriptionStatus(session.user.id, role);
 
             // Aguardar o DOM renderizar antes de configurar listeners
             setTimeout(() => {
@@ -159,9 +187,12 @@ async function checkSession() {
                 .eq('id', session.user.id)
                 .single();
 
+            const modalAberto = document.getElementById('modalCriarLojaObrigatorio');
             if (checkProfile && (checkProfile.role === 'dono' || checkProfile.role === 'admin') && !checkProfile.loja_id) {
-                console.warn('🚨 Dono sem loja detectado. Iniciando reparo...');
-                showRepairStoreModal();
+                if (!modalAberto || modalAberto.classList.contains('hidden')) {
+                    console.warn('🚨 Dono sem loja detectado. Iniciando reparo...');
+                    showRepairStoreModal();
+                }
             }
 
             console.log('✅ checkSession: Processo completo!');
@@ -183,12 +214,40 @@ async function checkSession() {
     }
 }
 
+function getUserRole() {
+    if (localStorage.getItem('master_impersonate_id')) return ROLES.DONO;
+    const role = localStorage.getItem('userRole') || ROLES.VENDEDOR;
+    // Normalização rápida para legados
+    if (role === 'usuario' || role === 'vendedor') return ROLES.VENDEDOR;
+    if (role === 'admin' || role === 'dono') return ROLES.DONO;
+    if (role === 'programador' || role === 'master') return ROLES.MASTER;
+    return role;
+}
+
+function getStorePlan() {
+    const impPlan = localStorage.getItem('master_impersonate_plan');
+    if (impPlan && localStorage.getItem('master_impersonate_id')) return impPlan;
+    return localStorage.getItem('storePlan') || PLANS.BASICA;
+}
+
 // Funções para Reparo de Loja Faltante
 function showRepairStoreModal() {
     const modal = document.getElementById('modalCriarLojaObrigatorio');
     if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        
+        // 🔓 DESTRAVAR CLIQUES
+        document.body.style.overflow = 'auto';
+        document.body.style.pointerEvents = 'auto';
+
+        // 🔥 LIMPEZA RADICAL: Esconde TUDO que possa estar na frente
+        document.querySelectorAll('.fixed, .absolute').forEach(el => {
+            if (el.id !== 'modalCriarLojaObrigatorio' && !el.closest('#modalCriarLojaObrigatorio')) {
+                el.style.display = 'none';
+                el.style.zIndex = '-1';
+            }
+        });
 
         const form = document.getElementById('formCriarLojaObrigatorio');
         if (form) {
@@ -220,22 +279,31 @@ async function repairMissingStore(nomeLoja) {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session) throw new Error("Sessão expirada");
 
-    // 1. Gerar Chave Única
+    // 1. Gerar Chave Única e Data de Renovação (30 dias)
     const chaveUnica = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const dataRenovacao = new Date();
+    dataRenovacao.setDate(dataRenovacao.getDate() + 7);
+    const dataRenovacaoStr = dataRenovacao.toISOString().split('T')[0];
 
-    // 2. Criar a Loja
+    // 2. Criar a Loja com Plano Básico Inicial
     const { data: novaLoja, error: lojaError } = await supabaseClient
         .from('lojas')
         .insert({
             nome: nomeLoja,
             chave_acesso: chaveUnica,
             dono_id: session.user.id,
+            plano: 'basica',
+            valor_assinatura: 0,
+            data_renovacao: dataRenovacaoStr,
             ativo: true
         })
         .select()
         .single();
 
-    if (lojaError) throw lojaError;
+    if (lojaError) {
+        console.error('Erro ao Criar Loja:', lojaError);
+        throw new Error("Erro no banco: " + lojaError.message);
+    }
 
     // 3. Vincular Perfil à Loja
     const { error: profError } = await supabaseClient
@@ -243,7 +311,10 @@ async function repairMissingStore(nomeLoja) {
         .update({ loja_id: novaLoja.id })
         .eq('id', session.user.id);
 
-    if (profError) throw profError;
+    if (profError) {
+        console.error('Erro ao Vincular Perfil:', profError);
+        throw new Error("Erro ao vincular perfil: " + profError.message);
+    }
 
     return novaLoja;
 }
@@ -613,5 +684,76 @@ async function leaveMasterMode() {
     } catch (err) {
         console.error('Erro ao sair do modo master:', err);
         showNotification('Erro', 'Não foi possível desativar o modo master.', 'error');
+    }
+}
+
+/**
+ * 🛡️ FISCAL DE ASSINATURA
+ * Bloqueia o acesso ou mostra avisos baseado na data de renovação da loja.
+ */
+async function checkSubscriptionStatus(userId, role) {
+    if (role === 'master') return; // Master nunca é bloqueado
+
+    try {
+        const { data: profile } = await supabaseClient.from('profiles').select('loja_id').eq('id', userId).single();
+        if (!profile?.loja_id) return;
+
+        const { data: loja, error } = await supabaseClient.from('lojas').select('*').eq('id', profile.loja_id).single();
+        
+        if (error || !loja) return;
+
+        const hoje = new Date();
+        const dataRenovacao = new Date(loja.data_renovacao + 'T23:59:59'); // Fim do dia da renovação
+
+        // Verificação de Bloqueio (Inativo ou Vencido) - DESATIVADO PARA LANÇAMENTO
+        if (false && (!loja.ativo || hoje > dataRenovacao)) {
+            console.warn('🚨 ACESSO BLOQUEADO (Ignorado para lançamento): Assinatura vencida ou inativa.');
+            return false;
+        }
+
+        // Salva o plano no localStorage para as permissões de UI usarem
+        localStorage.setItem('storePlan', (loja.plano || 'basica').toLowerCase());
+
+        // --- REGISTRA ÚLTIMO ACESSO ---
+        if (role !== 'master') {
+            supabaseClient.from('lojas')
+                .update({ ultimo_acesso: new Date().toISOString() })
+                .eq('id', profile.loja_id)
+                .then(({ error }) => { if (error) console.warn('⚠️ Erro ao registrar acesso:', error); });
+        }
+
+        const dataVencObj = new Date(loja.data_renovacao + 'T23:59:59');
+        
+        // Calcula dias restantes
+        const diffTime = dataVencObj - hoje;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        const blocker = document.getElementById('subscriptionBlocker');
+        const warning = document.getElementById('subscriptionWarning');
+        const daysEl = document.getElementById('daysRemaining');
+        const renewBtn = document.getElementById('btnRenovarWhats');
+
+        const numeroMaster = "5511999999999"; 
+        const linkWhats = `https://wa.me/${numeroMaster}?text=Olá!%20Gostaria%20de%20renovar%20minha%20assinatura%20do%20sistema.`;
+        if (renewBtn) renewBtn.href = linkWhats;
+
+        if (diffDays <= 0) {
+            // 🚫 BLOQUEADO
+            if (blocker) blocker.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            // Remove a app da vista do usuário por segurança
+            const mainApp = document.getElementById('mainApp');
+            if (mainApp) mainApp.innerHTML = ''; 
+        } else if (diffDays <= 5) {
+            // ⚠️ AVISO PRÉVIO
+            if (warning) {
+                warning.classList.remove('hidden');
+                if (daysEl) daysEl.textContent = diffDays;
+                const renewLinkManual = document.getElementById('renewLink');
+                if (renewLinkManual) renewLinkManual.href = linkWhats;
+            }
+        }
+    } catch (err) {
+        console.error('Erro ao processar assinatura:', err);
     }
 }

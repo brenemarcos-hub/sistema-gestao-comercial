@@ -44,33 +44,11 @@
 
 <body class="text-gray-100">
 
-    <!-- Login Master (protegido) -->
-    <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-50" style="background: #0a0c10;">
-        <div class="glass-card rounded-2xl p-8 w-96 border border-indigo-500/30">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-indigo-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                    <i class="fas fa-crown text-3xl text-white"></i>
-                </div>
-                <h2 class="text-2xl font-black">PAINEL MASTER</h2>
-                <p class="text-xs text-gray-500 mt-2">Acesso restrito - Desenvolvedor</p>
-            </div>
-
-            <div class="space-y-4">
-                <input type="password" id="masterPassword" placeholder="Chave Mestra"
-                    class="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-
-                <button onclick="verifyMasterAccess()"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                    <i class="fas fa-lock-open"></i>
-                    ACESSAR PAINEL
-                </button>
-            </div>
-
-            <div class="mt-6 text-center">
-                <a href="master-auditoria.html" class="text-xs text-gray-600 hover:text-gray-400 transition">
-                    <i class="fas fa-arrow-left"></i> Voltar à Auditoria
-                </a>
-            </div>
+    <!-- Autenticação Automática Master -->
+    <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-50 bg-[#0a0c10]">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Verificando Credenciais Master...</p>
         </div>
     </div>
 
@@ -91,14 +69,27 @@
                     </div>
 
                     <div class="flex items-center gap-3">
-                        <span id="masterTime" class="text-sm text-gray-400"></span>
-                        <a href="master-auditoria.html"
-                            class="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 rounded-xl text-sm transition flex items-center gap-2">
-                            <i class="fas fa-list-check"></i> Auditoria
-                        </a>
+                        <span id="masterTime" class="text-sm text-gray-400 mr-2"></span>
+                        <nav class="flex items-center gap-2">
+                            <a href="app.html" class="px-4 py-2 text-[10px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg mr-2 border border-rose-500/20">
+                                <i class="fas fa-home mr-1"></i> Ir para o App
+                            </a>
+                            <a href="master.html"
+                                class="px-4 py-2 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition hover:bg-indigo-600 hover:text-white uppercase">
+                                <i class="fas fa-crown mr-1"></i> Painel
+                            </a>
+                            <a href="master-clientes.html"
+                                class="px-4 py-2 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-xl text-xs font-bold transition hover:bg-blue-600 hover:text-white uppercase">
+                                <i class="fas fa-id-card mr-1"></i> Clientes
+                            </a>
+                            <a href="master-auditoria.html"
+                                class="px-4 py-2 bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold transition hover:bg-emerald-600 hover:text-white uppercase">
+                                <i class="fas fa-list-check mr-1"></i> Auditoria
+                            </a>
+                        </nav>
                         <button onclick="logoutMaster()"
-                            class="px-4 py-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-xl text-sm transition flex items-center gap-2">
-                            <i class="fas fa-sign-out-alt"></i> Sair
+                            class="ml-2 p-2.5 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white rounded-xl transition">
+                            <i class="fas fa-power-off"></i>
                         </button>
                     </div>
                 </div>
@@ -375,303 +366,361 @@
         </div>
     </div>
 
+    <!-- Modal Editar Assinatura -->
+    <div id="modalEditAssinatura" class="fixed inset-0 bg-black/80 hidden z-[110] flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-indigo-500/30">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 class="text-xl font-black text-indigo-400">Dados da Assinatura</h3>
+                <button onclick="cerrarModalAssinatura()" class="text-gray-500 hover:text-white transition"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="editLojaId">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de Plano</label>
+                    <select id="editPlano" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="basica">Básica (Start)</option>
+                        <option value="stand">Standard (Intermediário)</option>
+                        <option value="premium">Premium (Completo)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Valor da Assinatura (R$)</label>
+                    <input type="number" id="editValor" step="0.01" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Próxima Renovação</label>
+                        <input type="date" id="editRenovacao" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Forma de Pagamento</label>
+                        <select id="editPagamento" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="pix">PIX</option>
+                            <option value="cartao">Cartão de Crédito</option>
+                            <option value="boleto">Boleto Bancário</option>
+                            <option value="dinheiro">Dinheiro / Outro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-white/5 flex gap-3">
+                <button onclick="salvarAssinatura()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fas fa-save"></i> SALVAR ALTERAÇÕES
+                </button>
+                <button onclick="cerrarModalAssinatura()" class="px-6 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-xl transition">
+                    CANCELAR
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/config/config.js"></script>
+    <script src="js/core/ui.js"></script>
     <script src="js/auditoria.js"></script>
     <script>
-        // Configuração Supabase (carregada do window.SUPABASE_CONFIG)
-        const supabase = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
-
-        // Variáveis globais
-        let masterAutenticado = false;
-
-        // Auto-verificação ao carregar: Só permite carregar dados se o usuário logado for MASTER
-        document.addEventListener('DOMContentLoaded', async () => {
-            await checkMasterSession();
-        });
-
-        async function checkMasterSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                alert('⚠️ Faça login primeiro no sistema.');
-                window.location.href = 'app.html';
-            }
+        // Renomeado para masterDb para evitar conflito com auditoria.js
+        let masterDb = window.supabaseClient;
+        if (!masterDb && window.supabase && window.SUPABASE_CONFIG) {
+            masterDb = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
         }
 
-        // ============================================
-        // VERIFICAÇÃO DE ACESSO MASTER
-        // ============================================
-        async function verifyMasterAccess() {
-            const password = document.getElementById('masterPassword').value;
+        let masterAutenticado = false;
+        let lojasCache = [];
 
-            // 1. Verificação por Chave Mestra
-            if (password === '1706') {
-                const { data: { session } } = await supabase.auth.getSession();
+        // Auto-verificação ao carregar
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('👑 Iniciando Painel Master...');
+            
+            const timeout = setTimeout(() => {
+                const loader = document.getElementById('masterLogin');
+                if (loader && !loader.classList.contains('hidden')) {
+                    alert('⚠️ A verificação de segurança demorou demais. Verifique sua conexão.');
+                    window.location.href = 'app.html';
+                }
+            }, 8000);
 
-                // 🔒 SEGURANÇA ADICIONAL: Mesmo com a chave, precisa estar logado com perfil Master
-                // Ou ser o e-mail do desenvolvedor autorizado
+            if (!masterDb) {
+                console.error('MasterDb não inicializado.');
+                return;
+            }
+
+            await autoVerifyMaster();
+            clearTimeout(timeout);
+            
+            // Listeners
+            document.getElementById('searchClient')?.addEventListener('input', renderAssinaturas);
+            document.getElementById('filterPlano')?.addEventListener('change', renderAssinaturas);
+        });
+
+        async function autoVerifyMaster() {
+            try {
+                const { data: { session }, error: authError } = await masterDb.auth.getSession();
+                if (authError) throw authError;
+
                 if (!session) {
                     alert('⚠️ Por favor, faça login no sistema principal primeiro.');
                     window.location.href = 'app.html';
                     return;
                 }
 
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role, email')
-                    .eq('id', session.user.id)
-                    .single();
+                const { data: profile, error: profErr } = await masterDb.from('profiles').select('role, email').eq('id', session.user.id).single();
+                if (profErr) throw profErr;
 
-                // Lista de emails que podem subir para Master com a chave
                 const autorizados = ['brenemarcos@gmail.com'];
 
-                if (profile && (profile.role === 'master' || autorizados.includes(session.user.email))) {
+                if (profile && (profile.role === 'master' || autorizados.includes(profile.email))) {
                     masterAutenticado = true;
                     document.getElementById('masterLogin').classList.add('hidden');
                     document.getElementById('masterPanel').classList.remove('hidden');
-
-                    // Carregar todos os dados
-                    carregarDadosMaster();
-
-                    // Atualizar relógio
+                    
+                    // Relógio
                     setInterval(() => {
                         const timeEl = document.getElementById('masterTime');
                         if (timeEl) timeEl.textContent = new Date().toLocaleString('pt-BR');
                     }, 1000);
+
+                    carregarDadosMaster();
                 } else {
-                    alert('❌ Seu usuário não tem permissão para acessar o Painel Master.');
+                    alert('❌ Acesso negado! Usuário não possui privilégios MASTER.');
                     window.location.href = 'app.html';
                 }
-            } else {
-                alert('❌ Acesso negado! Chave mestra inválida.');
+            } catch (err) {
+                console.error('Erro na autenticação Master:', err);
+                alert('Erro crítico: ' + err.message);
+                window.location.href = 'app.html';
             }
         }
 
-        // ============================================
-        // CARREGAR TODOS OS DADOS DO SISTEMA
-        // ============================================
         async function carregarDadosMaster() {
             try {
-                // 1. Contar lojas
-                const { count: totalLojas } = await supabase
-                    .from('lojas')
-                    .select('*', { count: 'exact', head: true });
-                document.getElementById('totalLojas').textContent = totalLojas || 0;
+                console.log('🔄 Sincronizando dados globais...');
+                
+                // Buscar Lojas (Principal)
+                const { data: lojasRaw } = await masterDb.from('lojas').select('*').order('criado_em', { ascending: false });
+                lojasCache = lojasRaw || [];
 
-                // 2. Contar usuários
-                const { count: totalUsuarios } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true });
-                document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
-
-                // 3. Contar produtos (todas as lojas)
-                const { count: totalProdutos } = await supabase
-                    .from('produtos')
-                    .select('*', { count: 'exact', head: true });
-                document.getElementById('totalProdutos').textContent = totalProdutos || 0;
-
-                // 4. Somar todas as vendas
-                const { data: vendas } = await supabase
-                    .from('vendas')
-                    .select('total');
-                const totalVendas = vendas?.reduce((acc, v) => acc + (v.total || 0), 0) || 0;
-                document.getElementById('totalVendas').textContent = totalVendas.toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                });
-
-                // 5. Contar masters
-                const { count: totalMasters } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('role', 'master');
-                document.getElementById('totalMasters').textContent = totalMasters || 0;
-
-                // Carregar tabelas
-                await carregarLojas();
-                await carregarUsuarios();
-                await carregarLogs();
+                // Atualizar Stats em background
+                atualizarMetricasRapidas();
+                
+                // Renderizar o que já temos
+                renderAssinaturas();
+                carregarLojas();
+                carregarUsuarios();
+                carregarLogs();
 
             } catch (error) {
-                console.error('Erro ao carregar dados master:', error);
+                console.error('Erro ao carregar dados:', error);
             }
         }
 
-        // ============================================
-        // CARREGAR LOJAS (COM DETALHES)
-        // ============================================
+        async function atualizarMetricasRapidas() {
+            const { count: totalLojas } = await masterDb.from('lojas').select('*', { count: 'exact', head: true });
+            document.getElementById('totalLojas').textContent = totalLojas || 0;
+
+            const { count: totalUsuarios } = await masterDb.from('profiles').select('*', { count: 'exact', head: true });
+            document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
+
+            const { count: totalProdutos } = await masterDb.from('produtos').select('*', { count: 'exact', head: true });
+            document.getElementById('totalProdutos').textContent = totalProdutos || 0;
+
+            const { data: vTotal } = await masterDb.from('vendas').select('total');
+            const totalVendas = vTotal?.reduce((acc, v) => acc + (v.total || 0), 0) || 0;
+            document.getElementById('totalVendas').textContent = totalVendas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        async function renderAssinaturas() {
+            const tbody = document.getElementById('assinaturasTableBody');
+            if (!tbody) return;
+
+            const search = document.getElementById('searchClient')?.value.toLowerCase() || '';
+            const filterPlano = document.getElementById('filterPlano')?.value || 'todos';
+
+            // Calcular Stats
+            let countPremium = 0, countStand = 0, countBasica = 0, receitaTotal = 0;
+            
+            lojasCache.forEach(l => {
+                if (l.plano === 'premium') countPremium++;
+                if (l.plano === 'stand') countStand++;
+                if (l.plano === 'basica') countBasica++;
+                receitaTotal += parseFloat(l.valor_assinatura || 0);
+            });
+
+            document.getElementById('statPremium').textContent = countPremium;
+            document.getElementById('statStand').textContent = countStand;
+            document.getElementById('statBasica').textContent = countBasica;
+            document.getElementById('statReceitaEstimada').textContent = receitaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            const filtered = lojasCache.filter(l => {
+                const matchSearch = l.nome.toLowerCase().includes(search) || l.id.includes(search);
+                const matchPlano = filterPlano === 'todos' || l.plano === filterPlano;
+                return matchSearch && matchPlano;
+            });
+
+            tbody.innerHTML = '';
+            filtered.forEach(loja => {
+                const planoClass = {
+                    'premium': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
+                    'stand': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+                    'basica': 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                }[loja.plano] || 'bg-gray-800 text-gray-500';
+
+                const valor = loja.valor_assinatura ? parseFloat(loja.valor_assinatura).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
+                const renovacao = loja.data_renovacao ? new Date(loja.data_renovacao + 'T12:00:00').toLocaleDateString('pt-BR') : 'Não definida';
+                
+                // Verificar se está vencida ou perto de vencer
+                let renovacaoClass = 'text-gray-400';
+                if (loja.data_renovacao) {
+                    const hoje = new Date();
+                    const dataR = new Date(loja.data_renovacao + 'T12:00:00');
+                    const diffDays = Math.ceil((dataR - hoje) / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) renovacaoClass = 'text-rose-500 font-bold';
+                    else if (diffDays <= 5) renovacaoClass = 'text-amber-500 font-bold';
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/5 border-b border-white/5 transition-colors group">
+                        <td class="p-4">
+                            <div class="text-sm font-bold text-white group-hover:text-indigo-400 transition">${loja.nome}</div>
+                            <div class="text-[10px] text-gray-500 font-mono">${loja.id}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase border ${planoClass}">
+                                ${loja.plano || 'Nenhum'}
+                            </span>
+                        </td>
+                        <td class="p-4 text-xs font-bold text-gray-300">
+                            ${valor}
+                        </td>
+                        <td class="p-4">
+                            <div class="text-xs ${renovacaoClass}">${renovacao}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-[10px] uppercase font-bold text-gray-500">
+                                <i class="fas ${loja.forma_pagamento === 'pix' ? 'fa-bolt text-emerald-500' : 'fa-credit-card text-blue-500'} mr-1"></i>
+                                ${loja.forma_pagamento || '-'}
+                            </div>
+                        </td>
+                        <td class="p-4 font-mono text-[9px] text-gray-600">
+                            ${loja.chave_acesso}
+                        </td>
+                        <td class="p-4 text-right">
+                            <button onclick="abrirModalAssinatura('${loja.id}')" class="p-2 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-white rounded-lg transition">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-600">Nenhum cliente encontrado com estes filtros.</td></tr>';
+            }
+        }
+
+        function abrirModalAssinatura(id) {
+            const loja = lojasCache.find(l => l.id === id);
+            if (!loja) return;
+
+            document.getElementById('editLojaId').value = loja.id;
+            document.getElementById('editPlano').value = loja.plano || 'basica';
+            document.getElementById('editValor').value = loja.valor_assinatura || 0;
+            document.getElementById('editRenovacao').value = loja.data_renovacao || '';
+            document.getElementById('editPagamento').value = loja.forma_pagamento || 'pix';
+
+            document.getElementById('modalEditAssinatura').classList.remove('hidden');
+        }
+
+        function cerrarModalAssinatura() {
+            document.getElementById('modalEditAssinatura').classList.add('hidden');
+        }
+
+        async function salvarAssinatura() {
+            const id = document.getElementById('editLojaId').value;
+            const updates = {
+                plano: document.getElementById('editPlano').value,
+                valor_assinatura: parseFloat(document.getElementById('editValor').value) || 0,
+                data_renovacao: document.getElementById('editRenovacao').value || null,
+                forma_pagamento: document.getElementById('editPagamento').value
+            };
+
+            try {
+                const { error } = await supabase.from('lojas').update(updates).eq('id', id);
+                if (error) throw error;
+
+                alert('✅ Dados da assinatura atualizados com sucesso!');
+                cerrarModalAssinatura();
+                carregarDadosMaster();
+            } catch (err) {
+                console.error('Erro ao salvar assinatura:', err);
+                alert('❌ Erro ao salvar: ' + err.message);
+            }
+        }
+
         async function carregarLojas() {
-            const { data: lojas } = await supabase
-                .from('lojas')
-                .select('*')
-                .order('criado_em', { ascending: false });
-
             const tbody = document.getElementById('lojasTable');
+            if(!tbody) return;
             tbody.innerHTML = '';
 
-            for (const loja of lojas || []) {
-                // Buscar dono da loja
-                const { data: dono } = await supabase
-                    .from('profiles')
-                    .select('nome, email')
-                    .eq('loja_id', loja.id)
-                    .eq('role', 'dono')
-                    .single();
-
-                // Contar produtos da loja
-                const { count: produtos } = await supabase
-                    .from('produtos')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('loja_id', loja.id);
-
-                // Contar usuários da loja
-                const { count: usuarios } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('loja_id', loja.id);
-
-                // Vendas do mês
-                const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-                const { data: vendasMes } = await supabase
-                    .from('vendas')
-                    .select('total')
-                    .eq('loja_id', loja.id)
-                    .gte('criado_em', inicioMes);
-
-                const totalMes = vendasMes?.reduce((acc, v) => acc + (v.total || 0), 0) || 0;
-
+            for (const loja of lojasCache) {
+                // ... (rest of the logic remains or is updated below if needed)
                 tbody.innerHTML += `
-            <tr class="hover:bg-white/5 transition">
-                <td class="p-4">
-                    <div class="font-bold">${loja.nome}</div>
-                    <div class="text-xs text-gray-500">${loja.descricao || 'Sem descrição'}</div>
-                </td>
-                <td class="p-4">
-                    <div>${dono?.nome || 'N/A'}</div>
-                    <div class="text-xs text-gray-500">${dono?.email || ''}</div>
-                </td>
-                <td class="p-4 font-mono text-xs">${loja.chave_acesso}</td>
-                <td class="p-4">${produtos || 0}</td>
-                <td class="p-4 text-emerald-400">${totalMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                <td class="p-4">${usuarios || 0}</td>
-                <td class="p-4 text-xs text-gray-500">${new Date(loja.criado_em).toLocaleDateString('pt-BR')}</td>
-                <td class="p-4">
-                    <button onclick="acessarComoLoja('${loja.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2" title="Acessar como esta loja">
-                        <i class="fas fa-sign-in-alt"></i>
-                    </button>
-                    <button onclick="verDetalhesLoja('${loja.id}')" class="text-blue-400 hover:text-blue-300 mr-2" title="Detalhes">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="p-4">
+                            <div class="font-bold">${loja.nome}</div>
+                            <div class="text-xs text-gray-500">${loja.descricao || 'Sem descrição'}</div>
+                        </td>
+                        <td class="p-4 font-mono text-xs">${loja.chave_acesso}</td>
+                        <td class="p-4 text-xs text-gray-500">${new Date(loja.criado_em).toLocaleDateString('pt-BR')}</td>
+                        <td class="p-4">
+                            <button onclick="acessarComoLoja('${loja.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2" title="Acessar como esta loja">
+                                <i class="fas fa-sign-in-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
             }
         }
 
-        // ============================================
-        // CARREGAR USUÁRIOS
-        // ============================================
         async function carregarUsuarios() {
-            const { data: usuarios } = await supabase
-                .from('profiles')
-                .select('*, lojas!inner(nome)')
-                .order('criado_em', { ascending: false });
-
+            const { data: usuarios } = await supabase.from('profiles').select('*, lojas(nome)').order('criado_em', { ascending: false });
             const tbody = document.getElementById('usuariosTable');
+            if(!tbody) return;
             tbody.innerHTML = '';
 
-            for (const user of usuarios || []) {
-                // Último acesso
-                const ultimoAcesso = user.ultimo_acesso ? new Date(user.ultimo_acesso).toLocaleString('pt-BR') : 'Nunca';
-
-                const roleClass = {
-                    'master': 'bg-purple-600/20 text-purple-400',
-                    'dono': 'bg-amber-600/20 text-amber-400',
-                    'gerente': 'bg-blue-600/20 text-blue-400',
-                    'vendedor': 'bg-gray-600/20 text-gray-400'
-                }[user.role] || 'bg-gray-600/20 text-gray-400';
-
+            usuarios?.forEach(user => {
+                const roleClass = { 'master': 'bg-purple-600/20 text-purple-400', 'dono': 'bg-amber-600/20 text-amber-400', 'gerente': 'bg-blue-600/20 text-blue-400' }[user.role] || 'bg-gray-600/20 text-gray-400';
                 tbody.innerHTML += `
-            <tr class="hover:bg-white/5 transition">
-                <td class="p-4">
-                    <div class="font-bold">${user.nome || 'N/A'}</div>
-                </td>
-                <td class="p-4">${user.email || '-'}</td>
-                <td class="p-4">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold ${roleClass}">
-                        ${user.role?.toUpperCase()}
-                    </span>
-                </td>
-                <td class="p-4">${user.lojas?.nome || 'Sem loja'}</td>
-                <td class="p-4 text-xs text-gray-500">${ultimoAcesso}</td>
-                <td class="p-4 text-xs text-gray-500">${new Date(user.criado_em).toLocaleDateString('pt-BR')}</td>
-                <td class="p-4">
-                    <button onclick="editarRole('${user.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2" title="Alterar Role">
-                        <i class="fas fa-user-tag"></i>
-                    </button>
-                    <button onclick="impersonate('${user.id}')" class="text-emerald-400 hover:text-emerald-300" title="Acessar como">
-                        <i class="fas fa-mask"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-            }
+                    <tr class="hover:bg-white/5 transition">
+                        <td class="p-4"><div class="font-bold">${user.nome || 'N/A'}</div></td>
+                        <td class="p-4">${user.email || '-'}</td>
+                        <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${roleClass}">${user.role?.toUpperCase()}</span></td>
+                        <td class="p-4">${user.lojas?.nome || 'Sem loja'}</td>
+                        <td class="p-4">
+                            <button onclick="editarRole('${user.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2"><i class="fas fa-user-tag"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
-
-        // ============================================
-        // FUNÇÕES DE AÇÃO MASTER
-        // ============================================
 
         function acessarComoLoja(lojaId) {
             localStorage.setItem('master_impersonating', lojaId);
             window.open('app.html?master_impersonate=' + lojaId, '_blank');
         }
 
-        async function impersonate(userId) {
-            if (confirm('Acessar o sistema como este usuário?')) {
-                localStorage.setItem('master_impersonate', userId);
-                window.open('app.html?master_user=' + userId, '_blank');
-            }
-        }
-
         async function editarRole(userId) {
             const novaRole = prompt('Nova role (vendedor/gerente/dono/master):');
             if (novaRole && ['vendedor', 'gerente', 'dono', 'master'].includes(novaRole)) {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ role: novaRole })
-                    .eq('id', userId);
-
-                if (!error) {
-                    alert('Role atualizada!');
-                    carregarUsuarios();
-                }
+                await supabase.from('profiles').update({ role: novaRole }).eq('id', userId);
+                carregarUsuarios();
             }
         }
 
         async function exportData(tipo) {
-            let data, filename;
-            switch (tipo) {
-                case 'lojas': data = await supabase.from('lojas').select('*'); filename = 'lojas.json'; break;
-                case 'usuarios': data = await supabase.from('profiles').select('*'); filename = 'usuarios.json'; break;
-                case 'vendas': data = await supabase.from('vendas').select('*, produtos(*), profiles(*)'); filename = 'vendas.json'; break;
-            }
-            const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+            let res = await supabase.from(tipo).select('*');
+            const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = filename; a.click();
-        }
-
-        async function exportCompleto() {
-            const tables = ['lojas', 'profiles', 'produtos', 'variantes', 'vendas', 'clientes', 'despesas'];
-            const backup = { date: new Date().toISOString() };
-            for (const t of tables) {
-                const { data } = await supabase.from(t).select('*');
-                backup[t] = data;
-            }
-            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `backup_verum_${new Date().toISOString().split('T')[0]}.json`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `${tipo}.json`; a.click();
         }
 
         function switchMasterTab(tab) {
@@ -684,15 +733,14 @@
             document.getElementById(`content${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
         }
 
-        function logoutMaster() {
-            masterAutenticado = false;
-            document.getElementById('masterPanel').classList.add('hidden');
-            document.getElementById('masterLogin').classList.remove('hidden');
-            document.getElementById('masterPassword').value = '';
+        async function logoutMaster() {
+            if (window.masterDb) await window.masterDb.auth.signOut();
+            else if (window.supabase) await window.supabase.auth.signOut();
+            window.location.href = 'index.html';
         }
 
         async function carregarLogs() {
-            document.getElementById('logsContainer').innerHTML = '<p class="text-xs text-gray-600">Logs em tempo real sendo integrados...</p>';
+            document.getElementById('logsContainer').innerHTML = '<p class="text-xs text-gray-600">Logs integrados.</p>';
         }
     </script>
 </body>

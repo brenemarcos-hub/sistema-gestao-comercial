@@ -43,15 +43,35 @@ function renderClientesTable() {
         tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Nenhum cliente encontrado</td></tr>';
         return;
     }
-
     filtered.forEach(cliente => {
+        // Calcular Status Financeiro (Dívidas)
+        const dividas = vendas.filter(v => (v.id_cliente === cliente.id || v.cliente_id === cliente.id) && v.status_pagamento === 'pendente');
+        const totalDevendo = dividas.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
+        const dataProximoPay = dividas.filter(v => v.data_proximo).sort((a,b) => new Date(a.data_proximo) - new Date(b.data_proximo))[0]?.data_proximo;
+
         const dataCadastro = new Date(cliente.criado_em).toLocaleDateString('pt-BR');
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors';
         row.innerHTML = `
             <td class="px-6 py-4">
-                <div class="text-sm font-bold text-gray-900 dark:text-white">${cliente.nome}</div>
-                <div class="text-[10px] text-gray-400 truncate max-w-xs">${cliente.endereco || 'Sem endereço'}</div>
+                <div class="flex items-center gap-3">
+                    <div>
+                        <div class="text-sm font-bold text-gray-900 dark:text-white">${cliente.nome}</div>
+                        <div class="text-[10px] text-gray-400 truncate max-w-xs">${cliente.endereco || 'Sem endereço'}</div>
+                    </div>
+                    ${totalDevendo > 0 ? `
+                        <div class="flex flex-col items-end ml-auto">
+                            <span class="bg-rose-100 text-rose-700 text-[10px] font-black px-2 py-0.5 rounded-full border border-rose-200">
+                                DEVENDO R$ ${totalDevendo.toFixed(2).replace('.', ',')}
+                            </span>
+                            ${dataProximoPay ? `<span class="text-[9px] text-rose-500 font-bold mt-1">Prox: ${new Date(dataProximoPay).toLocaleDateString('pt-BR')}</span>` : ''}
+                        </div>
+                    ` : `
+                        <span class="ml-auto bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                            EM DIA
+                        </span>
+                    `}
+                </div>
             </td>
             <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                 <a href="https://wa.me/${cliente.whatsapp?.replace(/\D/g, '')}" target="_blank" class="hover:text-green-500 transition">
@@ -212,6 +232,14 @@ function openClientHistory(id) {
                 </td>
                 <td class="p-4 text-sm">${v.quantidade}</td>
                 <td class="p-4 text-sm font-bold text-indigo-600">R$ ${valorVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                <td class="p-4">
+                    <span class="px-2 py-1 text-[10px] font-bold rounded-full 
+                    ${v.status_pagamento === 'pago' ? 'bg-emerald-100 text-emerald-700' : 
+                      v.status_pagamento === 'pago (atrasado)' ? 'bg-blue-100 text-blue-700' : 
+                      'bg-amber-100 text-amber-700'} uppercase">
+                        ${v.status_pagamento || 'pago'}
+                    </span>
+                </td>
             `;
             tableBody.appendChild(row);
         });

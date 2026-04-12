@@ -54,33 +54,11 @@
 
 <body class="text-gray-100 min-h-screen">
 
-    <!-- Login Master -->
+    <!-- Autenticação Automática Master -->
     <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-[100] bg-[#0a0c10]">
-        <div class="glass-card rounded-2xl p-8 w-96 border border-emerald-500/30">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-emerald-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                    <i class="fas fa-shield-halved text-3xl text-white"></i>
-                </div>
-                <h2 class="text-2xl font-black">AUDITORIA MASTER</h2>
-                <p class="text-xs text-gray-500 mt-2">Acesso restrito para monitoramento</p>
-            </div>
-
-            <div class="space-y-4">
-                <input type="password" id="masterPassword" placeholder="Chave Mestra"
-                    class="w-full px-4 py-3 bg-black/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none">
-
-                <button onclick="verifyMasterAccess()"
-                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                    <i class="fas fa-unlock"></i>
-                    AUTENTICAR
-                </button>
-            </div>
-
-            <div class="mt-6 text-center">
-                <a href="app.html" class="text-xs text-gray-600 hover:text-gray-400 transition">
-                    <i class="fas fa-arrow-left"></i> Voltar ao Sistema Principal
-                </a>
-            </div>
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-black">Auditando Credenciais...</p>
         </div>
     </div>
 
@@ -100,6 +78,14 @@
                 </div>
 
                 <div class="flex items-center gap-4">
+                    <nav class="hidden md:flex items-center gap-2 mr-4 border-r border-white/10 pr-4">
+                        <a href="app.html" class="px-4 py-2 text-[10px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg mr-2">
+                            <i class="fas fa-rocket mr-1"></i> Ir para o App
+                        </a>
+                        <a href="master.html" class="px-4 py-2 text-[10px] font-black text-gray-400 hover:text-indigo-400 transition uppercase tracking-widest">Painel</a>
+                        <a href="master-clientes.html" class="px-4 py-2 text-[10px] font-black text-gray-400 hover:text-blue-400 transition uppercase tracking-widest">Clientes</a>
+                        <a href="master-auditoria.html" class="px-4 py-2 text-[10px] font-black text-emerald-400 transition uppercase tracking-widest">Auditoria</a>
+                    </nav>
                     <div class="text-right hidden sm:block">
                         <p id="currentTime" class="text-sm font-medium"></p>
                         <p class="text-[10px] text-gray-500">Monitoramento Ativo</p>
@@ -145,10 +131,10 @@
                 <div class="glass-card p-6 rounded-2xl border-l-4 border-amber-500">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Usuários (24h)</p>
-                            <h3 id="statUsuariosAtivos" class="text-3xl font-black">--</h3>
+                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Lojas Ativas (24h)</p>
+                            <h3 id="statLojasAtivas" class="text-3xl font-black">--</h3>
                         </div>
-                        <i class="fas fa-user-clock text-amber-500/20 text-4xl"></i>
+                        <i class="fas fa-store text-amber-500/20 text-4xl"></i>
                     </div>
                 </div>
             </div>
@@ -159,6 +145,8 @@
                     class="tab-btn active px-4 py-4 text-sm font-bold transition text-gray-500">ACESSOS</button>
                 <button onclick="switchTab('usuarios')"
                     class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">USUÁRIOS</button>
+                <button onclick="switchTab('lojas')"
+                    class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500 uppercase">Lojas</button>
                 <button onclick="switchTab('erros')"
                     class="tab-btn px-4 py-4 text-sm font-bold transition text-gray-500">ERROS</button>
                 <button onclick="switchTab('acoes')"
@@ -373,61 +361,69 @@
     <script src="js/config/config.js"></script>
 
     <script>
-        // Usar o Supabase Client já inicializado no config.js
-        const db = window.supabaseClient;
+        // Inicialização Robusta
+        let db = window.supabaseClient || window.supabase?.activeClient;
+
+        async function getDb() {
+            if (db) return db;
+            if (window.supabaseClient) return window.supabaseClient;
+            if (window.supabase && window.SUPABASE_CONFIG) {
+                return window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+            }
+            return null;
+        }
 
         // Estado
         let activeTabCurrent = 'acessos';
         let charts = {};
 
-        // Inicia Autoverificação IMEDIATAMENTE (Apenas garante que está logado)
+        // Inicia Autoverificação IMEDIATAMENTE
         (async function initAudit() {
+            console.log('🔍 Iniciando Auditoria...');
+            const timeout = setTimeout(() => {
+                const loader = document.getElementById('masterLogin');
+                if (loader && !loader.classList.contains('hidden')) {
+                    alert('Falha na inicialização da auditoria. Redirecionando...');
+                    window.location.href = 'app.html';
+                }
+            }, 6000);
+
             try {
-                const { data: { session } } = await db.auth.getSession();
+                db = await getDb();
+                if (!db) throw new Error('Conexão ao banco ausente.');
+
+                const { data: { session }, error: authErr } = await db.auth.getSession();
+                if (authErr) throw authErr;
+
                 if (!session) {
                     alert('⚠️ Por favor, faça login no sistema principal primeiro.');
                     window.location.href = 'app.html';
+                    return;
+                }
+
+                // Verificação de Role
+                const { data: profile, error: profErr } = await db.from('profiles').select('role, email').eq('id', session.user.id).single();
+                if (profErr) throw profErr;
+
+                const autorizados = ['brenemarcos@gmail.com'];
+
+                if (profile && (profile.role === 'master' || autorizados.includes(session.user.email))) {
+                    console.log('✅ Auditoria autorizada.');
+                    document.getElementById('masterLogin').classList.add('hidden');
+                    document.getElementById('auditPanel').classList.remove('hidden');
+                    atualizarStats();
+                    carregarAcessos();
+                    clearTimeout(timeout);
+                } else {
+                    alert('❌ Acesso negado! Seu usuário não possui privilégios MASTER.');
+                    window.location.href = 'app.html';
                 }
             } catch (err) {
-                console.error('Erro na inicialização:', err);
+                console.error('Erro na auditoria:', err);
+                alert('Erro de Auditoria: ' + err.message);
+                window.location.href = 'app.html';
             }
         })();
-
-        // Verificação de Acesso Manual
-        async function verifyMasterAccess() {
-            const password = document.getElementById('masterPassword').value.trim();
-            console.log('🔑 Tentativa de acesso manual com senha...');
-
-            if (password === '1706') {
-                try {
-                    const { data: { session } } = await db.auth.getSession();
-
-                    if (!session) {
-                        alert('⚠️ Por favor, faça login no sistema principal primeiro (app.html).');
-                        // window.location.href = 'app.html';
-                        return;
-                    }
-
-                    const { data: profile } = await db.from('profiles').select('role').eq('id', session.user.id).single();
-                    const autorizados = ['brenemarcos@gmail.com'];
-
-                    if (profile && (profile.role === 'master' || autorizados.includes(session.user.email))) {
-                        document.getElementById('masterLogin').classList.add('hidden');
-                        document.getElementById('auditPanel').classList.remove('hidden');
-                        atualizarStats();
-                        carregarAcessos();
-                    } else {
-                        alert('❌ Acesso negado! Seu usuário (' + session.user.email + ') não tem permissão Master.');
-                        console.error('Perfil insuficiente:', profile);
-                    }
-                } catch (err) {
-                    console.error('Erro ao verificar acesso manual:', err);
-                    alert('Erro técnico ao verificar acesso.');
-                }
-            } else {
-                alert('❌ Chave mestra inválida.');
-            }
-        }
 
         // Suporte a tecla Enter
         document.getElementById('masterPassword')?.addEventListener('keypress', (e) => {
@@ -442,8 +438,9 @@
             }
         }
 
-        function logout() {
-            window.location.reload();
+        async function logout() {
+            await db.auth.signOut();
+            window.location.href = 'index.html';
         }
 
         function switchTab(tab) {
@@ -456,6 +453,7 @@
             activeTabCurrent = tab;
             if (tab === 'acessos') carregarAcessos();
             if (tab === 'usuarios') carregarUsuarios();
+            if (tab === 'lojas') carregarLojas();
             if (tab === 'erros') carregarErros();
             if (tab === 'acoes') carregarAcoes();
             if (tab === 'analise') carregarAnalise();
@@ -484,9 +482,9 @@
             // Usuários Ativos (24h)
             const ontem = new Date();
             ontem.setHours(ontem.getHours() - 24);
-            const { data: usersAtivos } = await db.from('logs_acessos').select('usuario_id').gte('criado_em', ontem.toISOString());
-            const uniqueUsers = new Set(usersAtivos?.filter(u => u.usuario_id).map(u => u.usuario_id));
-            document.getElementById('statUsuariosAtivos').textContent = uniqueUsers.size || 0;
+            const { data: storesAtivas } = await db.from('logs_acessos').select('loja_id').gte('criado_em', ontem.toISOString());
+            const uniqueStores = new Set(storesAtivas?.filter(s => s.loja_id).map(s => s.loja_id));
+            document.getElementById('statLojasAtivas').textContent = uniqueStores.size || 0;
         }
 
         // ===================================

@@ -6,27 +6,52 @@ async function getUserLojaId() {
     // Tenta usar o cache
     if (lojaIdCache) return lojaIdCache;
 
+    // --- MODO SUPORTE (MASTER) ---
+    const impId = localStorage.getItem('master_impersonate_id');
+    const role = localStorage.getItem('userRole');
+    if (impId && role === 'master') {
+        console.log('🎭 MODO SUPORTE ATIVO: Acessando loja via Personificação');
+        return impId;
+    }
+
     try {
         const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
         if (authError || !user) return null;
 
-        const { data: profile, error: profError } = await supabaseClient
+        const { data: profile, error: profileError } = await supabaseClient
             .from('profiles')
             .select('loja_id')
             .eq('id', user.id)
             .single();
 
-        if (profError) {
-            console.error('❌ Erro ao buscar perfil:', profError);
+        if (profileError || !profile || !profile.loja_id) {
+            // Se já estamos com o modal aberto, não fazemos nada nem logamos erro para evitar loop
+            const modalLoja = document.getElementById('modalCriarLojaObrigatorio');
+            if (modalLoja && !modalLoja.classList.contains('hidden')) return null;
+
+            // --- NOVO: Abrir modal de criação se for Dono ---
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'dono') {
+                const subBlocker = document.getElementById('subscriptionBlocker');
+                const loginSection = document.getElementById('loginSection');
+                
+                if (modalLoja) {
+                    modalLoja.classList.remove('hidden');
+                    modalLoja.classList.add('flex');
+                    if (subBlocker) subBlocker.classList.add('hidden');
+                    if (loginSection) loginSection.classList.add('hidden');
+                    
+                    setTimeout(() => {
+                        const input = document.getElementById('obrigatorioNomeLoja');
+                        if (input) input.focus();
+                    }, 500);
+                }
+            }
             return null;
         }
 
-        if (profile?.loja_id) {
-            lojaIdCache = profile.loja_id;
-            return lojaIdCache;
-        }
-
-        return null;
+        lojaIdCache = profile.loja_id;
+        return profile.loja_id;
     } catch (err) {
         console.error('⚠️ Falha crítica no getUserLojaId:', err);
         return null;
@@ -161,6 +186,10 @@ async function saveProduct(e) {
         let targetProductId = selectedProductId;
         let shouldSumStock = false;
 
+        // Capturar Imagem da Prévia
+        const imagePreview = document.getElementById('productImagePreview');
+        const imagemUrl = imagePreview && !imagePreview.classList.contains('hidden') ? imagePreview.src : null;
+
         if (!isEditing) {
             const { data: existing } = await supabaseClient
                 .from('produtos')
@@ -198,7 +227,8 @@ async function saveProduct(e) {
                 ean: ean,
                 nome: nome.trim(),
                 categoria: categoria.trim(),
-                preco_venda: pNovo
+                preco_venda: pNovo,
+                imagem_url: imagemUrl
             }).eq('id', targetProductId).eq('loja_id', lojaId);
 
             const { data: dbVariants } = await supabaseClient.from('variantes').select('*').eq('id_produto', targetProductId);
@@ -239,13 +269,27 @@ async function saveProduct(e) {
             const lojaId = await getUserLojaId();
             if (!lojaId) throw new Error("Loja não identificada. Faça login novamente.");
 
+            // --- TRAVA DE PLANO: Limite de Produtos ---
+            const plan = getStorePlan();
+            const limit = PLAN_LIMITS[plan]?.produtos || 500;
+            const userRole = getUserRole();
+
+            if (produtos.length >= limit && userRole !== 'master') {
+                return showNotification(
+                    'Limite do Plano', 
+                    `Seu plano ${plan.toUpperCase()} permite até ${limit} produtos. Faça upgrade para cadastrar mais.`, 
+                    'warning'
+                );
+            }
+
             const { data: newP, error: newPError } = await supabaseClient.from('produtos').insert({
                 sku: cleanSku,
                 ean: ean,
                 nome: nome.trim(),
                 categoria: categoria.trim(),
                 preco_venda: parseFloat(preco_venda),
-                loja_id: lojaId
+                loja_id: lojaId,
+                imagem_url: imagemUrl
             }).select();
 
             if (newPError) throw newPError;
@@ -332,6 +376,42 @@ async function deleteProduct(productId) {
     }
 }
 
+/**
+ * 🕵️ AUDITORIA: Registra quando uma loja abre o sistema
+ */
+async function registrarAcessoAuditoria() {
+    if (!supabaseClient) return;
+    
+    // Evita registrar acessos do Master na auditoria de lojas
+    if (localStorage.getItem('userRole') === 'master') return;
+
+    try {
+        const lojaId = await getUserLojaId();
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!lojaId || !user) return;
+
+        const { data: profile } = await supabaseClient.from('profiles').select('nome').eq('id', user.id).single();
+
+        // Detectar dispositivo de forma simples
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const browser = navigator.userAgent.split(') ')[1] || 'Web Browser';
+
+        await supabaseClient.from('logs_acessos').insert({
+            usuario_id: user.id,
+            usuario_nome: profile?.nome || user.email,
+            usuario_email: user.email,
+            loja_id: lojaId,
+            acao: 'login',
+            dispositivo: isMobile ? 'mobile' : 'desktop',
+            navegador: browser,
+            ip: '0.0.0.0', // O Supabase captura o IP real se configurado no banco
+            criado_em: new Date().toISOString()
+        });
+    } catch (err) {
+        console.warn('⚠️ Falha ao registrar log de acesso:', err);
+    }
+}
+
 // Carregar vendas
 async function loadSales() {
     if (!supabaseClient) return;
@@ -360,7 +440,10 @@ async function loadSales() {
 
             return {
                 ...venda,
-                produtos: { nome: produto ? produto.nome : 'Produto Removido' },
+                produtos: { 
+                    nome: produto ? produto.nome : 'Produto Removido',
+                    imagem_url: produto ? produto.imagem_url : null
+                },
                 variantes: {
                     tamanho: variante ? variante.tamanho : '-',
                     cor: variante ? variante.cor : '-'
@@ -401,16 +484,26 @@ async function saveSale(e) {
         const vendasProcessadas = [];
         const erros = [];
 
+        // Coleta de dados de pagamento
+        const metodoPagamento = document.getElementById('saleMetodoPagamento').value;
+        const statusPagamento = document.getElementById('saleStatusPagamento').value;
+        const parcelas = parseInt(document.getElementById('saleParcelas').value) || 1;
+        const dataProximo = document.getElementById('saleDataProximo').value || null;
+
         for (const item of carrinho) {
             try {
-                // Chama a função SQL que faz tudo atomicamente
+                // Chama a função SQL que faz tudo atomicamente (agora com suporte a pagamentos)
                 const { data, error } = await supabaseClient.rpc('vender_produto', {
                     p_variant_id: item.variantId,
                     p_quantidade: item.qtd,
                     p_produto_id: item.productId,
                     p_preco_unitario: item.preco,
                     p_cliente_id: idCliente,
-                    p_loja_id: lojaId
+                    p_loja_id: lojaId,
+                    p_metodo_pagamento: metodoPagamento,
+                    p_status_pagamento: statusPagamento,
+                    p_parcelas: parcelas,
+                    p_data_proximo: dataProximo
                 });
 
                 if (error) {
@@ -420,6 +513,7 @@ async function saveSale(e) {
 
                 vendasProcessadas.push(item.nome);
             } catch (itemError) {
+                // ... (rest of the catch)
                 // Registra erro mas continua processando outros itens
                 erros.push({
                     produto: item.nome,
@@ -526,3 +620,31 @@ async function deleteSale(saleId) {
         showNotification('Erro', 'Não foi possível restaurar estoque.', 'error');
     }
 }
+
+async function changeSaleStatus(saleId, newStatus) {
+    if (!supabaseClient) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('vendas')
+            .update({ status_pagamento: newStatus })
+            .eq('id', saleId);
+
+        if (error) throw error;
+
+        showNotification('Status Atualizado', `Venda marcada como ${newStatus.toUpperCase()}.`, 'success');
+        
+        // Registrar Ação
+        if (typeof registrarAcao === 'function') {
+            registrarAcao(null, null, 'alterou_status_venda', 'venda', saleId, { status: newStatus });
+        }
+
+        // Recarregar dados
+        loadSales();
+        loadProducts();
+    } catch (error) {
+        console.error('Erro ao mudar status:', error);
+        showNotification('Erro', 'Não foi possível atualizar o status.', 'error');
+    }
+}
+window.changeSaleStatus = changeSaleStatus;

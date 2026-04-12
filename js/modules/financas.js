@@ -201,7 +201,9 @@ async function updateFinancialDashboard() {
         return true; // tudo
     };
 
-    let receitaBruta = 0;
+    let faturamentoTotal = 0;
+    let recebidoTotal = 0;
+    let aReceberTotal = 0;
     let custoProdutos = 0;
     let totalDespesas = 0;
     const categoriasMapa = {};
@@ -210,7 +212,14 @@ async function updateFinancialDashboard() {
     vendas.forEach(v => {
         if (!isNoPeriodo(v.criado_em)) return;
 
-        receitaBruta += parseFloat(v.total) || 0;
+        const valor = parseFloat(v.total) || 0;
+        faturamentoTotal += valor;
+
+        if (v.status_pagamento === 'pago' || v.status_pagamento === 'pago (atrasado)') {
+            recebidoTotal += valor;
+        } else {
+            aReceberTotal += valor;
+        }
 
         const prod = produtos.find(p => p.id == v.id_produto);
         if (prod) {
@@ -220,19 +229,18 @@ async function updateFinancialDashboard() {
         }
     });
 
-    // 2. Despesas Gerenciais
+    // ... (despesas logic same)
     despesas.forEach(d => {
         const dataItem = d.data_vencimento ? new Date(d.data_vencimento) : new Date(d.criado_em);
         if (!isNoPeriodo(dataItem)) return;
 
         totalDespesas += parseFloat(d.valor) || 0;
         
-        // Mapa para o gráfico
         const cat = d.categoria || 'Outros';
         categoriasMapa[cat] = (categoriasMapa[cat] || 0) + parseFloat(d.valor);
     });
 
-    const lucroLiquido = receitaBruta - custoProdutos - totalDespesas;
+    const lucroReal = recebidoTotal - custoProdutos - totalDespesas;
 
     // Atualiza Widgets
     const setElText = (id, text) => {
@@ -240,14 +248,18 @@ async function updateFinancialDashboard() {
         if (el) el.textContent = text;
     };
 
-    setElText('finReceitaTotal', receitaBruta.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
-    setElText('finDespesasTotal', (custoProdutos + totalDespesas).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
-    setElText('finLucroLiquido', lucroLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
-    setElText('finTotalExpensesFormatted', totalDespesas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+    const formatBRL = (val) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    setElText('finFaturamentoTotal', formatBRL(faturamentoTotal));
+    setElText('finRecebidoTotal', formatBRL(recebidoTotal));
+    setElText('finAReceberTotal', formatBRL(aReceberTotal));
+    setElText('finDespesasTotal', formatBRL(custoProdutos + totalDespesas));
+    setElText('finLucroLiquido', formatBRL(lucroReal));
+    setElText('finTotalExpensesFormatted', formatBRL(totalDespesas));
 
     const lucroEl = document.getElementById('finLucroLiquido');
     if (lucroEl) {
-        lucroEl.className = `text-2xl font-black ${lucroLiquido >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+        lucroEl.className = `text-xl font-black ${lucroReal >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
     }
 
     renderFinanceCharts(categoriasMapa);

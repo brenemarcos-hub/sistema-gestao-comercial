@@ -1,228 +1,199 @@
 // ============================================
-// SISTEMA DE PERMISSÕES POR ROLE
+// SISTEMA DE NÍVEIS DE CONTA (ROLES & PLANOS)
 // ============================================
 
+/**
+ * NÍVEIS DE ACESSO (O QUE O USUÁRIO É)
+ * Determina hierarquia dentro da loja.
+ */
 const ROLES = {
-    VENDEDOR: 'vendedor', // Nível 1
-    GERENTE: 'gerente',   // Nível 2
-    DONO: 'dono',         // Nível 3
-    MASTER: 'master'      // Nível 99 (Você)
+    VENDEDOR: 'vendedor', // Operacional (PDV, Estoque, Clientes)
+    GERENTE: 'gerente',   // Administrativo (Preços, Relatórios de Vendas)
+    DONO: 'dono',         // Total (Financeiro, Configurações da Loja)
+    MASTER: 'master'      // Sistema (Audit, Backup, Manutenção Global)
 };
 
-// Hierarquia de permissões (do menor para o maior)
 const ROLE_HIERARCHY = {
-    'vendedor': 1,
-    'gerente': 2,
-    'dono': 3,
-    'master': 99
+    [ROLES.VENDEDOR]: 10,
+    [ROLES.GERENTE]: 20,
+    [ROLES.DONO]: 30,
+    [ROLES.MASTER]: 100
 };
 
-// Obter role do usuário atual
+/**
+ * NÍVEIS DE ASSINATURA (O QUE A LOJA TEM)
+ * Determina limites de recursos e ferramentas premium.
+ */
+const PLANS = {
+    BASICA: 'basica',
+    STAND: 'stand',
+    PREMIUM: 'premium'
+};
+
+const PLAN_LIMITS = {
+    [PLANS.BASICA]: {
+        produtos: 300,
+        usuarios: 1,
+        lucro_real: false,
+        backup_nuvem: false,
+        export: false
+    },
+    [PLANS.STAND]: {
+        produtos: 99999,
+        usuarios: 5,
+        lucro_real: true,
+        backup_nuvem: true,
+        export: false
+    },
+    [PLANS.PREMIUM]: {
+        produtos: 99999,
+        usuarios: 999,
+        lucro_real: true,
+        backup_nuvem: true,
+        export: true
+    }
+};
+
+/**
+ * MATRIZ DE CAPACIDADES (O QUE PODE SER FEITO)
+ * Centraliza a lógica de Role + Plan.
+ */
+const CAPABILITIES = {
+    // --- VENDAS ---
+    'pos:use': () => true, // Todos podem vender
+    'sales:edit': () => hasMinimumRole(ROLES.GERENTE),
+    'sales:delete': () => hasMinimumRole(ROLES.DONO),
+    'sales:export': () => (hasMinimumRole(ROLES.DONO) && getStorePlan() === PLANS.PREMIUM),
+
+    // --- PRODUTOS ---
+    'products:view': () => true,
+    'products:manage': () => hasMinimumRole(ROLES.GERENTE),
+    'products:cost_price': () => hasMinimumRole(ROLES.DONO),
+    'products:import_xml': () => hasMinimumRole(ROLES.GERENTE),
+
+    // --- CLIENTES ---
+    'clients:view': () => true,
+    'clients:manage': () => true, // Vendedor pode cadastrar cliente
+    'clients:delete': () => hasMinimumRole(ROLES.GERENTE),
+
+    // --- FINANÇAS ---
+    'finance:view': () => hasMinimumRole(ROLES.DONO) || (hasMinimumRole(ROLES.GERENTE) && getStorePlan() !== PLANS.BASICA),
+    'finance:profit': () => getStorePlan() !== PLANS.BASICA && hasMinimumRole(ROLES.DONO),
+    'expenses:manage': () => hasMinimumRole(ROLES.DONO),
+
+    // --- CONFIGURAÇÃO ---
+    'store:config': () => hasMinimumRole(ROLES.DONO),
+    'users:manage': () => hasMinimumRole(ROLES.DONO) && PLAN_LIMITS[getStorePlan()]?.usuarios > 1,
+
+    // --- MASTER ---
+    'master:access': () => hasMinimumRole(ROLES.MASTER)
+};
+
+// ============================================
+// FUNÇÕES ÚTEIS
+// ============================================
+
 function getUserRole() {
-    const role = localStorage.getItem('userRole') || 'vendedor';
-    // Normalização de roles legados
-    if (role === 'usuario' || role === 'vendedor') return 'vendedor';
-    if (role === 'admin' || role === 'dono') return 'dono';
-    if (role === 'programador' || role === 'master') return 'master';
+    if (localStorage.getItem('master_impersonate_id')) return ROLES.DONO;
+    const role = localStorage.getItem('userRole') || ROLES.VENDEDOR;
+    // Normalização rápida para legados
+    if (role === 'usuario' || role === 'vendedor') return ROLES.VENDEDOR;
+    if (role === 'admin' || role === 'dono') return ROLES.DONO;
+    if (role === 'programador' || role === 'master') return ROLES.MASTER;
     return role;
 }
 
-// Verificar se o usuário tem permissão mínima
-function hasMinimumRole(minimumRole) {
-    const userRole = getUserRole();
-    return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[minimumRole];
+function getStorePlan() {
+    const impPlan = localStorage.getItem('master_impersonate_plan');
+    if (impPlan && localStorage.getItem('master_impersonate_id')) return impPlan;
+    return localStorage.getItem('storePlan') || PLANS.BASICA;
 }
 
-// Verificar se o usuário tem um role específico
-function hasRole(role) {
-    return getUserRole() === role;
+function hasMinimumRole(minRole) {
+    const current = getUserRole();
+    return (ROLE_HIERARCHY[current] || 0) >= (ROLE_HIERARCHY[minRole] || 0);
 }
 
-// Verificar se o usuário tem um dos roles especificados
-function hasAnyRole(roles) {
-    const userRole = getUserRole();
-    return roles.includes(userRole);
-}
-
-// ============================================
-// PERMISSÕES POR FUNCIONALIDADE
-// ============================================
-
-const PERMISSIONS = {
-    // === NÍVEL 1: VENDEDOR ===
-    canUsePOS: () => true,
-    canViewStock: () => true,
-    canCreateClients: () => true,
-    canViewClients: () => true,
-    canEditClients: () => true,
-
-    // === NÍVEL 2: GERENTE (Tudo do 1 + Gerenciamento operacional) ===
-    canManageProducts: () => hasMinimumRole(ROLES.GERENTE),
-    canChangeStock: () => hasMinimumRole(ROLES.GERENTE),
-    canViewSalesReports: () => hasMinimumRole(ROLES.GERENTE),
-    canViewFinancialReports: () => hasMinimumRole(ROLES.GERENTE),
-    canDeleteClients: () => hasMinimumRole(ROLES.GERENTE),
-    canEditSales: () => hasMinimumRole(ROLES.GERENTE),
-
-    // === NÍVEL 3: DONO (Tudo do 2 + Visão total do negócio) ===
-    canViewCostPrice: () => hasMinimumRole(ROLES.DONO),
-    canViewNetProfit: () => hasMinimumRole(ROLES.DONO),
-    canViewAllFinancials: () => hasMinimumRole(ROLES.DONO),
-    canManageEmployees: () => hasMinimumRole(ROLES.DONO),
-    canDeleteSales: () => hasMinimumRole(ROLES.DONO),
-    canChangeRoles: () => hasMinimumRole(ROLES.DONO),
-
-    // === NÍVEL 99: MASTER (Tudo do 3 + Sistema) ===
-    canManageSystemConfig: () => hasMinimumRole(ROLES.MASTER),
-    canDeleteActivityLogs: () => hasMinimumRole(ROLES.MASTER),
-    canAccessMaster: () => hasMinimumRole(ROLES.MASTER),
-    canAccessSettings: () => hasMinimumRole(ROLES.DONO) // Dono+ pode configurar loja
-};
-
-// --- ÁREAS DE ACESSO (MAPPING PARA O CÓDIGO) ---
-PERMISSIONS.canCreateProducts = PERMISSIONS.canManageProducts;
-PERMISSIONS.canEditProducts = PERMISSIONS.canManageProducts;
-PERMISSIONS.canDeleteProducts = PERMISSIONS.canManageProducts;
-PERMISSIONS.canViewSales = PERMISSIONS.canUsePOS;
-PERMISSIONS.canCreateSales = PERMISSIONS.canUsePOS;
-PERMISSIONS.canViewExpenses = PERMISSIONS.canViewFinancialReports;
-PERMISSIONS.canCreateExpenses = PERMISSIONS.canViewFinancialReports;
-PERMISSIONS.canViewReports = PERMISSIONS.canViewSalesReports;
-PERMISSIONS.canExportData = PERMISSIONS.canViewSalesReports;
-
-
-// ============================================
-// APLICAR PERMISSÕES NA UI
-// ============================================
-
-function applyUIPermissions() {
-    const userRole = getUserRole();
-    // Exibir botão de configurações para dono e master
-    const btnConfig = document.getElementById('btnConfigLoja');
-    if (btnConfig) {
-        if (userRole === 'dono' || userRole === 'master') {
-            btnConfig.classList.remove('hidden');
-        } else {
-            btnConfig.classList.add('hidden');
-        }
+/**
+ * Verifica se o usuário tem permissão para uma capacidade
+ * @param {string} capability - ID da capacidade (ex: 'products:manage')
+ * @returns {boolean}
+ */
+function can(capability) {
+    if (getUserRole() === ROLES.MASTER) return true; // Master pode TUDO
+    
+    const checker = CAPABILITIES[capability];
+    if (!checker) {
+        console.warn(`Capacidade desconhecida: ${capability}`);
+        return false;
     }
+    return checker();
+}
 
-    console.log('✅ Permissões aplicadas com sucesso!');
-    console.log('🔐 Aplicando permissões para role:', userRole);
+// ============================================
+// APLICAÇÃO NA UI (DINÂMICA)
+// ============================================
 
-    // Limpar estilos inline forçados (do Master) antes de aplicar permissões
-    const allElements = ['addProductBtn', 'addVendaBtn', 'addClientBtn', 'addExpenseBtn', 'usersBtn', 'navFinancas', 'navRelatorios', 'importXMLBtn'];
-    allElements.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && userRole !== 'master') {
-            // Remove estilos inline que podem ter sido aplicados pelo Master
-            el.style.removeProperty('display');
-            el.style.removeProperty('visibility');
-            el.style.removeProperty('opacity');
+/**
+ * Varre o DOM procurando elementos com atributos de permissão
+ * data-capability: Requer can(capability)
+ * data-role: Requer hasMinimumRole(role)
+ */
+function applyUIPermissions() {
+    const role = getUserRole();
+    console.log(`🔐 Aplicando Permissões (Role: ${role}, Plan: ${getStorePlan()})`);
+
+    // 1. Elementos por CAPACIDADE
+    document.querySelectorAll('[data-capability]').forEach(el => {
+        const capability = el.getAttribute('data-capability');
+        const allowed = can(capability);
+        
+        // Se tiver o atributo data-lock="true", em vez de esconder, desabilita e mostra cadeado
+        if (el.getAttribute('data-lock') === 'true') {
+            if (!allowed) {
+                el.disabled = true;
+                el.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+                if (!el.querySelector('.fa-lock')) {
+                    const lock = document.createElement('i');
+                    lock.className = 'fas fa-lock ml-2 text-[10px] text-amber-500';
+                    el.appendChild(lock);
+                }
+            } else {
+                el.disabled = false;
+                el.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
+                const lock = el.querySelector('.fa-lock');
+                if (lock) lock.remove();
+            }
+        } else {
+            // Comportamento padrão: Esconder
+            el.classList.toggle('hidden', !allowed);
+            if (allowed) el.classList.remove('hidden');
         }
     });
 
-    // Botões Principais (True = Esconde, False = Mostra)
-    hideElementIf('addProductBtn', !PERMISSIONS.canManageProducts());
-    hideElementIf('addVendaBtn', !PERMISSIONS.canUsePOS());
-    hideElementIf('addClientBtn', !PERMISSIONS.canCreateClients());
-    hideElementIf('addExpenseBtn', !PERMISSIONS.canViewFinancialReports());
-    hideElementIf('usersBtn', !PERMISSIONS.canManageEmployees());
-    hideElementIf('importXMLBtn', !PERMISSIONS.canManageProducts()); // Gerente+ pode importar
+    // 2. Elementos por ROLE MÍNIMA
+    document.querySelectorAll('[data-role]').forEach(el => {
+        const minRole = el.getAttribute('data-role');
+        const allowed = hasMinimumRole(minRole);
+        el.classList.toggle('hidden', !allowed);
+    });
 
-    // Navegação (Tabs)
-    hideElementIf('navFinancas', !PERMISSIONS.canViewFinancialReports());
-    hideElementIf('navRelatorios', !PERMISSIONS.canViewSalesReports());
-
-    // Master vê TUDO (Força visibilidade com !important)
-    if (userRole === 'master') {
-        const masterElements = ['addProductBtn', 'addVendaBtn', 'addClientBtn', 'addExpenseBtn', 'usersBtn', 'navFinancas', 'navRelatorios', 'importXMLBtn'];
-        masterElements.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.classList.remove('hidden');
-                el.style.setProperty('display', 'inline-flex', 'important');
-                el.style.setProperty('visibility', 'visible', 'important');
-                el.style.setProperty('opacity', '1', 'important');
-            }
-        });
-    }
-
-    // Badge de Role (DONO, MASTER, etc)
-    updateRoleBadge(userRole);
-
-    // Atualizar tabelas se necessário
-    if (typeof renderProductsTable === 'function' && activeTab === 'estoque') renderProductsTable();
-    if (typeof renderSalesTable === 'function' && activeTab === 'vendas') renderSalesTable();
+    // --- COMPORTAMENTOS ESPECÍFICOS ---
+    
+    // Notificar ui.js que as permissões mudaram (para renderizar tabelas etc)
+    if (typeof renderProductsTable === 'function' && window.activeTab === 'estoque') renderProductsTable();
+    if (typeof renderSalesTable === 'function' && window.activeTab === 'vendas') renderSalesTable();
 }
 
-// Função para Resetar Todos os Usuários para Vendedor (Útil para limpeza)
-async function resetAllUserRoles() {
-    if (!confirm('⚠️ ISSO VAI RESETAR TODOS OS USUÁRIOS PARA "VENDEDOR". Deseja continuar?')) return;
 
-    try {
-        const { error } = await supabaseClient
-            .from('profiles')
-            .update({ role: 'vendedor' })
-            .neq('role', 'master'); // Protege quem já é Master
-
-        if (error) throw error;
-        showNotification('Sucesso', 'Todos os usuários foram resetados para Vendedor.', 'success');
-        setTimeout(() => location.reload(), 2000);
-    } catch (err) {
-        console.error(err);
-        alert('Erro ao resetar: ' + err.message);
-    }
-}
-
-function hideElementIf(elementId, condition) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.style.display = condition ? 'none' : '';
-    }
-}
-
-function updateRoleBadge(role) {
-    // Estilos dos Badges
-    const roleColors = {
-        'vendedor': 'bg-gray-500',
-        'gerente': 'bg-blue-600',
-        'dono': 'bg-amber-500',
-        'master': 'bg-indigo-600' // Cor distinta para Master
-    };
-
-    const roleLabels = {
-        'vendedor': 'Vendedor',
-        'gerente': 'Gerente',
-        'dono': 'Dono',
-        'master': 'Master'
-    };
-
-    // Fallback para roles antigos se existirem no DB
-    const bgClass = roleColors[role] || 'bg-gray-500';
-    const label = roleLabels[role] || role.toUpperCase();
-
-    const headerName = document.getElementById('headerStoreName');
-    if (headerName) {
-        const existingBadge = document.querySelector('.role-badge');
-        if (existingBadge) existingBadge.remove();
-
-        const badge = document.createElement('span');
-        badge.className = `role-badge ml-2 px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded text-white ${bgClass}`;
-        badge.textContent = label;
-        headerName.appendChild(badge);
-    }
-}
-
-function applyTablePermissions() {
-    // Já tratado dinamicamente no render das tabelas (ui.js)
-}
-
-function checkPermissionOrNotify(permission, action = 'realizar esta ação') {
-    if (!permission()) {
+/**
+ * Atalho para verificar e alertar se não puder
+ */
+function checkPermissionOrNotify(capability, action = 'realizar esta ação') {
+    if (!can(capability)) {
         showNotification(
-            'Sem Permissão',
-            `Você não tem permissão para ${action}. Entre em contato com um administrador.`,
+            'Acesso Restrito',
+            `Seu nível de conta não permite ${action}. Verifique seu plano ou cargo.`,
             'error'
         );
         return false;
@@ -230,43 +201,24 @@ function checkPermissionOrNotify(permission, action = 'realizar esta ação') {
     return true;
 }
 
-// Função para elevar o usuário atual a Master usando uma chave secreta
-async function elevateToMaster() {
-    const key = prompt('Digite a Chave Mestra para elevação de privilégios:');
-    if (!key) return;
+// Objeto de permissões para compatibilidade com módulos de UI
+const PERMISSIONS = {
+    canViewProducts: () => can('products:view'),
+    canManageProducts: () => can('products:manage'),
+    canEditProducts: () => can('products:manage'),
+    canDeleteProducts: () => can('products:manage'),
+    canViewProfit: () => can('finance:profit'),
+    canDeleteSales: () => can('sales:delete'),
+};
 
-    if (key === 'verum-master') {
-        try {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) return showNotification('Erro', 'Você precisa estar logado.', 'error');
-
-            const { error } = await supabaseClient
-                .from('profiles')
-                .update({ role: 'master' })
-                .eq('id', session.user.id);
-
-            if (error) throw error;
-
-            localStorage.setItem('userRole', 'master');
-            showNotification('Privilégios Elevados', 'Sua conta agora é MASTER. O sistema será reiniciado.', 'success');
-
-            setTimeout(() => location.reload(), 2000);
-        } catch (err) {
-            console.error(err);
-            showNotification('Erro na Elevação', err.message, 'error');
-        }
-    } else {
-        showNotification('Chave Inválida', 'A chave mestra informada está incorreta.', 'error');
-    }
-}
-
-// Exportar para uso global
-window.PERMISSIONS = PERMISSIONS;
+// Exportar globais
+window.ROLES = ROLES;
+window.PLANS = PLANS;
+window.PLAN_LIMITS = PLAN_LIMITS;
+window.can = can;
 window.hasMinimumRole = hasMinimumRole;
-window.hasRole = hasRole;
-window.hasAnyRole = hasAnyRole;
 window.applyUIPermissions = applyUIPermissions;
 window.checkPermissionOrNotify = checkPermissionOrNotify;
-window.ROLES = ROLES;
-window.resetAllUserRoles = resetAllUserRoles;
-window.elevateToMaster = elevateToMaster;
+window.getUserRole = getUserRole;
+window.getStorePlan = getStorePlan;
+window.PERMISSIONS = PERMISSIONS;

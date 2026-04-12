@@ -10,7 +10,7 @@ function sanitizeHTML(str) {
 
 // Carregar usuários do banco de dados
 async function loadUsers() {
-    if (!PERMISSIONS.canManageEmployees()) {
+    if (!can('users:manage')) {
         showNotification('Acesso Negado', 'Você não tem permissão para gerenciar usuários.', 'error');
         return;
     }
@@ -50,30 +50,30 @@ function renderUsersTable(currentUserId) {
     }
 
     const currentUserRole = getUserRole();
-    const isMaster = currentUserRole === 'master';
+    const isMaster = currentUserRole === ROLES.MASTER;
 
     // FILTRO DE INVISIBILIDADE (O PULO DO GATO)
     // Se eu não sou Master, eu não vejo Masters na lista.
     const visibleUsers = usuariosList.filter(user => {
-        if ((user.role === 'master' || user.role === 'programador') && !isMaster) return false;
+        if ((user.role === ROLES.MASTER || user.role === 'programador') && !isMaster) return false;
         return true;
     });
 
     tbody.innerHTML = visibleUsers.map(user => {
         // Lógica de permissão para edição
         const isSelf = user.id === currentUserId;
-        const isTargetMaster = user.role === 'master';
-        const isTargetDono = user.role === 'dono';
+        const isTargetMaster = user.role === ROLES.MASTER;
+        const isTargetDono = user.role === ROLES.DONO;
 
         let canEdit = false;
 
-        if (currentUserRole === 'master') {
+        if (currentUserRole === ROLES.MASTER) {
             // Master pode editar qualquer um (exceto a si mesmo, tratado abaixo)
             canEdit = true;
-        } else if (currentUserRole === 'dono') {
+        } else if (currentUserRole === ROLES.DONO) {
             // Dono pode editar vendedores e gerentes
             // Não pode editar Master nem outros Donos
-            if (user.role === 'vendedor' || user.role === 'gerente' || user.role === 'usuario') {
+            if (user.role === ROLES.VENDEDOR || user.role === ROLES.GERENTE || user.role === 'usuario') {
                 canEdit = true;
             }
         }
@@ -87,7 +87,7 @@ function renderUsersTable(currentUserId) {
         // 🔒 SANITIZAR dados do usuário para prevenir XSS
         const safeName = sanitizeHTML(user.nome || 'Usuário Sem Nome');
         const safeEmail = user.email ? sanitizeHTML(user.email) : '<span class="italic text-xs">Email não registrado</span>';
-        const safeRole = sanitizeHTML(user.role || 'vendedor');
+        const safeRole = sanitizeHTML(user.role || ROLES.VENDEDOR);
 
         return `
         <tr class="border-b dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -113,10 +113,10 @@ function renderUsersTable(currentUserId) {
                     class="p-2 text-sm border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none ${opacityClass}"
                     ${disabledAttr}
                 >
-                    <option value="vendedor" ${user.role === 'vendedor' || user.role === 'usuario' ? 'selected' : ''}>Vendedor</option>
-                    <option value="gerente" ${user.role === 'gerente' ? 'selected' : ''}>Gerente</option>
-                    <option value="dono" ${user.role === 'dono' || user.role === 'admin' ? 'selected' : ''}>Dono</option>
-                    ${isMaster ? `<option value="master" ${user.role === 'master' ? 'selected' : ''}>Master</option>` : ''}
+                    <option value="vendedor" ${user.role === ROLES.VENDEDOR || user.role === 'usuario' ? 'selected' : ''}>Vendedor</option>
+                    <option value="gerente" ${user.role === ROLES.GERENTE ? 'selected' : ''}>Gerente</option>
+                    <option value="dono" ${user.role === ROLES.DONO || user.role === 'admin' ? 'selected' : ''}>Dono</option>
+                    ${isMaster ? `<option value="master" ${user.role === ROLES.MASTER ? 'selected' : ''}>Master</option>` : ''}
                 </select>
             </td>
         </tr>
@@ -126,17 +126,17 @@ function renderUsersTable(currentUserId) {
 // Helper para cores das badges
 function getRoleBadgeClass(role) {
     switch (role) {
-        case 'master': return 'bg-red-100 text-red-700 border-red-200';
-        case 'dono': return 'bg-amber-100 text-amber-700 border-amber-200';
-        case 'gerente': return 'bg-blue-100 text-blue-700 border-blue-200';
-        case 'vendedor': return 'bg-gray-100 text-gray-700 border-gray-200';
+        case ROLES.MASTER: return 'bg-red-100 text-red-700 border-red-200';
+        case ROLES.DONO: return 'bg-amber-100 text-amber-700 border-amber-200';
+        case ROLES.GERENTE: return 'bg-blue-100 text-blue-700 border-blue-200';
+        case ROLES.VENDEDOR: return 'bg-gray-100 text-gray-700 border-gray-200';
         default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
 }
 
 // Alterar o nível de acesso
 async function changeUserRole(userId, newRole) {
-    if (!PERMISSIONS.canManageEmployees()) return;
+    if (!can('users:manage')) return;
 
     // Confirmação visual rápida (Optimistic UI)
     const userIndex = usuariosList.findIndex(u => u.id === userId);
