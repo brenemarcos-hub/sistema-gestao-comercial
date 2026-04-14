@@ -2,7 +2,7 @@
 let chartFinCategorias = null;
 
 // Carregar despesas do banco
-async function loadExpenses() {
+async function loadExpenses(forceRefresh = false) {
     if (!supabaseClient) return;
 
     const lojaId = await getUserLojaId();
@@ -11,7 +11,19 @@ async function loadExpenses() {
         return;
     }
 
+    // Tentar carregar do cache
+    if (!forceRefresh) {
+        const cached = typeof getFromCache === 'function' ? getFromCache(`despesas_${lojaId}`) : null;
+        if (cached) {
+            despesas = cached;
+            renderExpensesTable();
+            updateFinancialDashboard();
+            return;
+        }
+    }
+
     try {
+        console.log('📡 Buscando despesas do banco de dados...');
         const { data, error } = await supabaseClient
             .from('despesas')
             .select('*')
@@ -20,6 +32,10 @@ async function loadExpenses() {
 
         if (error) throw error;
         despesas = data || [];
+
+        // Salvar no cache
+        if (typeof saveToCache === 'function') saveToCache(`despesas_${lojaId}`, despesas);
+
         renderExpensesTable();
         updateFinancialDashboard();
     } catch (error) {
@@ -79,16 +95,16 @@ function renderExpensesTable() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors';
         row.innerHTML = `
-            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">${item.descricao}</td>
-            <td class="px-6 py-4 text-sm text-gray-500 italic">${item.categoria || 'Outros'}</td>
-            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-bold">${valorFormat}</td>
-            <td class="px-6 py-4 text-sm text-gray-500">${dataVenc}</td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white" data-label="Descrição">${item.descricao}</td>
+            <td class="px-6 py-4 text-sm text-gray-500 italic" data-label="Categoria">${item.categoria || 'Outros'}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-bold" data-label="Valor">${valorFormat}</td>
+            <td class="px-6 py-4 text-sm text-gray-500" data-label="Vencimento">${dataVenc}</td>
+            <td class="px-6 py-4" data-label="Status">
                 <span class="px-2 py-1 text-[10px] font-bold rounded-full ${item.pago ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'} uppercase">
                     ${item.pago ? 'PAGO' : 'PENDENTE'}
                 </span>
             </td>
-            <td class="px-6 py-4 text-sm font-medium">
+            <td class="px-6 py-4 text-sm font-medium" data-label="Ações">
                 <button onclick="editExpense('${item.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
                 <button onclick="deleteExpense('${item.id}')" class="text-rose-600 hover:text-rose-900"><i class="fas fa-trash"></i></button>
             </td>
@@ -131,7 +147,7 @@ async function saveExpense(e) {
         }
 
         closeSidebarExpense();
-        loadExpenses();
+        loadExpenses(true);
     } catch (error) {
         console.error('Erro ao salvar despesa:', error);
         capturarErro(error, { funcao: 'saveExpense', descricao: descricao });
@@ -160,7 +176,7 @@ async function deleteExpense(id) {
     try {
         await supabaseClient.from('despesas').delete().eq('id', id);
         showNotification('Sucesso', 'Despesa excluída.', 'success');
-        loadExpenses();
+        loadExpenses(true);
     } catch (error) {
         capturarErro(error, { funcao: 'deleteExpense', id: id });
         showNotification('Erro', 'Não foi possível excluir.', 'error');

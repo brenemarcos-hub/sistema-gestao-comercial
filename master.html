@@ -72,8 +72,13 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-                        <nav class="flex items-center gap-2 whitespace-nowrap">
+                        <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+                            <button onclick="carregarDadosMaster()" 
+                                class="p-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-xl transition"
+                                title="Recarregar Dados">
+                                <i class="fas fa-sync-alt" id="masterRefreshIcon"></i>
+                            </button>
+                            <nav class="flex items-center gap-2 whitespace-nowrap">
                             <a href="app.html" class="px-3 py-1.5 text-[9px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg border border-rose-500/20">
                                 <i class="fas fa-home"></i> App
                             </a>
@@ -497,6 +502,9 @@
         }
 
         async function carregarDadosMaster() {
+            const icon = document.getElementById('masterRefreshIcon');
+            if (icon) icon.classList.add('fa-spin');
+            
             try {
                 console.log('🔄 Sincronizando dados globais...');
                 
@@ -515,6 +523,8 @@
 
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
             }
         }
 

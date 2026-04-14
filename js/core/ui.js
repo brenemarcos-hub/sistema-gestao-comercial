@@ -403,7 +403,7 @@ function renderProductsTable() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50';
         row.innerHTML = `
-            <td class="px-6 py-4">
+            <td class="px-6 py-4" data-label="Produto">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-slate-600 cursor-zoom-in" onclick="openImageModal('${produto.imagem_url}')">
                         ${produto.imagem_url ? `<img src="${produto.imagem_url}" class="w-full h-full object-cover">` : `<i class="fas fa-image text-gray-300"></i>`}
@@ -414,22 +414,22 @@ function renderProductsTable() {
                     </div>
                 </div>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4" data-label="Categoria">
                 <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm border
                 ${categoryColors[produto.categoria] || 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}">
                     ${produto.categoria}
                 </span>
             </td>
-            <td class="px-6 py-4 text-sm font-bold text-gray-500 uppercase tracking-tighter">
+            <td class="px-6 py-4 text-sm font-bold text-gray-500 uppercase tracking-tighter" data-label="SKU">
                 ${produto.sku}
             </td>
-            <td class="px-6 py-4 text-sm font-black text-indigo-600 dark:text-indigo-400">
+            <td class="px-6 py-4 text-sm font-black text-indigo-600 dark:text-indigo-400" data-label="Preço">
                 R$ ${parseFloat(produto.preco_venda).toFixed(2).replace('.', ',')}
             </td>
-            <td class="px-6 py-4 text-sm font-bold ${estoqueTotal === 0 ? 'text-rose-500' : 'text-slate-500'}">
+            <td class="px-6 py-4 text-sm font-bold ${estoqueTotal === 0 ? 'text-rose-500' : 'text-slate-500'}" data-label="Estoque">
                 ${estoqueTotal}
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4" data-label="Status">
                 ${estoqueTotal === 0 ? 
                     '<span class="px-2 py-1 text-[9px] font-black bg-rose-100 text-rose-700 rounded-full border border-rose-200 uppercase">Esgotado</span>' : 
                     temBaixo ? 
@@ -437,7 +437,7 @@ function renderProductsTable() {
                     '<span class="px-2 py-1 text-[9px] font-black bg-emerald-100 text-emerald-700 rounded-full border border-emerald-200 uppercase">Em Dia</span>'
                 }
             </td>
-            <td class="px-6 py-4 text-sm font-medium">
+            <td class="px-6 py-4 text-sm font-medium" data-label="Ações">
                 <button onclick="viewProductDetails('${produto.id}')" class="text-indigo-600 hover:text-indigo-900 mr-2" title="Ver Detalhes">
                     <i class="fas fa-eye text-lg"></i>
                 </button>
@@ -476,8 +476,8 @@ function renderSalesTable() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50 text-sm';
         row.innerHTML = `
-            <td class="px-6 py-4 text-gray-500">${new Date(v.criado_em).toLocaleString('pt-BR')}</td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4 text-gray-500" data-label="Data">${new Date(v.criado_em).toLocaleString('pt-BR')}</td>
+            <td class="px-6 py-4" data-label="Produto">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded bg-gray-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-slate-600 cursor-zoom-in" onclick="openImageModal('${v.produtos?.imagem_url}')">
                         ${v.produtos?.imagem_url ? `<img src="${v.produtos?.imagem_url}" class="w-full h-full object-cover">` : `<i class="fas fa-image text-[10px] text-gray-300"></i>`}
@@ -485,16 +485,16 @@ function renderSalesTable() {
                     <div class="font-medium text-gray-900 dark:text-white">${v.produtos?.nome || 'Excluído'}</div>
                 </div>
             </td>
-            <td class="px-6 py-4 text-gray-500">${v.cliente_nome || 'Venda Direta'}</td>
-            <td class="px-6 py-4 text-gray-500">${v.variantes?.tamanho || '-'} / ${v.variantes?.cor || '-'}</td>
-            <td class="px-6 py-4">${v.quantidade}</td>
-            <td class="px-6 py-4 text-gray-500">R$ ${v.preco_unitario ? parseFloat(v.preco_unitario).toFixed(2).replace('.', ',') : (parseFloat(v.total) / v.quantidade).toFixed(2).replace('.', ',')}</td>
-            <td class="px-6 py-4 text-emerald-600 font-bold">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
-            <td class="px-6 py-4 text-xs">
+            <td class="px-6 py-4 text-gray-500" data-label="Cliente">${v.cliente_nome || 'Venda Direta'}</td>
+            <td class="px-6 py-4 text-gray-500" data-label="Variante">${v.variantes?.tamanho || '-'} / ${v.variantes?.cor || '-'}</td>
+            <td class="px-6 py-4" data-label="Qtd">${v.quantidade}</td>
+            <td class="px-6 py-4 text-gray-500" data-label="Preço Un.">R$ ${v.preco_unitario ? parseFloat(v.preco_unitario).toFixed(2).replace('.', ',') : (parseFloat(v.total) / v.quantidade).toFixed(2).replace('.', ',')}</td>
+            <td class="px-6 py-4 text-emerald-600 font-bold" data-label="Total">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
+            <td class="px-6 py-4 text-xs" data-label="Pagamento">
                 <div class="font-bold text-gray-700 dark:text-gray-200">${v.metodo_pagamento || 'N/A'}</div>
                 ${v.parcelas > 1 ? `<div class="text-[9px] text-gray-500">${v.parcelas}x${v.data_proximo ? ` • Prox: ${new Date(v.data_proximo).toLocaleDateString('pt-BR')}` : ''}</div>` : ''}
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4" data-label="Status">
                 <select onchange="changeSaleStatus('${v.id}', this.value)" 
                     class="px-2 py-1 text-[10px] font-bold rounded-full uppercase border-none cursor-pointer focus:ring-0
                     ${v.status_pagamento === 'pago' ? 'bg-emerald-100 text-emerald-700' : 
@@ -505,7 +505,7 @@ function renderSalesTable() {
                     <option value="pendente" ${v.status_pagamento === 'pendente' ? 'selected' : ''}>PENDENTE</option>
                 </select>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4" data-label="Ações">
                 ${PERMISSIONS.canDeleteSales() ? `<button onclick="deleteSale('${v.id}')" class="text-rose-600 hover:text-rose-900 delete-sale-btn" title="Excluir Venda"><i class="fas fa-trash"></i></button>` : ''}
             </td>
         `;

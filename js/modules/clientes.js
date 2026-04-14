@@ -1,5 +1,5 @@
 // Carregar clientes do banco
-async function loadClientes() {
+async function loadClientes(forceRefresh = false) {
     if (!supabaseClient) return;
 
     const lojaId = await getUserLojaId();
@@ -8,7 +8,19 @@ async function loadClientes() {
         return;
     }
 
+    // Tentar carregar do cache primeiro
+    if (!forceRefresh) {
+        const cached = typeof getFromCache === 'function' ? getFromCache(`clientes_${lojaId}`) : null;
+        if (cached) {
+            clientes = cached;
+            renderClientesTable();
+            updateSaleClienteDropdown();
+            return;
+        }
+    }
+
     try {
+        console.log('📡 Buscando clientes do banco de dados...');
         const { data, error } = await supabaseClient
             .from('clientes')
             .select('*')
@@ -17,6 +29,10 @@ async function loadClientes() {
 
         if (error) throw error;
         clientes = data || [];
+        
+        // Salvar no cache
+        if (typeof saveToCache === 'function') saveToCache(`clientes_${lojaId}`, clientes);
+
         renderClientesTable();
         updateSaleClienteDropdown();
     } catch (error) {
@@ -53,34 +69,36 @@ function renderClientesTable() {
         const row = document.createElement('tr');
         row.className = 'hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors';
         row.innerHTML = `
-            <td class="px-6 py-4">
+            <td class="px-6 py-4" data-label="Cliente">
                 <div class="flex items-center gap-3">
                     <div>
                         <div class="text-sm font-bold text-gray-900 dark:text-white">${cliente.nome}</div>
                         <div class="text-[10px] text-gray-400 truncate max-w-xs">${cliente.endereco || 'Sem endereço'}</div>
                     </div>
-                    ${totalDevendo > 0 ? `
-                        <div class="flex flex-col items-end ml-auto">
+                </div>
+            </td>
+            <td class="px-6 py-4" data-label="Financeiro">
+                 ${totalDevendo > 0 ? `
+                        <div class="flex flex-col items-end">
                             <span class="bg-rose-100 text-rose-700 text-[10px] font-black px-2 py-0.5 rounded-full border border-rose-200">
                                 DEVENDO R$ ${totalDevendo.toFixed(2).replace('.', ',')}
                             </span>
                             ${dataProximoPay ? `<span class="text-[9px] text-rose-500 font-bold mt-1">Prox: ${new Date(dataProximoPay).toLocaleDateString('pt-BR')}</span>` : ''}
                         </div>
                     ` : `
-                        <span class="ml-auto bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full">
+                        <span class="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full">
                             EM DIA
                         </span>
                     `}
-                </div>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300" data-label="WhatsApp">
                 <a href="https://wa.me/${cliente.whatsapp?.replace(/\D/g, '')}" target="_blank" class="hover:text-green-500 transition">
                     <i class="fab fa-whatsapp mr-1 text-green-500"></i> ${cliente.whatsapp || '-'}
                 </a>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-500">${cliente.cpf_cnpj || '-'}</td>
-            <td class="px-6 py-4 text-sm text-gray-500">${dataCadastro}</td>
-            <td class="px-6 py-4 text-sm font-medium">
+            <td class="px-6 py-4 text-sm text-gray-500" data-label="CPF/CNPJ">${cliente.cpf_cnpj || '-'}</td>
+            <td class="px-6 py-4 text-sm text-gray-500" data-label="Cadastro">${dataCadastro}</td>
+            <td class="px-6 py-4 text-sm font-medium" data-label="Ações">
                 <button onclick="openClientHistory('${cliente.id}')" class="text-amber-600 hover:text-amber-900 mr-3" title="Histórico">
                     <i class="fas fa-history"></i>
                 </button>
@@ -135,7 +153,7 @@ async function saveCliente(e) {
         }
 
         closeSidebarCliente();
-        loadClientes();
+        loadClientes(true);
     } catch (error) {
         console.error('Erro ao salvar cliente:', error);
         capturarErro(error, { funcao: 'saveCliente', nome: nome });
@@ -175,7 +193,7 @@ async function deleteCliente(id) {
         // Registrar Ação: Exclusão
         registrarAcao(null, null, 'excluiu_cliente', 'cliente', id);
 
-        loadClientes();
+        loadClientes(true);
     } catch (error) {
         console.error('Erro ao excluir cliente:', error);
         capturarErro(error, { funcao: 'deleteCliente', clienteId: id });

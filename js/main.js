@@ -9,10 +9,39 @@ document.addEventListener('DOMContentLoaded', async function () {
     // O cliente já é inicializado no config.js
     if (supabaseClient) {
         await checkSession();
+        // --- NOVO: Forçar recarga de dados ao abrir o sistema ---
+        if (typeof refreshAllData === 'function') refreshAllData();
+        
         // --- NOVO: Auditoria mestre de acessos ---
         if (typeof registrarAcessoAuditoria === 'function') registrarAcessoAuditoria();
     }
 });
+
+// Funções de Recarga Global
+async function refreshAllData() {
+    const icon = document.getElementById('refreshIcon');
+    if (icon) icon.classList.add('fa-spin');
+    
+    console.log('🔄 Iniciando sincronização global de dados...');
+    
+    try {
+        // Carrega tudo forçando refresh do cache
+        await Promise.all([
+            typeof loadProducts === 'function' ? loadProducts(true) : Promise.resolve(),
+            typeof loadSales === 'function' ? loadSales(true) : Promise.resolve(),
+            typeof loadClientes === 'function' ? loadClientes(true) : Promise.resolve(),
+            typeof loadExpenses === 'function' ? loadExpenses(true) : Promise.resolve()
+        ]);
+        
+        showNotification('Sincronizado', 'Todos os dados foram atualizados com sucesso.', 'success');
+    } catch (err) {
+        console.error('Erro na sincronização:', err);
+        showNotification('Erro', 'Falha ao sincronizar alguns dados.', 'error');
+    } finally {
+        if (icon) icon.classList.remove('fa-spin');
+    }
+}
+window.refreshAllData = refreshAllData;
 
 // --- CAPTURA GLOBAL DE ERROS ---
 window.addEventListener('error', (event) => {

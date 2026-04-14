@@ -107,7 +107,29 @@ async function testConnection() {
 }
 
 
-async function loadProducts() {
+// --- CACHE INTELIGENTE ---
+const CACHE_EXPIRATION = 5 * 60 * 1000; // 5 minutos
+
+function getFromCache(key) {
+    try {
+        const cached = localStorage.getItem(key);
+        if (!cached) return null;
+        const { data, timestamp } = JSON.parse(cached);
+        if (Date.now() - timestamp > CACHE_EXPIRATION) return null;
+        console.log(`⚡ Dados carregados do cache: ${key}`);
+        return data;
+    } catch (e) { return null; }
+}
+window.getFromCache = getFromCache;
+
+function saveToCache(key, data) {
+    try {
+        localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+    } catch (e) { console.warn('Falha ao salvar no cache local', e); }
+}
+window.saveToCache = saveToCache;
+
+async function loadProducts(forceRefresh = false) {
     if (!supabaseClient) return;
 
     const lojaId = await getUserLojaId();
@@ -116,29 +138,37 @@ async function loadProducts() {
         return;
     }
 
+    // Tentar carregar do cache primeiro (se não for refresh forçado)
+    if (!forceRefresh) {
+        const cached = getFromCache(`produtos_${lojaId}`);
+        if (cached) {
+            produtos = cached;
+            updateSummaryCards();
+            renderProductsTable();
+            // Carrega o resto do cache ou banco
+            loadClientes();
+            if (activeTab === 'relatorios') renderCharts();
+            return;
+        }
+    }
+
     try {
+        console.log('📡 Buscando produtos do banco de dados...');
+        
+        // 🚀 OTIMIZAÇÃO: Busca única com variantes (Join)
         const { data: produtosData, error: produtosError } = await supabaseClient
             .from('produtos')
-            .select('*')
+            .select('*, variantes(*)') // Pegamos o produto E todas as suas variantes em uma só query
             .eq('loja_id', lojaId)
             .order('criado_em', { ascending: false });
 
         if (produtosError) throw produtosError;
 
-        const produtosComVariantes = await Promise.all(
-            produtosData.map(async (produto) => {
-                const { data: variantes, error: variantesError } = await supabaseClient
-                    .from('variantes')
-                    .select('*')
-                    .eq('id_produto', produto.id);
+        produtos = produtosData || [];
+        
+        // Salvar no cache
+        saveToCache(`produtos_${lojaId}`, produtos);
 
-                if (variantesError) throw variantesError;
-
-                return { ...produto, variantes: variantes || [] };
-            })
-        );
-
-        produtos = produtosComVariantes;
         updateSummaryCards();
         renderProductsTable();
         await loadClientes();
@@ -315,7 +345,7 @@ async function saveProduct(e) {
         document.getElementById('sidebar').classList.remove('open');
         stopAutoSave();
         resetForm();
-        loadProducts();
+        loadProducts(true);
 
     } catch (error) {
         console.error('Erro ao salvar:', error);
@@ -368,7 +398,7 @@ async function deleteProduct(productId) {
         // Registrar Ação: Exclusão
         registrarAcao(null, null, 'excluiu_produto', 'produto', productId);
 
-        loadProducts();
+        loadProducts(true);
     } catch (error) {
         console.error('Erro ao excluir:', error);
         capturarErro(error, { funcao: 'deleteProduct', productId: productId });
@@ -413,7 +443,7 @@ async function registrarAcessoAuditoria() {
 }
 
 // Carregar vendas
-async function loadSales() {
+async function loadSales(forceRefresh = false) {
     if (!supabaseClient) return;
 
     const lojaId = await getUserLojaId();
@@ -422,7 +452,20 @@ async function loadSales() {
         return;
     }
 
+    // Cache para vendas
+    if (!forceRefresh) {
+        const cached = getFromCache(`vendas_${lojaId}`);
+        if (cached) {
+            vendas = cached;
+            renderSalesTable();
+            updateSalesSummary();
+            if (activeTab === 'relatorios') renderCharts();
+            return;
+        }
+    }
+
     try {
+        console.log('📡 Buscando vendas do banco de dados...');
         const { data, error } = await supabaseClient
             .from('vendas')
             .select('*')
@@ -434,9 +477,8 @@ async function loadSales() {
             const produto = produtos.find(p => p.id == venda.id_produto);
             const variante = produto ? produto.variantes.find(v => v.id == venda.id_variante) : null;
             
-            // Suporte para ambos os nomes de coluna (id_cliente ou cliente_id)
             const idC = venda.id_cliente || venda.cliente_id;
-            const cliente = clientes.find(c => c.id == idC);
+            const cliente = (typeof clientes !== 'undefined' ? clientes : []).find(c => c.id == idC);
 
             return {
                 ...venda,
@@ -451,6 +493,9 @@ async function loadSales() {
                 cliente_nome: cliente ? cliente.nome : 'Venda Direta'
             };
         });
+
+        // Salvar no cache
+        saveToCache(`vendas_${lojaId}`, vendas);
 
         renderSalesTable();
         updateSalesSummary();
@@ -553,8 +598,8 @@ async function saveSale(e) {
         renderCart();
 
         // Recarregar dados em ordem para evitar "Produto Removido"
-        await loadProducts();
-        await loadSales();
+        await loadProducts(true);
+        await loadSales(true);
 
     } catch (error) {
         console.error('Erro na venda multi-item:', error);
@@ -613,8 +658,8 @@ async function deleteSale(saleId) {
             .eq('loja_id', lojaId); // Segurança extra
 
         showNotification('Venda excluída', 'Estoque restaurado.', 'success');
-        await loadProducts();
-        await loadSales();
+        await loadProducts(true);
+        await loadSales(true);
     } catch (error) {
         console.error('Erro ao excluir venda:', error);
         showNotification('Erro', 'Não foi possível restaurar estoque.', 'error');
@@ -641,7 +686,7 @@ async function changeSaleStatus(saleId, newStatus) {
 
         // Recarregar dados
         loadSales();
-        loadProducts();
+        loadProducts(true);
     } catch (error) {
         console.error('Erro ao mudar status:', error);
         showNotification('Erro', 'Não foi possível atualizar o status.', 'error');

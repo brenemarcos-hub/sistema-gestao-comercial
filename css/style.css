@@ -172,7 +172,15 @@ body {
     border-radius: 0.75rem;
     display: flex;
     gap: 0.25rem;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav-pill-container::-webkit-scrollbar {
+    display: none;
 }
 
 .dark .nav-pill-container {
@@ -219,19 +227,58 @@ body {
 @media (max-width: 768px) {
     .nav-pill-container {
         width: 100%;
+        justify-content: flex-start;
     }
 
     .nav-pill-btn span {
-        display: none;
+        display: block;
+        font-size: 10px;
     }
 
     .nav-pill-btn {
-        padding: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        min-width: fit-content;
+        flex-direction: column;
+        gap: 0.25rem;
     }
 
     .nav-pill-btn i {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         margin: 0;
+    }
+    
+    /* Tabelas Responsivas */
+    .responsive-table thead {
+        display: none;
+    }
+    
+    .responsive-table tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+        background: var(--card-bg);
+    }
+    
+    .responsive-table td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center;
+        padding: 0.5rem 0.75rem !important;
+        border: none !important;
+        text-align: right;
+        min-height: 40px;
+    }
+    
+    .responsive-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 10px;
+        color: var(--text-muted);
+        text-align: left;
+        margin-right: 1rem;
     }
 }
 
@@ -296,7 +343,7 @@ body {
     transform: translateY(-5px);
 }
 
-/* Conteúdo Padrão (Número + Ícone) */
+/* ConteÃºdo PadrÃ£o (NÃºmero + Ãcone) */
 .card-hover .main-content {
     opacity: 1;
     transform: scale(1);
@@ -312,7 +359,7 @@ body {
     pointer-events: none;
 }
 
-/* Conteúdo Detalhado (Insights - aparece no hover) */
+/* ConteÃºdo Detalhado (Insights - aparece no hover) */
 .card-hover .hover-content {
     position: absolute;
     inset: 0;
@@ -361,7 +408,7 @@ body {
 .slide-in-from-top-2 { animation: slideInFromTop 0.3s ease forwards; }
 @keyframes slideInFromTop { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* Utilit�rios Globais */
+/* Utilitários Globais */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
