@@ -116,11 +116,28 @@ async function capturarErro(erro, contexto = {}) {
 }
 
 // 4. REGISTRAR AÇÃO DO USUÁRIO (Bloco 4 Correção)
-async function registrarAcao(dados) {
+// 4. REGISTRAR AÇÃO DO USUÁRIO (Compatível com múltiplos formatos)
+async function registrarAcao(arg1, arg2, arg3, arg4, arg5, arg6) {
     const db = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
     if (!db) return;
 
     try {
+        let dados;
+        // Verifica se veio no formato de objeto único ou argumentos espalhados
+        if (arg1 && typeof arg1 === 'object' && arg1.acao) {
+            dados = arg1;
+        } else {
+            // Se veio no formato: null, null, acao, entidade, entidade_id, detalhes
+            // Ou no formato: acao, entidade, entidade_id, detalhes
+            const temNulls = (arg1 === null);
+            dados = {
+                acao: temNulls ? arg3 : arg1,
+                entidade: temNulls ? arg4 : arg2,
+                entidade_id: temNulls ? arg5 : arg3,
+                detalhes: (temNulls ? arg6 : arg4) || {}
+            };
+        }
+
         const { data: { session } } = await db.auth.getSession();
         const usuarioId = session?.user?.id;
         const usuarioEmail = session?.user?.email;
@@ -135,10 +152,7 @@ async function registrarAcao(dados) {
             criado_em: new Date().toISOString()
         };
 
-        const { error } = await db
-            .from('logs_acoes')
-            .insert(acaoData);
-
+        const { error } = await db.from('logs_acoes').insert(acaoData);
         if (error) console.error('Erro ao registrar ação:', error);
     } catch (err) {
         console.error('Falha no registro de ação:', err);

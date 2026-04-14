@@ -2,10 +2,23 @@ function updateDashboardMetrics() {
     if (!produtos || !vendas) return;
 
     const agora = new Date();
-    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-    const trintaDiasAtras = new Date(hoje);
+    
+    // Helper para obter data local YYYY-MM-DD (Evita bug de UTC)
+    const getLocalDateStr = (date) => {
+        const d = new Date(date);
+        return d.getFullYear() + '-' + 
+               String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(d.getDate()).padStart(2, '0');
+    };
+
+    const hojeStr = getLocalDateStr(agora);
+    const mesAtual = agora.getMonth();
+    const anoAtual = agora.getFullYear();
+    const seteDiasAtras = new Date(agora);
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+    const trintaDiasAtras = new Date(agora);
     trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
-    const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+    const inicioMes = new Date(anoAtual, mesAtual, 1);
 
     let dinheiroParado = 0, totalEstoqueCritico = 0, totalEstoqueParado = 0;
     const categoriasImpacto = {};
@@ -13,8 +26,8 @@ function updateDashboardMetrics() {
     produtos.forEach(p => {
         let valorProduto = 0, temEstoque = false;
         p.variantes.forEach(v => {
-            // Usa custo da variante ou fallback de 70% do preço de venda
-            const custoItem = parseFloat(v.custo_unitario) || (parseFloat(p.preco_venda) * 0.7);
+            // Usa custo real ou estimativa de 60%
+            const custoItem = parseFloat(v.custo_unitario) || (parseFloat(p.preco_venda) * 0.6);
             const vVal = (Number(v.estoque_atual) || 0) * custoItem;
             valorProduto += vVal;
             if (v.estoque_atual > 0) temEstoque = true;
@@ -23,25 +36,24 @@ function updateDashboardMetrics() {
         dinheiroParado += valorProduto;
         const cat = p.categoria || 'Sem Categoria';
         categoriasImpacto[cat] = (categoriasImpacto[cat] || 0) + valorProduto;
+        
+        // Estoque parado: itens criados há mais de 30 dias que ainda tem estoque
         if (new Date(p.criado_em) < trintaDiasAtras && temEstoque) totalEstoqueParado++;
     });
 
     let faturamentoMes = 0, qtdVendasMes = 0;
     let faturamentoHoje = 0, faturamento7d = 0;
 
-    const seteDiasAtras = new Date(hoje);
-    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
-    const hojeStr = agora.toISOString().split('T')[0];
-
     vendas.forEach(v => {
         const dataVenda = new Date(v.criado_em);
+        const itemDateStr = getLocalDateStr(dataVenda);
         const valor = Number(v.total) || 0;
 
         if (dataVenda >= inicioMes) {
             faturamentoMes += valor;
             qtdVendasMes++;
         }
-        if (v.criado_em.startsWith(hojeStr)) {
+        if (itemDateStr === hojeStr) {
             faturamentoHoje += valor;
         }
         if (dataVenda >= seteDiasAtras) {

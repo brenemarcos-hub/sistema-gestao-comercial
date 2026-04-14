@@ -179,7 +179,11 @@ function renderCharts(startDate = null, endDate = null, customSalesList = null) 
     const sourceData = customSalesList || vendas;
 
     if (!customSalesList && vendas && vendas.length > 0) {
-        localStorage.setItem('dashboardCacheVendas', JSON.stringify(vendas));
+        if (typeof saveToCache === 'function') {
+            saveToCache('dashboardCacheVendas', vendas);
+        } else {
+            localStorage.setItem('dashboardCacheVendas', JSON.stringify(vendas));
+        }
     }
 
     const filteredSales = filterSalesByDate(sourceData, startDate, endDate);

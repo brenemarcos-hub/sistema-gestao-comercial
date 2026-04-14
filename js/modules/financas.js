@@ -197,68 +197,148 @@ async function updateFinancialDashboard() {
 
     const periodoFilter = document.getElementById('finPeriodo')?.value || 'mes';
     const agora = new Date();
-    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
-
-    // Função auxiliar para filtrar por período
-    const isNoPeriodo = (dataStr) => {
-        const data = new Date(dataStr);
-        if (periodoFilter === 'hoje') return data.toDateString() === agora.toDateString();
-        if (periodoFilter === 'mes') return data.getMonth() === agora.getMonth() && data.getFullYear() === agora.getFullYear();
-        if (periodoFilter === '7d') {
-            const limite = new Date(hoje);
-            limite.setDate(limite.getDate() - 7);
-            return data >= limite;
-        }
-        if (periodoFilter === '30d') {
-            const limite = new Date(hoje);
-            limite.setDate(limite.getDate() - 30);
-            return data >= limite;
-        }
-        return true; // tudo
+    
+    // Helper para obter data local YYYY-MM-DD
+    const getLocalDateStr = (date) => {
+        const d = new Date(date);
+        return d.getFullYear() + '-' + 
+               String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(d.getDate()).padStart(2, '0');
     };
 
-    let faturamentoTotal = 0;
-    let recebidoTotal = 0;
-    let aReceberTotal = 0;
-    let custoProdutos = 0;
-    let totalDespesas = 0;
+    const hojeStr = getLocalDateStr(agora);
+    const mesAtual = agora.getMonth();
+    const anoAtual = agora.getFullYear();
+
+    // Filtro de Período Robusto
+    const isNoPeriodo = (dataStr) => {
+        const dataItem = new Date(dataStr);
+        const itemDateStr = getLocalDateStr(dataItem);
+        
+        if (periodoFilter === 'hoje') return itemDateStr === hojeStr;
+        
+        if (periodoFilter === 'mes') {
+            return dataItem.getMonth() === mesAtual && dataItem.getFullYear() === anoAtual;
+        }
+        
+        const diffDias = (agora - dataItem) / (1000 * 60 * 60 * 24);
+        if (periodoFilter === '7d') return diffDias <= 7;
+        if (periodoFilter === '30d') return diffDias <= 30;
+        
+        return true;
+    };
+
+    let faturamentoTotal = 0;   // Valor total de todas as vendas (Empenhado)
+    let recebidoTotal = 0;      // Dinheiro que já entrou (Pago)
+    let aReceberTotal = 0;      // Dinheiro que vai entrar (Pendente)
+    let custoTotalVendas = 0;   // CMV - Custo das Mercadorias Vendidas
+    let totalDespesas = 0;      // Gastos fixos/variáveis
     const categoriasMapa = {};
 
-    // 1. Receita e CMV (Cost of Goods Sold)
+    // 1. Processar Vendas
     vendas.forEach(v => {
         if (!isNoPeriodo(v.criado_em)) return;
 
-        const valor = parseFloat(v.total) || 0;
-        faturamentoTotal += valor;
+        const totalVenda = parseFloat(v.total) || 0;
+        faturamentoTotal += totalVenda;
 
         if (v.status_pagamento === 'pago' || v.status_pagamento === 'pago (atrasado)') {
-            recebidoTotal += valor;
+            recebidoTotal += totalVenda;
         } else {
-            aReceberTotal += valor;
+            aReceberTotal += totalVenda;
         }
 
+        // Cálculo de Custo (CMV)
         const prod = produtos.find(p => p.id == v.id_produto);
         if (prod) {
             const variant = prod.variantes.find(varItem => varItem.id == v.id_variante);
-            const custo = parseFloat(variant?.custo_unitario) || (parseFloat(prod.preco_venda) * 0.7);
-            custoProdutos += custo * v.quantidade;
+            // Fallback: Se não tiver custo, assume 60% do preço de venda como custo estimado
+            const custoUnitario = parseFloat(variant?.custo_unitario) || (parseFloat(v.preco_unitario || prod.preco_venda) * 0.6);
+            custoTotalVendas += custoUnitario * v.quantidade;
         }
     });
 
-    // ... (despesas logic same)
+    // 2. Processar Despesas
     despesas.forEach(d => {
-        const dataItem = d.data_vencimento ? new Date(d.data_vencimento) : new Date(d.criado_em);
-        if (!isNoPeriodo(dataItem)) return;
+        const dataReferencia = d.data_vencimento ? new Date(d.data_vencimento + 'T12:00:00') : new Date(d.criado_em);
+        if (!isNoPeriodo(dataReferencia)) return;
 
-        totalDespesas += parseFloat(d.valor) || 0;
+        const valorD = parseFloat(d.valor) || 0;
+        totalDespesas += valorD;
         
         const cat = d.categoria || 'Outros';
-        categoriasMapa[cat] = (categoriasMapa[cat] || 0) + parseFloat(d.valor);
+        categoriasMapa[cat] = (categoriasMapa[cat] || 0) + valorD;
     });
 
-    const lucroReal = recebidoTotal - custoProdutos - totalDespesas;
+    // --- CÁLCULOS FINAIS ---
+    const lucroLiquido = faturamentoTotal - custoTotalVendas - totalDespesas;
+    const saldoCaixa = recebidoTotal - totalDespesas;
 
-    // Atualiza Widgets
+    // --- LEMBRETES DE COBRANÇA (Vendas a Prazo / Fiado) ---
+    const listCobranca = document.getElementById('cobrancasList');
+    const sectionCobranca = document.getElementById('cobrancasSection');
+    
+    let aReceberMes = 0;
+    let aReceberFuturo = 0;
+
+    const pendenteVendas = vendas.filter(v => v.status_pagamento === 'pendente');
+    pendenteVendas.forEach(v => {
+        const valorVenda = parseFloat(v.total) || 0;
+        const vData = v.data_proximo ? new Date(v.data_proximo + 'T12:00:00') : agora;
+        
+        // Se a data de vencimento é este mês e este ano
+        if (vData.getMonth() === mesAtual && vData.getFullYear() === anoAtual) {
+            aReceberMes += valorVenda;
+        } else if (vData > agora) {
+            aReceberFuturo += valorVenda;
+        }
+    });
+
+    if (listCobranca && sectionCobranca) {
+        const proximasVendas = pendenteVendas.filter(v => 
+            v.data_proximo && 
+            new Date(v.data_proximo + 'T12:00:00') <= new Date(agora.getTime() + 7 * 24 * 60 * 60 * 1000) // Próximos 7 dias
+        ).sort((a, b) => new Date(a.data_proximo) - new Date(b.data_proximo));
+
+        if (proximasVendas.length > 0) {
+            sectionCobranca.classList.remove('hidden');
+            listCobranca.innerHTML = proximasVendas.map(v => {
+                const cliente = clientes.find(c => c.id == (v.id_cliente || v.cliente_id));
+                const valorParcela = parseFloat(v.total) / (v.parcelas_originais || v.parcelas || 1);
+                
+                return `
+                    <div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                <i class="fas fa-user text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-gray-900 dark:text-white">${cliente?.nome || 'Cliente não identificado'}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase">Vence em: ${new Date(v.data_proximo + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
+                                    <span class="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-bold border border-amber-100">${v.parcelas}x Restante</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <p class="text-[9px] text-gray-400 font-bold uppercase">Valor Parcela</p>
+                                <p class="text-sm font-black text-indigo-600">R$ ${valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                            </div>
+                            <button onclick="changeSaleStatus('${v.id}', 'pago')" 
+                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-black text-xs shadow-lg shadow-emerald-100 dark:shadow-none transition-all flex items-center gap-2">
+                                <i class="fas fa-check"></i> RECEBER
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            sectionCobranca.classList.add('hidden');
+        }
+    }
+
+    // Atualiza Widgets na tela
     const setElText = (id, text) => {
         const el = document.getElementById(id);
         if (el) el.textContent = text;
@@ -268,14 +348,17 @@ async function updateFinancialDashboard() {
 
     setElText('finFaturamentoTotal', formatBRL(faturamentoTotal));
     setElText('finRecebidoTotal', formatBRL(recebidoTotal));
-    setElText('finAReceberTotal', formatBRL(aReceberTotal));
-    setElText('finDespesasTotal', formatBRL(custoProdutos + totalDespesas));
-    setElText('finLucroLiquido', formatBRL(lucroReal));
+    setElText('finAReceberTotal', formatBRL(aReceberMes + aReceberFuturo));
+    setElText('finAReceberMes', formatBRL(aReceberMes));
+    setElText('finAReceberFuturo', formatBRL(aReceberFuturo));
+    
+    setElText('finDespesasTotal', formatBRL(custoTotalVendas + totalDespesas)); 
+    setElText('finLucroLiquido', formatBRL(lucroLiquido));
     setElText('finTotalExpensesFormatted', formatBRL(totalDespesas));
-
+    
     const lucroEl = document.getElementById('finLucroLiquido');
     if (lucroEl) {
-        lucroEl.className = `text-xl font-black ${lucroReal >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+        lucroEl.className = `text-xl font-black ${lucroLiquido >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
     }
 
     renderFinanceCharts(categoriasMapa);

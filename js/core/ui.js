@@ -506,7 +506,7 @@ function renderSalesTable() {
                 </select>
             </td>
             <td class="px-6 py-4" data-label="Ações">
-                ${PERMISSIONS.canDeleteSales() ? `<button onclick="deleteSale('${v.id}')" class="text-rose-600 hover:text-rose-900 delete-sale-btn" title="Excluir Venda"><i class="fas fa-trash"></i></button>` : ''}
+                ${PERMISSIONS.canDeleteSales() ? `<button onclick="deleteSale('${v.id}')" class="text-rose-600 hover:text-rose-900 p-1.5 hover:bg-rose-50 rounded-lg transition" title="Excluir Venda"><i class="fas fa-trash"></i></button>` : ''}
             </td>
         `;
         tableBody.appendChild(row);
@@ -521,9 +521,21 @@ function applyTheme(theme) {
 }
 
 function updateSalesSummary() {
-    const hoje = new Date().toISOString().split('T')[0];
-    const vHoje = vendas.filter(v => v.criado_em && v.criado_em.startsWith(hoje));
-    const total = vendas.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
+    const agora = new Date();
+    const getLocalDateStr = (d) => {
+        const date = new Date(d);
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    };
+    
+    const hojeStr = getLocalDateStr(agora);
+    const vHoje = vendas.filter(v => v.criado_em && getLocalDateStr(v.criado_em) === hojeStr);
+    
+    // Faturamento Total de HOJE
+    const faturamentoHoje = vHoje.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
+    // Lifetime total (Opcional: Pode manter se preferir visão geral, mas aqui priorizamos clareza)
+    const lifetimeTotal = vendas.reduce((acc, v) => acc + (parseFloat(v.total) || 0), 0);
 
     const setElText = (id, text) => {
         const el = document.getElementById(id);
@@ -532,7 +544,7 @@ function updateSalesSummary() {
 
     setElText('vendasHoje', vHoje.length);
     setElText('totalVendido', vendas.length);
-    setElText('receitaTotal', `R$ ${total.toFixed(2).replace('.', ',')}`);
+    setElText('receitaTotal', `R$ ${faturamentoHoje.toFixed(2).replace('.', ',')}`);
 
     // Insights de Vendas
     const ultimaVenda = [...vHoje].sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em))[0];
@@ -545,7 +557,7 @@ function updateSalesSummary() {
 
     const elTotalVendido = document.getElementById('insightTotalVendido');
     if (elTotalVendido) {
-        elTotalVendido.textContent = `Aprox. R$ ${(total / Math.max(vendas.length, 1)).toFixed(2)} por pedido`;
+        elTotalVendido.textContent = `Aprox. R$ ${(lifetimeTotal / Math.max(vendas.length, 1)).toFixed(2)} por pedido`;
     }
 
     // Produto mais vendido em valor

@@ -56,7 +56,7 @@ function renderClientesTable() {
     tableBody.innerHTML = '';
 
     if (filtered.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Nenhum cliente encontrado</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Nenhum cliente encontrado</td></tr>';
         return;
     }
     filtered.forEach(cliente => {
@@ -71,43 +71,49 @@ function renderClientesTable() {
         row.innerHTML = `
             <td class="px-6 py-4" data-label="Cliente">
                 <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 hidden md:flex">
+                        <i class="fas fa-user text-xs"></i>
+                    </div>
                     <div>
                         <div class="text-sm font-bold text-gray-900 dark:text-white">${cliente.nome}</div>
-                        <div class="text-[10px] text-gray-400 truncate max-w-xs">${cliente.endereco || 'Sem endereço'}</div>
+                        <div class="text-[10px] text-gray-400 truncate max-w-[150px]">${cliente.endereco || 'Sem endereço'}</div>
                     </div>
                 </div>
             </td>
             <td class="px-6 py-4" data-label="Financeiro">
                  ${totalDevendo > 0 ? `
-                        <div class="flex flex-col items-end">
-                            <span class="bg-rose-100 text-rose-700 text-[10px] font-black px-2 py-0.5 rounded-full border border-rose-200">
-                                DEVENDO R$ ${totalDevendo.toFixed(2).replace('.', ',')}
+                        <div class="flex flex-col">
+                            <span class="bg-rose-100 text-rose-700 text-[10px] font-black px-2 py-0.5 rounded-full border border-rose-200 inline-block">
+                                R$ ${totalDevendo.toFixed(2).replace('.', ',')}
                             </span>
-                            ${dataProximoPay ? `<span class="text-[9px] text-rose-500 font-bold mt-1">Prox: ${new Date(dataProximoPay).toLocaleDateString('pt-BR')}</span>` : ''}
+                            ${dataProximoPay ? `<span class="text-[9px] text-rose-500 font-bold mt-1">Vence: ${new Date(dataProximoPay + 'T12:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
                         </div>
                     ` : `
-                        <span class="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full">
-                            EM DIA
-                        </span>
+                        <span class="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full">EM DIA</span>
                     `}
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300" data-label="WhatsApp">
-                <a href="https://wa.me/${cliente.whatsapp?.replace(/\D/g, '')}" target="_blank" class="hover:text-green-500 transition">
-                    <i class="fab fa-whatsapp mr-1 text-green-500"></i> ${cliente.whatsapp || '-'}
+            <td class="px-6 py-4" data-label="WhatsApp">
+                <a href="https://wa.me/${cliente.whatsapp?.replace(/\D/g, '')}" target="_blank" class="text-sm text-gray-600 dark:text-gray-300 hover:text-green-500 flex items-center gap-1">
+                    <i class="fab fa-whatsapp text-green-500"></i> ${cliente.whatsapp || '-'}
                 </a>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300" data-label="Aniversário">
+                ${cliente.data_aniversario ? `<span class="flex items-center gap-1"><i class="fas fa-birthday-cake text-amber-500"></i> ${cliente.data_aniversario}</span>` : '-'}
             </td>
             <td class="px-6 py-4 text-sm text-gray-500" data-label="CPF/CNPJ">${cliente.cpf_cnpj || '-'}</td>
             <td class="px-6 py-4 text-sm text-gray-500" data-label="Cadastro">${dataCadastro}</td>
             <td class="px-6 py-4 text-sm font-medium" data-label="Ações">
-                <button onclick="openClientHistory('${cliente.id}')" class="text-amber-600 hover:text-amber-900 mr-3" title="Histórico">
-                    <i class="fas fa-history"></i>
-                </button>
-                <button onclick="editCliente('${cliente.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteCliente('${cliente.id}')" class="text-rose-600 hover:text-rose-900" title="Excluir">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="openClientHistory('${cliente.id}')" class="text-amber-600 hover:text-amber-900" title="Histórico">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button onclick="editCliente('${cliente.id}')" class="text-indigo-600 hover:text-indigo-900" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteCliente('${cliente.id}')" class="text-rose-600 hover:text-rose-900" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         `;
         tableBody.appendChild(row);
@@ -120,13 +126,14 @@ async function saveCliente(e) {
 
     const nome = document.getElementById('clientNome').value.trim();
     const whatsapp = document.getElementById('clientWhatsapp').value.trim();
+    const aniversario = document.getElementById('clientAniversario').value.trim();
     const cpf = document.getElementById('clientCpf').value.trim();
     const endereco = document.getElementById('clientEndereco').value.trim();
 
     if (!nome) return showNotification('Aviso', 'O nome do cliente é obrigatório.', 'warning');
 
     try {
-        const clientData = { nome, whatsapp, cpf_cnpj: cpf, endereco };
+        const clientData = { nome, whatsapp, data_aniversario: aniversario, cpf_cnpj: cpf, endereco };
 
         if (selectedClientId) {
             const { error } = await supabaseClient
@@ -171,6 +178,7 @@ function editCliente(id) {
     document.getElementById('clientSidebarTitle').textContent = 'Editar Cliente';
     document.getElementById('clientNome').value = cliente.nome;
     document.getElementById('clientWhatsapp').value = cliente.whatsapp || '';
+    document.getElementById('clientAniversario').value = cliente.data_aniversario || '';
     document.getElementById('clientCpf').value = cliente.cpf_cnpj || '';
     document.getElementById('clientEndereco').value = cliente.endereco || '';
 
@@ -287,7 +295,21 @@ function updateSaleClienteDropdown() {
 function setupClientFormMasks() {
     const nomeInput = document.getElementById('clientNome');
     const whatsappInput = document.getElementById('clientWhatsapp');
+    const aniversarioInput = document.getElementById('clientAniversario');
     const cpfInput = document.getElementById('clientCpf');
+    
+    // Máscara Aniversário (DD/MM/AAAA)
+    if (aniversarioInput) {
+        aniversarioInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+            if (v.length >= 5) {
+                v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+            } else if (v.length >= 3) {
+                v = `${v.slice(0, 2)}/${v.slice(2)}`;
+            }
+            e.target.value = v;
+        });
+    }
 
     if (nomeInput) {
         nomeInput.addEventListener('input', (e) => {

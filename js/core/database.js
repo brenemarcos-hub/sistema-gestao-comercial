@@ -124,8 +124,32 @@ window.getFromCache = getFromCache;
 
 function saveToCache(key, data) {
     try {
-        localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-    } catch (e) { console.warn('Falha ao salvar no cache local', e); }
+        // Se for uma lista muito grande (vendas ou produtos), guardamos apenas os 1000 mais recentes no cache
+        // Isso evita estourar o limite de 5MB do localStorage
+        let dataToCache = data;
+        if (Array.isArray(data) && data.length > 1000) {
+            console.log(`📏 Dados muito grandes (${data.length} itens). Limitando cache para 1000 itens.`);
+            dataToCache = data.slice(0, 1000);
+        }
+
+        localStorage.setItem(key, JSON.stringify({ data: dataToCache, timestamp: Date.now() }));
+    } catch (e) { 
+        if (e.name === 'QuotaExceededError') {
+            // Limpa o cache se estiver cheio e tenta de novo silenciosamente
+            try {
+                Object.keys(localStorage).forEach(k => {
+                    if (k.includes('_') || k.startsWith('produtos_') || k.startsWith('vendas_')) {
+                        localStorage.removeItem(k);
+                    }
+                });
+                // Tenta salvar, se falhar de novo, apenas ignora o cache
+                localStorage.setItem(key, JSON.stringify({ data: data.slice(0, 500), timestamp: Date.now() }));
+            } catch (retryError) {
+                // Se ainda assim não couber, não salvamos no cache (o sistema carregará do banco normalmente)
+                console.warn('⚡ Cache desativado para este item (tamanho excede limite do navegador)');
+            }
+        }
+    }
 }
 window.saveToCache = saveToCache;
 
@@ -669,24 +693,119 @@ async function deleteSale(saleId) {
 async function changeSaleStatus(saleId, newStatus) {
     if (!supabaseClient) return;
 
+    const venda = vendas.find(v => v.id == saleId);
+    if (!venda) return;
+
+    // Qualquer baixa de pagamento em venda pendente abre o Checkout Profissional
+    if (newStatus === 'pago') {
+        openPaymentModal(venda);
+        return;
+    }
+
+    // Se for pagamento total ou outros status, segue o fluxo normal
+    await processPayment(saleId, newStatus, venda.parcelas, venda.data_proximo);
+}
+
+// --- LÓGICA DO NOVO MODAL DE PAGAMENTO ---
+let activePaymentSale = null;
+
+function openPaymentModal(venda) {
+    activePaymentSale = venda;
+    const modal = document.getElementById('paymentModal');
+    const valorTotalVenda = parseFloat(venda.total);
+    const qtdParcelasOriginal = venda.parcelas_originais || venda.parcelas; // Backup se não existir
+    const valorParcelaUnit = valorTotalVenda / (venda.parcelas_originais || venda.parcelas);
+
+    // Preencher campos
+    document.getElementById('payModalTotalVenda').textContent = `R$ ${valorTotalVenda.toLocaleString('pt-BR')}`;
+    document.getElementById('payModalParcelasRest').textContent = `${venda.parcelas}x`;
+    document.getElementById('payModalValorUnit').textContent = `R$ ${valorParcelaUnit.toLocaleString('pt-BR')}`;
+    document.getElementById('payInputQtdParcelas').value = 1;
+    document.getElementById('payInputQtdParcelas').max = venda.parcelas;
+    document.getElementById('payInputDesconto').value = '';
+    
+    // Atualizar valor final inicial
+    updatePaymentFinalValue();
+
+    // Listeners para cálculos em tempo real
+    document.getElementById('payInputQtdParcelas').oninput = updatePaymentFinalValue;
+    document.getElementById('payInputDesconto').oninput = updatePaymentFinalValue;
+    
+    // Botão de Confirmação
+    document.getElementById('btnConfirmPayment').onclick = confirmProfessionalPayment;
+
+    modal.classList.remove('hidden');
+}
+
+function updatePaymentFinalValue() {
+    if (!activePaymentSale) return;
+    
+    const qtdAPagar = parseInt(document.getElementById('payInputQtdParcelas').value) || 0;
+    const desconto = parseFloat(document.getElementById('payInputDesconto').value) || 0;
+    const valorTotalVenda = parseFloat(activePaymentSale.total);
+    const valorParcelaUnit = valorTotalVenda / (activePaymentSale.parcelas_originais || activePaymentSale.parcelas);
+    
+    const totalSemDesconto = valorParcelaUnit * qtdAPagar;
+    const totalFinal = Math.max(0, totalSemDesconto - desconto);
+    
+    document.getElementById('payModalFinalValue').textContent = `R$ ${totalFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+}
+
+async function confirmProfessionalPayment() {
+    const qtdPaga = parseInt(document.getElementById('payInputQtdParcelas').value);
+    const desconto = parseFloat(document.getElementById('payInputDesconto').value) || 0;
+    
+    if (qtdPaga <= 0 || qtdPaga > activePaymentSale.parcelas) {
+        return alert('Quantidade de parcelas inválida.');
+    }
+
+    const quitouTudo = (qtdPaga === activePaymentSale.parcelas);
+    let novoStatus = quitouTudo ? 'pago' : 'pendente';
+    let novasParcelasRestantes = activePaymentSale.parcelas - qtdPaga;
+    
+    // Calcula nova data de vencimento (pula tantas parcelas quanto pagas)
+    let novaDataProximo = activePaymentSale.data_proximo;
+    if (!quitouTudo) {
+        const dataBase = activePaymentSale.data_proximo ? new Date(activePaymentSale.data_proximo + 'T12:00:00') : new Date();
+        dataBase.setMonth(dataBase.getMonth() + qtdPaga);
+        novaDataProximo = dataBase.toISOString().split('T')[0];
+    }
+
+    document.getElementById('paymentModal').classList.add('hidden');
+    
+    await processPayment(activePaymentSale.id, novoStatus, novasParcelasRestantes, novaDataProximo, desconto);
+}
+
+async function processPayment(saleId, finalStatus, finalParcelas, finalDataProximo, descontoAplicado = 0) {
     try {
+        const lojaId = await getUserLojaId();
+        
+        const updateData = {
+            status_pagamento: finalStatus,
+            parcelas: finalParcelas,
+            data_proximo: finalDataProximo
+        };
+
         const { error } = await supabaseClient
             .from('vendas')
-            .update({ status_pagamento: newStatus })
-            .eq('id', saleId);
+            .update(updateData)
+            .eq('id', saleId)
+            .eq('loja_id', lojaId);
 
         if (error) throw error;
 
-        showNotification('Status Atualizado', `Venda marcada como ${newStatus.toUpperCase()}.`, 'success');
-        
-        // Registrar Ação
+        // Registrar Ação de Auditoria
         if (typeof registrarAcao === 'function') {
-            registrarAcao(null, null, 'alterou_status_venda', 'venda', saleId, { status: newStatus });
+            try {
+                registrarAcao(null, null, 'recebeu_pagamento', 'venda', saleId, { 
+                    status: finalStatus, 
+                    parcelas_restantes: finalParcelas 
+                });
+            } catch (e) { console.warn('Erro ao registrar auditoria de pagamento', e); }
         }
 
         // Recarregar dados
-        loadSales();
-        loadProducts(true);
+        loadSales(true);
     } catch (error) {
         console.error('Erro ao mudar status:', error);
         showNotification('Erro', 'Não foi possível atualizar o status.', 'error');
