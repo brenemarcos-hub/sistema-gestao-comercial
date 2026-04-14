@@ -1,59 +1,40 @@
-// Versão do Cache
-const CACHE_NAME = 'verum-cache-v1';
-
-// Arquivos para cache inicial
-const urlsToCache = [
-    '/',
-    '/index.html',
+const CACHE_NAME = 'verum-v1';
+const ASSETS = [
     '/app.html',
-    '/css/style.css',
-    '/js/config/config.js',
-    '/js/core/database.js',
-    '/js/core/auth.js',
-    '/js/core/ui.js',
     '/js/main.js',
-    'https://cdn.tailwindcss.com',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
+    '/js/core/database.js',
+    '/js/core/ui.js',
+    '/manifest.json'
 ];
 
-// Instalação do Service Worker
+// Instalação do Service Worker e Cache de arquivos essenciais
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Cache aberto');
-                return cache.addAll(urlsToCache);
-            })
+            .then(cache => cache.addAll(ASSETS))
     );
 });
 
-// Ativação e limpeza de caches antigos
-self.addEventListener('activate', event => {
-    const cacheWhitelist = [CACHE_NAME];
-    event.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-    );
-});
-
-// Interceptação de requisições
+// Estratégia Stale-while-revalidate apenas para recursos estáticos (GET)
 self.addEventListener('fetch', event => {
+    // IGNORAR chamadas de API (Supabase) e métodos que não sejam GET
+    if (event.request.method !== 'GET' || event.request.url.includes('supabase.co')) {
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request)
             .then(response => {
-                // Cache hit - return response
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request);
+                const fetchPromise = fetch(event.request).then(networkResponse => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        const responseToCache = networkResponse.clone();
+                        caches.open(CACHE_NAME).then(cache => {
+                            cache.put(event.request, responseToCache);
+                        });
+                    }
+                    return networkResponse;
+                });
+                return response || fetchPromise;
             })
     );
 });

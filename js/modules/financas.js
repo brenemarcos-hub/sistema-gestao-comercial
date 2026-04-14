@@ -124,7 +124,9 @@ async function saveExpense(e) {
     const statusValue = document.getElementById('expenseStatus').value;
     const pago = statusValue === 'pago';
 
-    if (!descricao || valor <= 0 || !categoria) return showNotification('Aviso', 'Preencha descrição, valor e categoria.', 'warning');
+    if (!descricao) return showNotification('Aviso', 'Preencha a descrição da despesa.', 'warning');
+    if (valor <= 0) return showNotification('Aviso', 'O valor da despesa deve ser maior que zero.', 'warning');
+    if (!categoria) return showNotification('Aviso', 'Por favor, selecione uma Categoria para a despesa.', 'warning');
 
     try {
         const lojaId = await getUserLojaId();

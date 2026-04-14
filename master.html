@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VERUM MASTER - Painel de Controle</title>
+    <title>MASTER DASHBOARD - VERUM GESTÃO</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,6 +19,7 @@
         body {
             background: #0a0c10;
             font-family: 'Inter', sans-serif;
+            color: #f8fafc;
         }
 
         .glass-card {
@@ -27,735 +28,392 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .master-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .amber-glow {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
         }
 
-        .stat-card {
-            transition: all 0.3s ease;
+        .nav-link.active {
+            color: #f59e0b;
+            border-bottom: 2px solid #f59e0b;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
         }
     </style>
 </head>
 
-<body class="text-gray-100">
+<body class="min-h-screen border-t-4 border-amber-500">
 
-    <!-- Autenticação Automática Master -->
-    <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-50 bg-[#0a0c10]">
+    <!-- Auth Loader -->
+    <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-[100] bg-[#0a0c10]">
         <div class="text-center">
-            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Verificando Credenciais Master...</p>
+            <div class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-black">VALIDANDO ACESSO MASTER...</p>
         </div>
     </div>
 
-    <!-- Painel Master (escondido até login) -->
     <div id="masterPanel" class="hidden">
         <!-- Header -->
-        <header class="glass-card border-b border-indigo-500/20 sticky top-0 z-50">
-            <div class="container mx-auto px-4 sm:px-6 py-4">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center gap-4 w-full sm:w-auto">
-                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                            <i class="fas fa-crown text-white text-lg"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-lg sm:text-xl font-black tracking-tight">VERUM <span class="text-indigo-400">MASTER</span></h1>
-                            <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest leading-none">Control Center</p>
-                        </div>
-                        <!-- Relógio Mobile -->
-                        <div class="ml-auto sm:hidden text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-1 rounded">
-                            <span id="masterTimeMobile"></span>
-                        </div>
+        <header class="glass-card border-b border-white/5 sticky top-0 z-50">
+            <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                        <i class="fas fa-crown text-slate-900 text-lg"></i>
                     </div>
+                    <div>
+                        <h1 class="text-xl font-black tracking-tighter uppercase">Verum <span class="text-amber-500">Master</span></h1>
+                        <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest leading-none">Painel de Controle Central</p>
+                    </div>
+                </div>
 
-                        <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-                            <button onclick="carregarDadosMaster()" 
-                                class="p-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-xl transition"
-                                title="Recarregar Dados">
-                                <i class="fas fa-sync-alt" id="masterRefreshIcon"></i>
-                            </button>
-                            <nav class="flex items-center gap-2 whitespace-nowrap">
-                            <a href="app.html" class="px-3 py-1.5 text-[9px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg border border-rose-500/20">
-                                <i class="fas fa-home"></i> App
-                            </a>
-                            <a href="master.html"
-                                class="px-3 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-[9px] font-bold transition hover:bg-indigo-600 hover:text-white uppercase">
-                                <i class="fas fa-chart-pie"></i> Painel
-                            </a>
-                            <a href="master-clientes.html"
-                                class="px-3 py-1.5 bg-blue-600/10 text-blue-400 border border-blue-500/20 rounded-xl text-[9px] font-bold transition hover:bg-blue-600 hover:text-white uppercase">
-                                <i class="fas fa-users"></i> Clientes
-                            </a>
-                        </nav>
-                        <div class="flex items-center gap-2 border-l border-white/10 pl-3">
-                            <span id="masterTime" class="hidden sm:block text-xs font-mono text-gray-500"></span>
-                            <button onclick="logoutMaster()"
-                                class="p-2 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white rounded-xl transition">
-                                <i class="fas fa-power-off text-sm"></i>
-                            </button>
-                        </div>
+                <nav class="flex items-center gap-6 text-[10px] font-black tracking-widest uppercase">
+                    <a href="master.html" class="nav-link active py-2 transition-all">Dashboard</a>
+                    <a href="master-clientes.html" class="nav-link text-gray-500 hover:text-amber-400 py-2 transition-all">Clientes</a>
+                    <a href="master-auditoria.html" class="nav-link text-gray-500 hover:text-amber-400 py-2 transition-all">Auditoria</a>
+                    <div class="w-px h-4 bg-white/10 mx-2"></div>
+                    <a href="app.html" class="flex items-center gap-2 text-rose-400 hover:text-rose-300 transition-all">
+                        <i class="fas fa-home"></i> Acessar App
+                    </a>
+                </nav>
+
+                <div class="flex items-center gap-4 border-l border-white/5 pl-4">
+                    <div class="text-right hidden lg:block">
+                        <p id="masterTime" class="text-[10px] font-mono text-gray-500"></p>
                     </div>
+                    <button onclick="logoutMaster()" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-500 transition-all flex items-center justify-center">
+                        <i class="fas fa-power-off"></i>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <!-- Container Principal -->
-        <div class="container mx-auto px-6 py-8">
-            <!-- Stats Globais -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                <div class="stat-card glass-card rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Total Lojas</p>
-                            <h3 id="totalLojas" class="text-3xl font-black mt-2">0</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-indigo-600/20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-store text-indigo-400"></i>
-                        </div>
+        <main class="container mx-auto px-6 py-10">
+            <!-- Headline Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+                <div class="glass-card p-6 rounded-[2rem] hover:border-amber-500/30 transition-all group">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-2 tracking-widest underline decoration-amber-500/30">Receita Estimada</p>
+                    <div class="flex items-baseline gap-1">
+                        <h3 id="statReceita" class="text-3xl font-black tracking-tighter">R$ 0</h3>
                     </div>
+                    <p class="text-[9px] text-emerald-500 font-bold mt-2"><i class="fas fa-arrow-up mr-1 text-[8px]"></i> Bruto Global</p>
                 </div>
 
-                <div class="stat-card glass-card rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Usuários Totais</p>
-                            <h3 id="totalUsuarios" class="text-3xl font-black mt-2">0</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-users text-green-400"></i>
-                        </div>
-                    </div>
+                <div class="glass-card p-6 rounded-[2rem] hover:border-emerald-500/30 transition-all group">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-2 tracking-widest">Lojas Ativas</p>
+                    <h3 id="statLojas" class="text-3xl font-black tracking-tighter">0</h3>
+                    <p class="text-[9px] text-gray-500 font-bold mt-2">Empresas Cadastradas</p>
                 </div>
 
-                <div class="stat-card glass-card rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Produtos</p>
-                            <h3 id="totalProdutos" class="text-3xl font-black mt-2">0</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-amber-600/20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-boxes text-amber-400"></i>
-                        </div>
-                    </div>
+                <div class="glass-card p-6 rounded-[2rem] hover:border-blue-500/30 transition-all group">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-2 tracking-widest">Base de Itens</p>
+                    <h3 id="statProdutos" class="text-3xl font-black tracking-tighter">0</h3>
+                    <p class="text-[9px] text-gray-500 font-bold mt-2">Total de SKUs Global</p>
                 </div>
 
-                <div class="stat-card glass-card rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Vendas Totais</p>
-                            <h3 id="totalVendas" class="text-2xl font-black mt-2">R$ 0</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-emerald-600/20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-chart-line text-emerald-400"></i>
-                        </div>
-                    </div>
+                <div class="glass-card p-6 rounded-[2rem] hover:border-rose-500/30 transition-all group">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-2 tracking-widest">Erro de Sistema</p>
+                    <h3 id="statErros" class="text-3xl font-black tracking-tighter text-rose-500">0</h3>
+                    <p class="text-[9px] text-rose-500/50 font-bold mt-2 uppercase tracking-tighter">Ação Necessária</p>
                 </div>
 
-                <div class="stat-card glass-card rounded-xl p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase">Masters</p>
-                            <h3 id="totalMasters" class="text-3xl font-black mt-2">0</h3>
-                        </div>
-                        <div class="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-crown text-purple-400"></i>
-                        </div>
-                    </div>
+                <div class="glass-card p-6 rounded-[2rem] hover:border-purple-500/30 transition-all group">
+                    <p class="text-[10px] text-gray-500 uppercase font-bold mb-2 tracking-widest">Contas Master</p>
+                    <h3 id="statMasters" class="text-3xl font-black tracking-tighter">0</h3>
+                    <p class="text-[9px] text-gray-500 font-bold mt-2">Privilégio Total</p>
                 </div>
             </div>
 
-            <!-- Tabs de Navegação -->
-            <div class="mb-6 border-b border-gray-800 overflow-x-auto scrollbar-hide">
-                <nav class="flex gap-2 sm:gap-6 whitespace-nowrap min-w-max">
-                    <button onclick="switchMasterTab('lojas')" id="tabLojas"
-                        class="tab-master active px-4 py-3 text-xs sm:text-sm font-bold border-b-2 border-indigo-500 text-indigo-400 transition-all uppercase tracking-widest">
-                        <i class="fas fa-store mr-2"></i>Lojas
-                    </button>
-                    <button onclick="switchMasterTab('usuarios')" id="tabUsuarios"
-                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
-                        <i class="fas fa-users mr-2"></i>Usuários
-                    </button>
-                    <button onclick="switchMasterTab('auditoria')" id="tabAuditoria"
-                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
-                        <i class="fas fa-history mr-2"></i>Auditoria
-                    </button>
-                    <button onclick="switchMasterTab('backup')" id="tabBackup"
-                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
-                        <i class="fas fa-database mr-2"></i>Backup
-                    </button>
-                    <button onclick="switchMasterTab('config')" id="tabConfig"
-                        class="tab-master px-4 py-3 text-xs sm:text-sm font-bold text-gray-500 hover:text-gray-300 transition-all uppercase tracking-widest">
-                        <i class="fas fa-cog mr-2"></i>Config
-                    </button>
-                </nav>
-            </div>
-
-            <!-- CONTEÚDO DAS TABS -->
-
-            <!-- TAB LOJAS -->
-            <div id="contentLojas" class="tab-content">
-                <div class="glass-card rounded-xl overflow-hidden">
-                    <div class="p-4 border-b border-gray-800 flex justify-between items-center">
-                        <h3 class="font-bold">Todas as Lojas Cadastradas</h3>
-                        <input type="text" id="searchLoja" placeholder="Buscar loja..."
-                            class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm w-64">
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-black/50">
-                                <tr class="text-left text-xs text-gray-500">
-                                    <th class="p-4">Loja</th>
-                                    <th class="p-4">Dono</th>
-                                    <th class="p-4">Chave Acesso</th>
-                                    <th class="p-4">Produtos</th>
-                                    <th class="p-4">Vendas (mês)</th>
-                                    <th class="p-4">Usuários</th>
-                                    <th class="p-4">Criação</th>
-                                    <th class="p-4">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lojasTable" class="divide-y divide-gray-800">
-                                <tr>
-                                    <td colspan="8" class="p-8 text-center text-gray-600">Carregando...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB USUÁRIOS -->
-            <div id="contentUsuarios" class="tab-content hidden">
-                <div class="glass-card rounded-xl overflow-hidden">
-                    <div class="p-4 border-b border-gray-800 flex justify-between items-center">
-                        <h3 class="font-bold">Todos os Usuários do Sistema</h3>
-                        <div class="flex gap-2">
-                            <select id="filtroRole"
-                                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm">
-                                <option value="">Todas roles</option>
-                                <option value="vendedor">Vendedor</option>
-                                <option value="gerente">Gerente</option>
-                                <option value="dono">Dono</option>
-                                <option value="master">Master</option>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Coluna 1 & 2: Crescimento e Performance -->
+                <div class="lg:col-span-2 space-y-8">
+                    <div class="glass-card p-8 rounded-[2.5rem] border-t border-white/5">
+                        <div class="flex justify-between items-center mb-8">
+                            <h3 class="text-lg font-black uppercase tracking-tighter">Volume de Vendas <span class="text-amber-500">Global</span></h3>
+                            <select class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-bold outline-none">
+                                <option>Últimos 7 dias</option>
+                                <option>Últimos 30 dias</option>
                             </select>
-                            <input type="text" id="searchUsuario" placeholder="Buscar usuário..."
-                                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm w-64">
+                        </div>
+                        <div class="h-80">
+                            <canvas id="mainChart"></canvas>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-black/50">
-                                <tr class="text-left text-xs text-gray-500">
-                                    <th class="p-4">Usuário</th>
-                                    <th class="p-4">Email</th>
-                                    <th class="p-4">Role</th>
-                                    <th class="p-4">Loja</th>
-                                    <th class="p-4">Último acesso</th>
-                                    <th class="p-4">Criação</th>
-                                    <th class="p-4">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usuariosTable" class="divide-y divide-gray-800">
-                                <tr>
-                                    <td colspan="7" class="p-8 text-center text-gray-600">Carregando...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                    <!-- Últimas Lojas -->
+                    <div class="glass-card p-8 rounded-[2.5rem] border-t border-white/5">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-black uppercase tracking-tighter">Inscrições <span class="text-emerald-500">Recentes</span></h3>
+                            <a href="master-clientes.html" class="text-[10px] font-black text-emerald-500 border border-emerald-500/20 px-4 py-2 rounded-xl hover:bg-emerald-500 hover:text-white transition-all uppercase tracking-widest">Ver Todos</a>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="text-[9px] text-gray-500 uppercase font-black border-b border-white/5">
+                                        <th class="pb-4">Loja / Cliente</th>
+                                        <th class="pb-4">Plano</th>
+                                        <th class="pb-4">Criação</th>
+                                        <th class="pb-4 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentLojasTable" class="divide-y divide-white/5">
+                                    <tr class="text-gray-600 italic">
+                                        <td colspan="4" class="py-8 text-center text-[10px]">Carregando sincronização...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- TAB AUDITORIA -->
-            <div id="contentAuditoria" class="tab-content hidden">
-                <div class="glass-card rounded-xl p-6">
-                    <h3 class="font-bold mb-4">Logs de Atividade (últimos 7 dias)</h3>
-                    <div id="logsContainer" class="space-y-2 max-h-96 overflow-y-auto">
-                        <!-- Logs serão inseridos aqui -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB BACKUP -->
-            <div id="contentBackup" class="tab-content hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-card rounded-xl p-6">
-                        <h3 class="font-bold mb-4 flex items-center gap-2">
-                            <i class="fas fa-download text-green-400"></i> Exportar Dados
+                <!-- Coluna 3: Alertas e Manutenção -->
+                <div class="space-y-8">
+                    <!-- Cards de Ações Rápidas -->
+                    <div class="glass-card p-8 rounded-[2.5rem] border-t border-white/5 bg-amber-500/5">
+                        <h3 class="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2">
+                             <i class="fas fa-bolt text-amber-500"></i> Ações Rápidas
                         </h3>
                         <div class="space-y-3">
-                            <button onclick="exportData('lojas')"
-                                class="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-left px-4 py-3 rounded-lg transition">
-                                <i class="fas fa-store mr-3"></i> Exportar todas as lojas (JSON)
+                            <button onclick="carregarDadosMaster()" class="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-amber-500 hover:text-slate-900 transition-all group">
+                                <span class="text-[10px] font-black uppercase tracking-widest">Sincronizar Global</span>
+                                <i class="fas fa-sync-alt group-hover:rotate-180 transition-all duration-500"></i>
                             </button>
-                            <button onclick="exportData('usuarios')"
-                                class="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-left px-4 py-3 rounded-lg transition">
-                                <i class="fas fa-users mr-3"></i> Exportar todos os usuários (JSON)
+                            <button onclick="switchMaintenance()" id="btnMaintenance" class="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-rose-500 hover:text-white transition-all group">
+                                <span class="text-[10px] font-black uppercase tracking-widest">Modo Manutenção</span>
+                                <i class="fas fa-tools"></i>
                             </button>
-                            <button onclick="exportData('vendas')"
-                                class="w-full bg-indigo-600/20 hover:bg-indigo-600/40 text-left px-4 py-3 rounded-lg transition">
-                                <i class="fas fa-shopping-cart mr-3"></i> Exportar todas as vendas (JSON)
-                            </button>
-                            <button onclick="exportCompleto()"
-                                class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-left px-4 py-3 rounded-lg transition font-bold">
-                                <i class="fas fa-database mr-3"></i> EXPORTAR COMPLETO (Backup)
-                            </button>
+                            <a href="master-auditoria.html" class="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-blue-500 hover:text-white transition-all group">
+                                <span class="text-[10px] font-black uppercase tracking-widest">Validar Segurança</span>
+                                <i class="fas fa-shield-alt"></i>
+                            </a>
                         </div>
                     </div>
 
-                    <div class="glass-card rounded-xl p-6">
-                        <h3 class="font-bold mb-4 flex items-center gap-2">
-                            <i class="fas fa-chart-pie text-purple-400"></i> Estatísticas do Sistema
+                    <!-- Logs Críticos -->
+                    <div class="glass-card p-8 rounded-[2.5rem] border-t border-white/5">
+                         <h3 class="text-sm font-black uppercase tracking-widest mb-6 flex items-center gap-2 text-rose-500">
+                             <i class="fas fa-triangle-exclamation"></i> Alertas Críticos
                         </h3>
-                        <div class="h-64">
-                            <canvas id="masterChart"></canvas>
+                        <div id="recentLogs" class="space-y-4">
+                            <div class="text-[10px] text-gray-600 italic">Buscando rastros...</div>
                         </div>
+                        <a href="master-auditoria.html" class="block text-center mt-8 text-[10px] font-black text-gray-500 hover:text-white transition-all uppercase tracking-widest">Ver Auditoria Completa</a>
                     </div>
                 </div>
             </div>
-
-            <!-- TAB CONFIG -->
-            <div id="contentConfig" class="tab-content hidden">
-                <div class="glass-card rounded-xl p-6">
-                    <h3 class="font-bold mb-6">Configurações Globais do Sistema</h3>
-
-                    <div class="space-y-6 max-w-2xl">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Chave Mestra (acesso master)</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="masterKeyConfig" value="verum-master"
-                                    class="flex-1 bg-black/50 border border-gray-700 rounded-lg px-4 py-2">
-                                <button onclick="updateMasterKey()"
-                                    class="px-6 bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">
-                                    Alterar
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Modo de Manutenção</label>
-                            <div class="flex items-center gap-4">
-                                <button onclick="setMaintenanceMode(true)"
-                                    class="px-6 py-2 bg-red-600/20 hover:bg-red-600/40 rounded-lg transition">
-                                    Ativar
-                                </button>
-                                <button onclick="setMaintenanceMode(false)"
-                                    class="px-6 py-2 bg-green-600/20 hover:bg-green-600/40 rounded-lg transition">
-                                    Desativar
-                                </button>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-2">Quando ativo, bloqueia novos acessos ao sistema</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Ações de Emergência</label>
-                            <div class="space-y-2">
-                                <button onclick="resetAllPasswords()"
-                                    class="w-full text-left px-4 py-3 bg-yellow-600/20 hover:bg-yellow-600/40 rounded-lg transition">
-                                    <i class="fas fa-key mr-3"></i> Resetar todas as senhas (enviar email)
-                                </button>
-                                <button onclick="forceLogoutAll()"
-                                    class="w-full text-left px-4 py-3 bg-orange-600/20 hover:bg-orange-600/40 rounded-lg transition">
-                                    <i class="fas fa-sign-out-alt mr-3"></i> Forçar logout de todos os usuários
-                                </button>
-                                <button onclick="backupAgora()"
-                                    class="w-full text-left px-4 py-3 bg-blue-600/20 hover:bg-blue-600/40 rounded-lg transition">
-                                    <i class="fas fa-sync-alt mr-3"></i> Executar backup agora
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Editar Assinatura -->
-    <div id="modalEditAssinatura" class="fixed inset-0 bg-black/80 hidden z-[110] flex items-center justify-center p-4">
-        <div class="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-indigo-500/30">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                <h3 class="text-xl font-black text-indigo-400">Dados da Assinatura</h3>
-                <button onclick="cerrarModalAssinatura()" class="text-gray-500 hover:text-white transition"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <input type="hidden" id="editLojaId">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tipo de Plano</label>
-                    <select id="editPlano" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="basica">Básica (Start)</option>
-                        <option value="stand">Standard (Intermediário)</option>
-                        <option value="premium">Premium (Completo)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Valor da Assinatura (R$)</label>
-                    <input type="number" id="editValor" step="0.01" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Próxima Renovação</label>
-                        <input type="date" id="editRenovacao" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Forma de Pagamento</label>
-                        <select id="editPagamento" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="pix">PIX</option>
-                            <option value="cartao">Cartão de Crédito</option>
-                            <option value="boleto">Boleto Bancário</option>
-                            <option value="dinheiro">Dinheiro / Outro</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6 border-t border-white/5 flex gap-3">
-                <button onclick="salvarAssinatura()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
-                    <i class="fas fa-save"></i> SALVAR ALTERAÇÕES
-                </button>
-                <button onclick="cerrarModalAssinatura()" class="px-6 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-xl transition">
-                    CANCELAR
-                </button>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script src="js/config/config.js"></script>
     <script src="js/core/ui.js"></script>
-    <script src="js/auditoria.js"></script>
     <script>
-        // Renomeado para masterDb para evitar conflito com auditoria.js
-        let masterDb = window.supabaseClient;
-        if (!masterDb && window.supabase && window.SUPABASE_CONFIG) {
-            masterDb = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
+        let db = window.supabaseClient;
+        if (!db && window.supabase && window.SUPABASE_CONFIG) {
+            db = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
         }
 
-        let masterAutenticado = false;
-        let lojasCache = [];
+        let isMaintenance = false;
 
-        // Auto-verificação ao carregar
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('👑 Iniciando Painel Master...');
-            
-            const timeout = setTimeout(() => {
-                const loader = document.getElementById('masterLogin');
-                if (loader && !loader.classList.contains('hidden')) {
-                    alert('⚠️ A verificação de segurança demorou demais. Verifique sua conexão.');
-                    window.location.href = 'app.html';
-                }
-            }, 8000);
+             // Relógio
+             setInterval(() => {
+                document.getElementById('masterTime').textContent = new Date().toLocaleString('pt-BR');
+            }, 1000);
 
-            if (!masterDb) {
-                console.error('MasterDb não inicializado.');
-                return;
-            }
-
+            if (!db) return alert('Configuração Supabase não encontrada.');
             await autoVerifyMaster();
-            clearTimeout(timeout);
-            
-            // Listeners
-            document.getElementById('searchClient')?.addEventListener('input', renderAssinaturas);
-            document.getElementById('filterPlano')?.addEventListener('change', renderAssinaturas);
         });
 
         async function autoVerifyMaster() {
             try {
-                const { data: { session }, error: authError } = await masterDb.auth.getSession();
-                if (authError) throw authError;
-
+                const { data: { session } } = await db.auth.getSession();
                 if (!session) {
-                    alert('⚠️ Por favor, faça login no sistema principal primeiro.');
                     window.location.href = 'app.html';
                     return;
                 }
 
-                const { data: profile, error: profErr } = await masterDb.from('profiles').select('role, email').eq('id', session.user.id).single();
-                if (profErr) throw profErr;
-
+                const { data: profile } = await db.from('profiles').select('role, email').eq('id', session.user.id).single();
+                
                 const autorizados = ['brenemarcos@gmail.com'];
-
-                if (profile && (profile.role === 'master' || autorizados.includes(profile.email))) {
-                    masterAutenticado = true;
+                if (profile?.role === 'master' || autorizados.includes(profile?.email)) {
                     document.getElementById('masterLogin').classList.add('hidden');
                     document.getElementById('masterPanel').classList.remove('hidden');
-                    
-                    // Relógio
-                    setInterval(() => {
-                        const timeStr = new Date().toLocaleString('pt-BR');
-                        const timeEl = document.getElementById('masterTime');
-                        const timeElMob = document.getElementById('masterTimeMobile');
-                        if (timeEl) timeEl.textContent = timeStr;
-                        if (timeElMob) timeElMob.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    }, 1000);
-
                     carregarDadosMaster();
                 } else {
-                    alert('❌ Acesso negado! Usuário não possui privilégios MASTER.');
+                    alert('ACESSO NEGADO: RESTRITO A MASTERS');
                     window.location.href = 'app.html';
                 }
             } catch (err) {
-                console.error('Erro na autenticação Master:', err);
-                alert('Erro crítico: ' + err.message);
+                console.error(err);
                 window.location.href = 'app.html';
             }
         }
 
         async function carregarDadosMaster() {
-            const icon = document.getElementById('masterRefreshIcon');
-            if (icon) icon.classList.add('fa-spin');
-            
             try {
-                console.log('🔄 Sincronizando dados globais...');
+                // Fetch Global Stats
+                const { count: totalLojas } = await db.from('lojas').select('*', { count: 'exact', head: true });
+                const { count: totalProdutos } = await db.from('produtos').select('*', { count: 'exact', head: true });
+                const { count: totalMasters } = await db.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'master');
+                const { count: totalErros } = await db.from('logs_erros').select('*', { count: 'exact', head: true }).eq('resolvido', false);
                 
-                // Buscar Lojas (Principal)
-                const { data: lojasRaw } = await masterDb.from('lojas').select('*').order('criado_em', { ascending: false });
-                lojasCache = lojasRaw || [];
+                const { data: vendas } = await db.from('vendas').select('total');
+                const totalReceita = vendas?.reduce((acc, v) => acc + (v.total || 0), 0) || 0;
 
-                // Atualizar Stats em background
-                atualizarMetricasRapidas();
-                
-                // Renderizar o que já temos
-                renderAssinaturas();
-                carregarLojas();
-                carregarUsuarios();
-                carregarLogs();
+                // Update UI
+                document.getElementById('statReceita').textContent = totalReceita.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                document.getElementById('statLojas').textContent = totalLojas;
+                document.getElementById('statProdutos').textContent = totalProdutos;
+                document.getElementById('statErros').textContent = totalErros;
+                document.getElementById('statMasters').textContent = totalMasters;
 
-            } catch (error) {
-                console.error('Erro ao carregar dados:', error);
-            } finally {
-                if (icon) icon.classList.remove('fa-spin');
-            }
-        }
+                // Load Recent Lojas
+                const { data: recentLojas } = await db.from('lojas').select('*').order('criado_em', { ascending: false }).limit(5);
+                renderRecentLojas(recentLojas);
 
-        async function atualizarMetricasRapidas() {
-            const { count: totalLojas } = await masterDb.from('lojas').select('*', { count: 'exact', head: true });
-            document.getElementById('totalLojas').textContent = totalLojas || 0;
+                // Load Recent Errors
+                const { data: recentErrors } = await db.from('logs_erros').select('*').eq('resolvido', false).order('criado_em', { ascending: false }).limit(3);
+                renderRecentErrors(recentErrors);
 
-            const { count: totalUsuarios } = await masterDb.from('profiles').select('*', { count: 'exact', head: true });
-            document.getElementById('totalUsuarios').textContent = totalUsuarios || 0;
+                // Load Chart (Mock data processing)
+                renderGlobalChart();
 
-            const { count: totalProdutos } = await masterDb.from('produtos').select('*', { count: 'exact', head: true });
-            document.getElementById('totalProdutos').textContent = totalProdutos || 0;
-
-            const { data: vTotal } = await masterDb.from('vendas').select('total');
-            const totalVendas = vTotal?.reduce((acc, v) => acc + (v.total || 0), 0) || 0;
-            document.getElementById('totalVendas').textContent = totalVendas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        async function renderAssinaturas() {
-            const tbody = document.getElementById('assinaturasTableBody');
-            if (!tbody) return;
-
-            const search = document.getElementById('searchClient')?.value.toLowerCase() || '';
-            const filterPlano = document.getElementById('filterPlano')?.value || 'todos';
-
-            // Calcular Stats
-            let countPremium = 0, countStand = 0, countBasica = 0, receitaTotal = 0;
-            
-            lojasCache.forEach(l => {
-                if (l.plano === 'premium') countPremium++;
-                if (l.plano === 'stand') countStand++;
-                if (l.plano === 'basica') countBasica++;
-                receitaTotal += parseFloat(l.valor_assinatura || 0);
-            });
-
-            document.getElementById('statPremium').textContent = countPremium;
-            document.getElementById('statStand').textContent = countStand;
-            document.getElementById('statBasica').textContent = countBasica;
-            document.getElementById('statReceitaEstimada').textContent = receitaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-            const filtered = lojasCache.filter(l => {
-                const matchSearch = l.nome.toLowerCase().includes(search) || l.id.includes(search);
-                const matchPlano = filterPlano === 'todos' || l.plano === filterPlano;
-                return matchSearch && matchPlano;
-            });
-
-            tbody.innerHTML = '';
-            filtered.forEach(loja => {
-                const planoClass = {
-                    'premium': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-                    'stand': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-                    'basica': 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-                }[loja.plano] || 'bg-gray-800 text-gray-500';
-
-                const valor = loja.valor_assinatura ? parseFloat(loja.valor_assinatura).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00';
-                const renovacao = loja.data_renovacao ? new Date(loja.data_renovacao + 'T12:00:00').toLocaleDateString('pt-BR') : 'Não definida';
-                
-                // Verificar se está vencida ou perto de vencer
-                let renovacaoClass = 'text-gray-400';
-                if (loja.data_renovacao) {
-                    const hoje = new Date();
-                    const dataR = new Date(loja.data_renovacao + 'T12:00:00');
-                    const diffDays = Math.ceil((dataR - hoje) / (1000 * 60 * 60 * 24));
-                    if (diffDays < 0) renovacaoClass = 'text-rose-500 font-bold';
-                    else if (diffDays <= 5) renovacaoClass = 'text-amber-500 font-bold';
-                }
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-white/5 border-b border-white/5 transition-colors group">
-                        <td class="p-4">
-                            <div class="text-sm font-bold text-white group-hover:text-indigo-400 transition">${loja.nome}</div>
-                            <div class="text-[10px] text-gray-500 font-mono">${loja.id}</div>
-                        </td>
-                        <td class="p-4">
-                            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase border ${planoClass}">
-                                ${loja.plano || 'Nenhum'}
-                            </span>
-                        </td>
-                        <td class="p-4 text-xs font-bold text-gray-300">
-                            ${valor}
-                        </td>
-                        <td class="p-4">
-                            <div class="text-xs ${renovacaoClass}">${renovacao}</div>
-                        </td>
-                        <td class="p-4">
-                            <div class="text-[10px] uppercase font-bold text-gray-500">
-                                <i class="fas ${loja.forma_pagamento === 'pix' ? 'fa-bolt text-emerald-500' : 'fa-credit-card text-blue-500'} mr-1"></i>
-                                ${loja.forma_pagamento || '-'}
-                            </div>
-                        </td>
-                        <td class="p-4 font-mono text-[9px] text-gray-600">
-                            ${loja.chave_acesso}
-                        </td>
-                        <td class="p-4 text-right">
-                            <button onclick="abrirModalAssinatura('${loja.id}')" class="p-2 bg-indigo-500/10 hover:bg-indigo-500 text-indigo-400 hover:text-white rounded-lg transition">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-600">Nenhum cliente encontrado com estes filtros.</td></tr>';
-            }
-        }
-
-        function abrirModalAssinatura(id) {
-            const loja = lojasCache.find(l => l.id === id);
-            if (!loja) return;
-
-            document.getElementById('editLojaId').value = loja.id;
-            document.getElementById('editPlano').value = loja.plano || 'basica';
-            document.getElementById('editValor').value = loja.valor_assinatura || 0;
-            document.getElementById('editRenovacao').value = loja.data_renovacao || '';
-            document.getElementById('editPagamento').value = loja.forma_pagamento || 'pix';
-
-            document.getElementById('modalEditAssinatura').classList.remove('hidden');
-        }
-
-        function cerrarModalAssinatura() {
-            document.getElementById('modalEditAssinatura').classList.add('hidden');
-        }
-
-        async function salvarAssinatura() {
-            const id = document.getElementById('editLojaId').value;
-            const updates = {
-                plano: document.getElementById('editPlano').value,
-                valor_assinatura: parseFloat(document.getElementById('editValor').value) || 0,
-                data_renovacao: document.getElementById('editRenovacao').value || null,
-                forma_pagamento: document.getElementById('editPagamento').value
-            };
-
-            try {
-                const { error } = await supabase.from('lojas').update(updates).eq('id', id);
-                if (error) throw error;
-
-                alert('✅ Dados da assinatura atualizados com sucesso!');
-                cerrarModalAssinatura();
-                carregarDadosMaster();
             } catch (err) {
-                console.error('Erro ao salvar assinatura:', err);
-                alert('❌ Erro ao salvar: ' + err.message);
+                console.error('Erro ao sincronizar Master:', err);
             }
         }
 
-        async function carregarLojas() {
-            const tbody = document.getElementById('lojasTable');
-            if(!tbody) return;
+        function renderRecentLojas(lojas) {
+            const tbody = document.getElementById('recentLojasTable');
             tbody.innerHTML = '';
+            
+            lojas?.forEach(loja => {
+                const planoClass = {
+                    'premium': 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+                    'stand': 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                    'basica': 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                }[loja.plano?.toLowerCase()] || 'bg-white/5 text-gray-500';
 
-            for (const loja of lojasCache) {
-                // ... (rest of the logic remains or is updated below if needed)
                 tbody.innerHTML += `
-                    <tr class="hover:bg-white/5 transition">
-                        <td class="p-4">
-                            <div class="font-bold">${loja.nome}</div>
-                            <div class="text-xs text-gray-500">${loja.descricao || 'Sem descrição'}</div>
+                    <tr class="hover:bg-white/5 transition-all">
+                        <td class="py-4">
+                            <div class="text-[11px] font-black">${loja.nome}</div>
+                            <div class="text-[8px] text-gray-600 font-mono">${loja.id}</div>
                         </td>
-                        <td class="p-4 font-mono text-xs">${loja.chave_acesso}</td>
-                        <td class="p-4 text-xs text-gray-500">${new Date(loja.criado_em).toLocaleDateString('pt-BR')}</td>
-                        <td class="p-4">
-                            <button onclick="acessarComoLoja('${loja.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2" title="Acessar como esta loja">
-                                <i class="fas fa-sign-in-alt"></i>
-                            </button>
+                        <td class="py-4">
+                            <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase border ${planoClass}">${loja.plano || 'Gold'}</span>
                         </td>
-                    </tr>
-                `;
-            }
-        }
-
-        async function carregarUsuarios() {
-            const { data: usuarios } = await supabase.from('profiles').select('*, lojas(nome)').order('criado_em', { ascending: false });
-            const tbody = document.getElementById('usuariosTable');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-
-            usuarios?.forEach(user => {
-                const roleClass = { 'master': 'bg-purple-600/20 text-purple-400', 'dono': 'bg-amber-600/20 text-amber-400', 'gerente': 'bg-blue-600/20 text-blue-400' }[user.role] || 'bg-gray-600/20 text-gray-400';
-                tbody.innerHTML += `
-                    <tr class="hover:bg-white/5 transition">
-                        <td class="p-4"><div class="font-bold">${user.nome || 'N/A'}</div></td>
-                        <td class="p-4">${user.email || '-'}</td>
-                        <td class="p-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${roleClass}">${user.role?.toUpperCase()}</span></td>
-                        <td class="p-4">${user.lojas?.nome || 'Sem loja'}</td>
-                        <td class="p-4">
-                            <button onclick="editarRole('${user.id}')" class="text-indigo-400 hover:text-indigo-300 mr-2"><i class="fas fa-user-tag"></i></button>
+                        <td class="py-4 text-[10px] text-gray-500 font-mono">${new Date(loja.criado_em).toLocaleDateString('pt-BR')}</td>
+                        <td class="py-4 text-right">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function acessarComoLoja(lojaId) {
-            localStorage.setItem('master_impersonating', lojaId);
-            window.open('app.html?master_impersonate=' + lojaId, '_blank');
-        }
-
-        async function editarRole(userId) {
-            const novaRole = prompt('Nova role (vendedor/gerente/dono/master):');
-            if (novaRole && ['vendedor', 'gerente', 'dono', 'master'].includes(novaRole)) {
-                await supabase.from('profiles').update({ role: novaRole }).eq('id', userId);
-                carregarUsuarios();
+        function renderRecentErrors(errors) {
+            const container = document.getElementById('recentLogs');
+            container.innerHTML = '';
+            
+            if (!errors || errors.length === 0) {
+                container.innerHTML = '<div class="text-[10px] text-emerald-500 font-bold uppercase tracking-widest text-center py-4"><i class="fas fa-check-circle mr-2"></i> Tudo operacional</div>';
+                return;
             }
-        }
 
-        async function exportData(tipo) {
-            let res = await supabase.from(tipo).select('*');
-            const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `${tipo}.json`; a.click();
-        }
-
-        function switchMasterTab(tab) {
-            document.querySelectorAll('.tab-master').forEach(t => {
-                t.classList.remove('active', 'border-indigo-500', 'text-indigo-400');
-                t.classList.add('text-gray-500');
+            errors.forEach(err => {
+                container.innerHTML += `
+                    <div class="p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[8px] font-black bg-rose-500 text-white px-2 py-0.5 rounded uppercase tracking-tighter">${err.funcao || 'Falha'}</span>
+                            <span class="text-[8px] text-gray-600 font-mono">${new Date(err.criado_em).toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                        <p class="text-[10px] font-medium text-gray-400 line-clamp-2">${err.mensagem_erro}</p>
+                    </div>
+                `;
             });
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active', 'border-indigo-500', 'text-indigo-400');
-            document.getElementById(`content${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
+        }
+
+        let mainChartInstance = null;
+        async function renderGlobalChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            // Fetch sales data
+            const date7 = new Date();
+            date7.setDate(date7.getDate() - 7);
+            const { data: sales } = await db.from('vendas').select('total, criado_em').gte('criado_em', date7.toISOString());
+
+            const salesMap = {};
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                salesMap[d.toLocaleDateString('pt-BR')] = 0;
+            }
+
+            sales?.forEach(s => {
+                const day = new Date(s.criado_em).toLocaleDateString('pt-BR');
+                if (salesMap[day] !== undefined) salesMap[day] += (s.total || 0);
+            });
+
+            if (mainChartInstance) mainChartInstance.destroy();
+            mainChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(salesMap),
+                    datasets: [{
+                        label: 'Vendas Brutas (R$)',
+                        data: Object.values(salesMap),
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 4,
+                        pointBackgroundColor: '#f59e0b',
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.03)' },
+                            ticks: { font: { size: 9 }, color: '#64748b' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { font: { size: 9 }, color: '#64748b' }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function switchMaintenance() {
+            isMaintenance = !isMaintenance;
+            const btn = document.getElementById('btnMaintenance');
+            if (isMaintenance) {
+                btn.classList.add('bg-rose-500', 'text-white');
+                btn.classList.remove('bg-white/5');
+            } else {
+                btn.classList.remove('bg-rose-500', 'text-white');
+                btn.classList.add('bg-white/5');
+            }
+            alert(isMaintenance ? 'Modo Manutenção ATIVADO' : 'Modo Manutenção DESATIVADO');
         }
 
         async function logoutMaster() {
-            if (window.masterDb) await window.masterDb.auth.signOut();
-            else if (window.supabase) await window.supabase.auth.signOut();
+            await db.auth.signOut();
             window.location.href = 'index.html';
-        }
-
-        async function carregarLogs() {
-            document.getElementById('logsContainer').innerHTML = '<p class="text-xs text-gray-600">Logs integrados.</p>';
         }
     </script>
 </body>

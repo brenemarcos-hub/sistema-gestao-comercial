@@ -228,10 +228,11 @@ async function saveProduct(e) {
         }
     });
 
-    if (!sku || !nome || !categoria || !preco_venda || variantes.length === 0) {
-        showNotification('Campos obrigatórios', 'Preencha todos os campos e variantes.', 'warning');
-        return;
-    }
+    if (!nome) return showNotification('Atenção', 'O nome do produto é obrigatório.', 'warning');
+    if (!sku) return showNotification('Atenção', 'O SKU do produto é obrigatório.', 'warning');
+    if (!categoria) return showNotification('Atenção', 'Por favor, selecione uma Categoria.', 'warning');
+    if (!preco_venda) return showNotification('Atenção', 'Defina o preço de venda.', 'warning');
+    if (variantes.length === 0) return showNotification('Atenção', 'Adicione pelo menos uma Variante (Tamanho/Cor).', 'warning');
 
     const cleanSku = sku.trim();
     const isEditing = selectedProductId !== null;
@@ -605,8 +606,13 @@ async function saveSale(e) {
                 'warning'
             );
         } else {
-            // Tudo certo!
-            showNotification('Sucesso!', `${carrinho.length} itens vendidos com sucesso.`, 'success');
+            // Sucesso Total!
+            // Capturar dados do cliente para o WhatsApp
+            const clienteObj = idCliente ? clientes.find(c => c.id == idCliente) : null;
+            const totalVenda = carrinho.reduce((acc, item) => acc + (item.preco * item.qtd), 0);
+            const resumoItens = carrinho.map(item => `• ${item.nome} (${item.qtd}x)`).join('\n');
+            
+            openSaleSuccessModal(clienteObj, totalVenda, resumoItens);
         }
 
         // Registrar Ação: Venda

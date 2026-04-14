@@ -5,14 +5,13 @@
 document.addEventListener('DOMContentLoaded', async function () {
     loadSettings();
     setupEventListeners();
+    
+    // NOVO: Inicializar categorias dinâmicas
+    if (typeof popularCategorias === 'function') popularCategorias();
 
-    // O cliente já é inicializado no config.js
     if (supabaseClient) {
         await checkSession();
-        // --- NOVO: Forçar recarga de dados ao abrir o sistema ---
         if (typeof refreshAllData === 'function') refreshAllData();
-        
-        // --- NOVO: Auditoria mestre de acessos ---
         if (typeof registrarAcessoAuditoria === 'function') registrarAcessoAuditoria();
     }
 });
@@ -24,6 +23,13 @@ async function refreshAllData() {
     
     console.log('🔄 Iniciando sincronização global de dados...');
     
+    // Limpeza seletiva do cache para resolver problemas de encoding e dados obsoletos
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('produtos_') || key.startsWith('vendas_') || key.startsWith('clientes_') || key.startsWith('expenses_')) {
+            localStorage.removeItem(key);
+        }
+    });
+
     try {
         // Carrega tudo forçando refresh do cache
         await Promise.all([
@@ -60,8 +66,9 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // Funções de carregamento de configurações
 function loadSettings() {
-    // Apenas Tema (Diferente da Loja, o tema é preferência local do navegador)
-    applyTheme('dark');
+    // Carrega preferência de tema do localStorage
+    const savedTheme = localStorage.getItem('appTheme') || 'dark';
+    applyTheme(savedTheme);
 }
 
 function saveSettings() {
@@ -76,6 +83,25 @@ function applyTheme(theme) {
         document.documentElement.classList.add('dark');
     } else {
         document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('appTheme', theme);
+    updateThemeIcon(theme);
+}
+
+function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const newTheme = isDark ? 'light' : 'dark';
+    applyTheme(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const icon = document.querySelector('#btnToggleTheme i');
+    if (!icon) return;
+    
+    if (theme === 'dark') {
+        icon.className = 'fas fa-sun text-lg';
+    } else {
+        icon.className = 'fas fa-moon text-lg';
     }
 }
 

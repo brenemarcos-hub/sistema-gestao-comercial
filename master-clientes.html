@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GESTÃO DE CLIENTES MASTER - VERUM GESTÃO</title>
+    <title>GESTÃO DE LOJAS - VERUM MASTER</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,6 +17,7 @@
         body {
             background: #0a0c10;
             font-family: 'Inter', sans-serif;
+            color: #f8fafc;
         }
 
         .glass-card {
@@ -25,164 +26,116 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .nav-link.active {
+            color: #f59e0b;
+            border-bottom: 2px solid #f59e0b;
         }
 
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
-
         ::-webkit-scrollbar-thumb {
             background: #334155;
             border-radius: 10px;
         }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
     </style>
 </head>
 
-<body class="text-gray-100 min-h-screen">
+<body class="min-h-screen border-t-4 border-amber-500">
 
-    <!-- Autenticação Automática Master -->
+    <!-- Auth Loader -->
     <div id="masterLogin" class="fixed inset-0 flex items-center justify-center z-[100] bg-[#0a0c10]">
         <div class="text-center">
-            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-black">Validando Acesso Master...</p>
+            <div class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-black">VALIDANDO ACESSO...</p>
         </div>
     </div>
 
-    <!-- Painel de Gestão -->
-    <div id="clientPanel" class="hidden">
+    <div id="masterPanel" class="hidden">
         <!-- Header -->
         <header class="glass-card border-b border-white/5 sticky top-0 z-50">
-            <div class="container mx-auto px-4 sm:px-6 py-4">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center gap-4 w-full sm:w-auto">
-                        <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                            <i class="fas fa-id-card text-white text-lg"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-lg sm:text-xl font-black uppercase tracking-tighter">Gestão de Clientes</h1>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest leading-none">Contratos e Assinaturas</p>
-                        </div>
+            <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                        <i class="fas fa-store text-slate-900 text-lg"></i>
                     </div>
-
-                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
-                        <nav class="flex items-center gap-2 whitespace-nowrap">
-                            <a href="app.html" class="px-3 py-1.5 text-[9px] font-black text-rose-400 hover:text-white transition uppercase tracking-widest bg-rose-500/10 rounded-lg border border-rose-500/20">
-                                <i class="fas fa-rocket"></i> App
-                            </a>
-                            <a href="master.html" class="px-3 py-1.5 text-[9px] font-black text-gray-400 hover:text-indigo-400 transition uppercase tracking-widest">Painel</a>
-                            <a href="master-clientes.html" class="px-3 py-1.5 text-[9px] font-black text-blue-400 transition uppercase tracking-widest">Clientes</a>
-                        </nav>
-                        <div class="flex items-center gap-2 border-l border-white/10 pl-3">
-                            <div class="text-right hidden lg:block">
-                                <p id="currentTime" class="text-[10px] font-mono text-gray-500"></p>
-                            </div>
-                            <button onclick="logout()"
-                                class="p-2 bg-white/5 hover:bg-red-600/20 text-gray-400 hover:text-red-400 rounded-xl transition">
-                                <i class="fas fa-power-off text-sm"></i>
-                            </button>
-                        </div>
+                    <div>
+                        <h1 class="text-xl font-black tracking-tighter uppercase">Gestão de <span class="text-amber-500">Lojas</span></h1>
+                        <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest leading-none">Controle de Assinaturas & Acesso</p>
                     </div>
                 </div>
+
+                <nav class="flex items-center gap-6 text-[10px] font-black tracking-widest uppercase">
+                    <a href="master.html" class="nav-link text-gray-500 hover:text-amber-400 py-2 transition-all">Dashboard</a>
+                    <a href="master-clientes.html" class="nav-link active py-2 transition-all">Clientes</a>
+                    <a href="master-auditoria.html" class="nav-link text-gray-500 hover:text-amber-400 py-2 transition-all">Auditoria</a>
+                    <div class="w-px h-4 bg-white/10 mx-2"></div>
+                    <a href="app.html" class="flex items-center gap-2 text-rose-400 hover:text-rose-300 transition-all font-black">
+                        <i class="fas fa-rocket"></i> APP
+                    </a>
+                </nav>
+
+                <button onclick="logoutMaster()" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-500 transition-all flex items-center justify-center">
+                    <i class="fas fa-power-off"></i>
+                </button>
             </div>
         </header>
 
-        <main class="container mx-auto px-6 py-8">
-            <!-- Dashboard Stats -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-indigo-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Planos Premium</p>
-                            <h3 id="statPremium" class="text-3xl font-black">--</h3>
-                        </div>
-                        <i class="fas fa-star text-indigo-500/20 text-4xl"></i>
-                    </div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-emerald-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Planos Standard</p>
-                            <h3 id="statStand" class="text-3xl font-black">--</h3>
-                        </div>
-                        <i class="fas fa-certificate text-emerald-500/20 text-4xl"></i>
-                    </div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-gray-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Planos Básicos</p>
-                            <h3 id="statBasica" class="text-3xl font-black">--</h3>
-                        </div>
-                        <i class="fas fa-shield-halved text-gray-500/20 text-4xl"></i>
-                    </div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl border-l-4 border-amber-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Receita Mensal Est.</p>
-                            <h3 id="statReceitaEstimada" class="text-3xl font-black text-amber-500">--</h3>
-                        </div>
-                        <i class="fas fa-sack-dollar text-amber-500/20 text-4xl"></i>
-                    </div>
-                </div>
-            </div>
-
+        <main class="container mx-auto px-6 py-10">
+            
             <!-- Toolbar -->
-            <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 mb-6">
-                <div class="flex flex-col sm:flex-row gap-4 flex-1">
-                    <div class="relative flex-1">
-                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                        <input type="text" id="searchClient" placeholder="Buscar cliente ou loja..."
-                            class="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-                    </div>
-                    <select id="filterPlano"
-                        class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 min-w-[150px]">
-                        <option value="todos">Todos os Planos</option>
-                        <option value="premium">Premium</option>
-                        <option value="stand">Standard</option>
-                        <option value="basica">Básica</option>
-                    </select>
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-6 mb-8">
+                <div class="flex-1 w-full lg:w-auto relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                    <input type="text" id="searchLoja" oninput="renderLojas()" placeholder="Buscar por nome da loja, dono ou chave de acesso..." 
+                           class="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-sm outline-none focus:ring-2 focus:ring-amber-500/50 transition-all font-medium">
                 </div>
-                <div class="flex flex-wrap gap-2 sm:justify-end">
-                    <button onclick="abrirModalNovaLoja()" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 uppercase tracking-widest">
-                        <i class="fas fa-plus"></i> Novo Cliente
+                <div class="flex gap-3 w-full lg:w-auto">
+                    <button onclick="abrirModalNovaLoja()" class="flex-1 lg:flex-none bg-amber-500 hover:bg-amber-400 text-slate-900 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+                        <i class="fas fa-plus mr-2"></i> Adicionar Cliente
                     </button>
-                    <button onclick="carregarDados()" class="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <button onclick="exportarCSV()" class="p-3 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-400 hover:text-white rounded-xl transition border border-indigo-500/20">
-                        <i class="fas fa-download"></i>
+                    <button onclick="carregarLojas()" class="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center">
+                        <i class="fas fa-sync-alt" id="syncIcon"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Table -->
-            <div class="glass-card rounded-2xl overflow-hidden border border-white/5">
+            <!-- Stats Overlay -->
+            <div class="flex flex-wrap gap-4 mb-10">
+                <div class="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-widest text-emerald-500">
+                    <i class="fas fa-check-circle mr-1"></i> <span id="countAtivas">0</span> Lojas Ativas
+                </div>
+                <div class="px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-widest text-amber-500">
+                    <i class="fas fa-star mr-1"></i> <span id="countGold">0</span> Plano Gold
+                </div>
+                <div class="px-4 py-2 bg-rose-500/10 border border-rose-500/20 rounded-full text-[10px] font-black uppercase tracking-widest text-rose-500">
+                    <i class="fas fa-clock mr-1"></i> <span id="countVencendo">0</span> Vencendo
+                </div>
+            </div>
+
+            <!-- Tabela Principal -->
+            <div class="glass-card rounded-[2.5rem] overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full text-left">
                         <thead>
-                            <tr class="bg-white/5 text-gray-400 text-[10px] uppercase font-bold tracking-widest">
-                                <th class="p-5">Cliente / Store Name</th>
-                                <th class="p-5">Plano Atual</th>
-                                <th class="p-5">Valor Mensal</th>
-                                <th class="p-5">Data Renovação</th>
-                                <th class="p-5">Cobrança Rápida</th>
-                                <th class="p-5 text-right">Ações</th>
+                            <tr class="bg-white/5 text-[10px] text-gray-500 uppercase font-black tracking-[0.2em]">
+                                <th class="p-6">Identificação da Loja</th>
+                                <th class="p-6">Dono / Responsável</th>
+                                <th class="p-6">Acesso Master</th>
+                                <th class="p-6">Assinatura / Plano</th>
+                                <th class="p-6">Próx. Renovação</th>
+                                <th class="p-6 text-right">Controle</th>
                             </tr>
                         </thead>
-                        <tbody id="assinaturasTableBody">
+                        <tbody id="lojasTableBody" class="divide-y divide-white/5">
                             <tr>
                                 <td colspan="6" class="p-20 text-center">
                                     <div class="flex flex-col items-center gap-4 text-gray-600">
-                                        <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-500"></i>
-                                        <p class="font-bold uppercase tracking-widest text-xs">Carregando base de clientes...</p>
+                                        <i class="fas fa-spinner fa-spin text-3xl text-amber-500"></i>
+                                        <p class="text-[10px] font-black uppercase tracking-widest">Sincronizando banco de dados...</p>
                                     </div>
                                 </td>
                             </tr>
@@ -193,656 +146,362 @@
         </main>
     </div>
 
-    <!-- Modal Editar -->
-    <div id="modalEditAssinatura" class="fixed inset-0 bg-black/90 hidden z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="glass-card w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-indigo-500/30">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+    <!-- Modal Editar/Adicionar -->
+    <div id="modalLoja" class="fixed inset-0 bg-black/90 hidden z-[110] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-card w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-amber-500/20">
+            <div class="p-8 border-b border-white/5 flex justify-between items-center bg-amber-500/5">
                 <div>
-                    <h3 class="text-xl font-black text-white italic">EDITAR CONTRATO</h3>
-                    <p id="editLojaNome" class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mt-1"></p>
+                    <h3 id="modalTitle" class="text-xl font-black text-white uppercase tracking-tighter italic">CADASTRAR NOVA LOJA</h3>
+                    <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Configuração de Acesso e Cobrança</p>
                 </div>
-                <button onclick="cerrarModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
+                <button onclick="fecharModal()" class="text-gray-500 hover:text-white transition-all"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div class="p-6 space-y-5">
-                <input type="hidden" id="editLojaId">
-                <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Nome Identificador da Loja</label>
-                    <input type="text" id="editNomeInput" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-white">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Nível de Conta</label>
-                    <select id="editPlano" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="basica">Básica (Start)</option>
-                        <option value="stand">Standard (Mid)</option>
-                        <option value="premium">Premium (Full)</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Valor da Assinatura (BRL)</label>
-                    <input type="number" id="editValor" step="0.01" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Dia de Vencimento</label>
-                        <input type="number" id="editDiaVencimento" min="1" max="28" placeholder="Ex: 10" 
-                            class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                            oninput="calcularProximaRenovacao()">
+            <div class="p-8 space-y-6">
+                <input type="hidden" id="lojaIdInput">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Nome da Loja</label>
+                        <input type="text" id="lojaNome" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Renovação Calculada</label>
-                        <input type="date" id="editRenovacao" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-[11px] font-bold text-indigo-400 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Chave de Acesso</label>
+                        <input type="text" id="lojaChave" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono text-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Dono (User ID)</label>
+                        <input type="text" id="lojaDonoId" placeholder="UUID do Usuário" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none truncate">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Plano</label>
+                        <select id="lojaPlano" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-bold">
+                            <option value="gold">MASTER GOLD</option>
+                            <option value="premium">RECURSOS TOTAIS</option>
+                            <option value="basica">START (BÁSICO)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Renovação</label>
+                        <input type="date" id="lojaRenovacao" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-3.5 text-xs focus:ring-2 focus:ring-amber-500 outline-none font-bold text-amber-500">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase mb-2 tracking-widest">Forma de Pagto.</label>
-                    <select id="editPagamento" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="pix">PIX</option>
-                        <option value="cartao">Cartão de Crédito</option>
-                        <option value="boleto">Boleto Bancário</option>
-                        <option value="dinheiro">Outro</option>
-                    </select>
-                </div>
             </div>
-            <div class="p-6 border-t border-white/5 flex gap-3">
-                <button onclick="salvarAlteracoes()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition shadow-lg shadow-indigo-600/20">
-                    ATUALIZAR CONTRATO
+            <div class="p-8 border-t border-white/5 flex gap-4">
+                <button onclick="salvarLoja()" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-5 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-xl shadow-amber-500/20 active:scale-95">
+                    <i class="fas fa-save mr-2"></i> SALVAR CONFIGURAÇÕES
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
     <script src="js/config/config.js"></script>
     <script>
-        // Inicialização Robusta do Client
-        let db = window.supabaseClient || window.supabase?.activeClient;
-        
-        async function getDb() {
-            if (db) return db;
-            if (window.supabaseClient) return window.supabaseClient;
-            if (window.supabase && window.SUPABASE_CONFIG) {
-                return window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
-            }
-            return null;
+        let db = window.supabaseClient;
+        if (!db && window.supabase && window.SUPABASE_CONFIG) {
+            db = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.key);
         }
 
         let lojasCache = [];
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Inicializando Painel Gestão...');
-            
-            // Timeout de segurança: Se em 7s não carregar, avisa o usuário
-            const timeout = setTimeout(() => {
-                const loader = document.getElementById('masterLogin');
-                if (loader && !loader.classList.contains('hidden')) {
-                    alert('⚠️ A verificação de segurança está demorando mais que o esperado. Verifique sua conexão ou login.');
-                }
-            }, 7000);
-
-            db = await getDb();
-            if (!db) {
-                alert('❌ Erro Crítico: Conexão com Supabase não encontrada.');
-                window.location.href = 'app.html';
-                return;
-            }
-            
-            await autoVerifyMaster();
-            clearTimeout(timeout);
-
-            setInterval(() => {
-                const el = document.getElementById('currentTime');
-                if (el) el.textContent = new Date().toLocaleString('pt-BR');
-            }, 1000);
-
-            document.getElementById('searchClient')?.addEventListener('input', renderAssinaturas);
-            document.getElementById('filterPlano')?.addEventListener('change', renderAssinaturas);
+             if (!db) return alert('Supabase não inicializado.');
+             await autoVerifyMaster();
         });
 
         async function autoVerifyMaster() {
             try {
-                console.log('🔐 Validando credenciais...');
-                const { data: { session }, error: authErr } = await db.auth.getSession();
-                if (authErr) throw authErr;
-                
-                if (!session) {
-                    alert('⚠️ Sessão expirada. Por favor, faça login novamente.');
-                    window.location.href = 'app.html';
-                    return;
-                }
+                const { data: { session } } = await db.auth.getSession();
+                if (!session) { window.location.href = 'app.html'; return; }
 
-                const { data: profile, error: profErr } = await db.from('profiles').select('role, email').eq('id', session.user.id).single();
-                if (profErr) throw profErr;
+                const { data: profile } = await db.from('profiles').select('role, email').eq('id', session.user.id).single();
                 
                 const autorizados = ['brenemarcos@gmail.com'];
-
-                if (profile?.role === 'master' || autorizados.includes(session.user.email)) {
-                    console.log('✅ Acesso Master concedido.');
+                if (profile?.role === 'master' || autorizados.includes(profile?.email)) {
                     document.getElementById('masterLogin').classList.add('hidden');
-                    document.getElementById('clientPanel').classList.remove('hidden');
-                    carregarDados();
+                    document.getElementById('masterPanel').classList.remove('hidden');
+                    carregarLojas();
                 } else {
-                    alert('❌ Acesso negado! Este painel é restrito para administradores.');
                     window.location.href = 'app.html';
                 }
-            } catch (e) { 
-                console.error('Falha na autenticação:', e); 
-                alert('Erro de Autenticação: ' + (e.message || 'Erro de conexão com o servidor'));
-                window.location.href = 'app.html';
-            }
+            } catch (err) { window.location.href = 'app.html'; }
         }
 
-        async function carregarDados() {
+        async function carregarLojas() {
+            const icon = document.getElementById('syncIcon');
+            if(icon) icon.classList.add('fa-spin');
+
             try {
-                console.log('📡 Buscando dados atualizados das lojas...');
-                const { data, error } = await db.from('lojas').select('*').order('nome');
+                const { data, error } = await db.from('lojas').select('*, profiles(nome, email)').order('criado_em', { ascending: false });
                 if (error) throw error;
-                
-                lojasCache = []; 
                 lojasCache = data || [];
-                
-                console.table(lojasCache.map(l => ({ Nome: l.nome, Plano: l.plano, Valor: l.valor_assinatura })));
-                
-                renderAssinaturas();
-            } catch (e) { 
-                console.error('Erro ao carregar lojas:', e);
-                alert('Erro ao carregar dados: ' + (e.message || e));
+                renderLojas();
+            } catch (err) {
+                console.error(err);
+            } finally {
+                if(icon) icon.classList.remove('fa-spin');
             }
         }
 
-        function renderAssinaturas() {
-            const tbody = document.getElementById('assinaturasTableBody');
-            if (!tbody) return;
+        function renderLojas() {
+            const tbody = document.getElementById('lojasTableBody');
+            const search = document.getElementById('searchLoja').value.toLowerCase();
+            
+            const filtered = lojasCache.filter(l => 
+                l.nome.toLowerCase().includes(search) || 
+                l.chave_acesso?.toLowerCase().includes(search) ||
+                l.profiles?.nome?.toLowerCase().includes(search) ||
+                l.profiles?.email?.toLowerCase().includes(search)
+            );
 
             tbody.innerHTML = '';
 
-            const search = document.getElementById('searchClient').value.toLowerCase();
-            const filter = document.getElementById('filterPlano').value;
-
-            let p = 0, s = 0, b = 0, r = 0;
-            lojasCache.forEach(l => {
-                const plano = (l.plano || '').toLowerCase();
-                if (plano === 'premium') p++;
-                else if (plano === 'stand' || plano === 'standard') s++;
-                else if (plano === 'basica') b++;
-                r += parseFloat(l.valor_assinatura || 0);
-            });
-
-            document.getElementById('statPremium').textContent = p;
-            document.getElementById('statStand').textContent = s;
-            document.getElementById('statBasica').textContent = b;
-            document.getElementById('statReceitaEstimada').textContent = r.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-            const filtered = lojasCache.filter(l => {
-                const ms = (l.nome || '').toLowerCase().includes(search) || String(l.id).includes(search);
-                const mf = filter === 'todos' || (l.plano || '').toLowerCase() === filter.toLowerCase();
-                return ms && mf;
-            });
+            // Update stats
+            document.getElementById('countAtivas').textContent = filtered.length;
+            document.getElementById('countGold').textContent = filtered.filter(l => (l.plano || '').toLowerCase() === 'gold').length;
+            
+            const hoje = new Date();
+            const vencendo = filtered.filter(l => l.data_renovacao && new Date(l.data_renovacao) <= new Date(hoje.getTime() + 5*24*60*60*1000)).length;
+            document.getElementById('countVencendo').textContent = vencendo;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-20 text-center text-gray-600 text-xs italic">Nenhum cliente encontrado...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="p-20 text-center text-gray-500 text-[10px] font-black uppercase tracking-widest">Nenhuma loja encontrada</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = filtered.map(loja => {
-                const plano = (loja.plano || '').toLowerCase();
-                const planoStyle = {
-                    'premium': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-                    'stand': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                    'standard': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-                    'basica': 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                }[plano] || 'bg-white/5 text-gray-500 border-white/5';
-
-                const valor = parseFloat(loja.valor_assinatura || 0);
-                const vencimento = loja.data_renovacao ? new Date(loja.data_renovacao + 'T12:00:00') : null;
-                const hoje = new Date();
-                let vencido = vencimento && vencimento < hoje;
-                let proximo = vencimento && (vencimento - hoje) / (1000*60*60*24) <= 5;
-
-                const isTrial = valor === 0;
+            filtered.forEach(loja => {
+                const plano = (loja.plano || 'Gold').toUpperCase();
+                const planoStyle = plano === 'GOLD' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20';
                 
-                return `
-                    <tr class="hover:bg-white/5 border-b border-white/5 transition-colors group">
-                        <td class="p-5">
-                            <div class="flex items-center gap-2">
-                                <div class="text-sm font-bold text-white group-hover:text-indigo-400 transition">${loja.nome || 'Sem Nome'}</div>
-                                ${isTrial ? '<span class="px-1.5 py-0.5 bg-amber-500/20 text-amber-500 text-[8px] font-black rounded border border-amber-500/20 animate-pulse">TESTE</span>' : ''}
-                            </div>
-                            <div class="text-[9px] text-gray-600 font-mono mt-0.5">${loja.id}</div>
+                const dataRen = loja.data_renovacao ? new Date(loja.data_renovacao + 'T12:00:00').toLocaleDateString('pt-BR') : 'Vvitalício';
+                const isOverdue = loja.data_renovacao && new Date(loja.data_renovacao) < hoje;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-white/5 transition-all group">
+                        <td class="p-6">
+                            <div class="text-[12px] font-black text-white uppercase tracking-tighter">${loja.nome}</div>
+                            <div class="text-[9px] text-gray-600 font-mono mt-1">${loja.id}</div>
                         </td>
-                        <td class="p-5">
+                        <td class="p-6">
+                            <div class="text-[11px] font-bold text-gray-400">${loja.profiles?.nome || 'Sem Responsável'}</div>
+                            <div class="text-[9px] text-gray-600">${loja.profiles?.email || '-'}</div>
+                        </td>
+                        <td class="p-6">
+                             <div class="inline-flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5 group-hover:bg-amber-500/10 group-hover:border-amber-500/20 transition-all cursor-pointer" onclick="navigator.clipboard.writeText('${loja.chave_acesso}'); alert('Chave copiada!')">
+                                <span class="text-[10px] font-mono text-amber-500 font-black">${loja.chave_acesso}</span>
+                                <i class="fas fa-copy text-[9px] text-gray-500"></i>
+                             </div>
+                        </td>
+                        <td class="p-6">
                             <span class="px-2.5 py-1 rounded text-[9px] font-black border uppercase ${planoStyle}">
-                                ${loja.plano || 'Nenhum'}
+                                ${plano}
                             </span>
                         </td>
-                        <td class="p-5 text-xs font-bold text-gray-300">
-                            ${valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </td>
-                        <td class="p-5">
-                            <div class="text-[11px] ${vencido ? 'text-rose-500 font-black' : proximo ? 'text-amber-500 font-bold' : 'text-gray-400'}">
-                                ${loja.data_renovacao ? new Date(loja.data_renovacao + 'T12:00:00').toLocaleDateString('pt-BR') : '--/--/----'}
-                                ${vencido ? ' <i class="fas fa-triangle-exclamation ml-1"></i>' : ''}
+                        <td class="p-6">
+                            <div class="text-[11px] font-bold ${isOverdue ? 'text-rose-500' : 'text-gray-400'}">
+                                ${dataRen} 
+                                ${isOverdue ? '<i class="fas fa-exclamation-circle ml-1"></i>' : ''}
                             </div>
                         </td>
-                        <td class="p-5">
-                            <div class="flex items-center gap-2">
-                                <button onclick="enviarCobranca('${loja.id}', 'whats')" title="Avisar via WhatsApp" 
-                                    class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center">
-                                    <i class="fab fa-whatsapp"></i>
-                                </button>
-                                <button onclick="enviarCobranca('${loja.id}', 'email')" title="Avisar via E-mail" 
-                                    class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition flex items-center justify-center">
-                                    <i class="fas fa-envelope"></i>
-                                </button>
-                                <button onclick="acessarLoja('${loja.id}')" title="Acessar como Suporte" 
-                                    class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 hover:bg-purple-600 hover:text-white transition flex items-center justify-center">
+                        <td class="p-6 text-right">
+                             <div class="flex justify-end gap-2">
+                                <button onclick="impersonate('${loja.id}')" title="Acessar como Suporte" 
+                                        class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white transition-all flex items-center justify-center">
                                     <i class="fas fa-sign-in-alt"></i>
                                 </button>
-                            </div>
-                        </td>
-                        <td class="p-4 text-right space-x-2">
-                            <button onclick="abrirModal('${loja.id}')" class="text-indigo-400 hover:text-indigo-300 text-xs font-bold uppercase tracking-widest bg-indigo-500/5 px-4 py-2 rounded-lg transition-all border border-indigo-500/20">
-                                <i class="fas fa-edit"></i> Editar
-                            </button>
-                            <button onclick="deleteLoja('${loja.id}', '${loja.nome}')" class="text-rose-500 hover:text-rose-400 text-xs font-bold uppercase tracking-widest bg-rose-500/5 px-4 py-2 rounded-lg transition-all border border-rose-500/20">
-                                <i class="fas fa-trash-alt"></i> Excluir
-                            </button>
+                                <button onclick="editarLoja('${loja.id}')" title="Editar Configurações" 
+                                        class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-slate-950 transition-all flex items-center justify-center">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="removerLoja('${loja.id}', '${loja.nome}')" title="Remover Definitivamente" 
+                                        class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                             </div>
                         </td>
                     </tr>
                 `;
-            }).join('');
+            });
         }
 
-        function abrirModal(id) {
+        function abrirModalNovaLoja() {
+             resetModal();
+             document.getElementById('modalTitle').textContent = 'CADASTRAR NOVA LOJA';
+             document.getElementById('lojaChave').value = Math.random().toString(36).substring(2, 12).toUpperCase();
+             document.getElementById('modalLoja').classList.remove('hidden');
+        }
+
+        function fecharModal() {
+             document.getElementById('modalLoja').classList.add('hidden');
+        }
+
+        function resetModal() {
+            document.getElementById('lojaIdInput').value = '';
+            document.getElementById('lojaNome').value = '';
+            document.getElementById('lojaChave').value = '';
+            document.getElementById('lojaDonoId').value = '';
+            document.getElementById('lojaPlano').value = 'gold';
+            document.getElementById('lojaRenovacao').value = '';
+        }
+
+        function editarLoja(id) {
             const l = lojasCache.find(x => x.id === id);
-            if (!l) {
-                alert('Erro ao localizar loja no cache.');
-                return;
-            }
-
-            const modal = document.getElementById('modalEditAssinatura');
-            if (!modal) {
-                alert('Modal não encontrado!');
-                return;
-            }
-
-            document.getElementById('editLojaId').value = l.id;
+            if(!l) return;
             
-            const nomeInput = document.getElementById('editNomeInput');
-            if (nomeInput) nomeInput.value = l.nome;
+            document.getElementById('modalTitle').textContent = 'EDITAR LOJA';
+            document.getElementById('lojaIdInput').value = l.id;
+            document.getElementById('lojaNome').value = l.nome;
+            document.getElementById('lojaChave').value = l.chave_acesso;
+            document.getElementById('lojaDonoId').value = l.dono_id || '';
+            document.getElementById('lojaPlano').value = (l.plano || 'gold').toLowerCase();
+            document.getElementById('lojaRenovacao').value = l.data_renovacao || '';
             
-            const nomeEl = document.getElementById('editLojaNome');
-            if (nomeEl) nomeEl.textContent = 'Editando: ' + l.nome;
-
-            document.getElementById('editPlano').value = (l.plano || 'basica').toLowerCase();
-            document.getElementById('editValor').value = l.valor_assinatura || 0;
-            document.getElementById('editDiaVencimento').value = l.dia_vencimento || 10;
-            document.getElementById('editRenovacao').value = l.data_renovacao || '';
-            document.getElementById('editPagamento').value = l.forma_pagamento || 'pix';
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            document.getElementById('modalLoja').classList.remove('hidden');
         }
 
-        function calcularProximaRenovacao() {
-            const dia = parseInt(document.getElementById('editDiaVencimento').value);
-            if (!dia || dia < 1 || dia > 31) return;
-
-            const hoje = new Date();
-            const diaHoje = hoje.getDate();
-            let mes = hoje.getMonth();
-            let ano = hoje.getFullYear();
-
-            // Se o dia escolhido já passou este mês, pula para o mês que vem
-            if (dia <= diaHoje) {
-                mes++;
-                if (mes > 11) {
-                    mes = 0;
-                    ano++;
-                }
-            }
-
-            // Formata YYYY-MM-DD para o input date
-            const dataFinal = new Date(ano, mes, dia);
-            const yyyy = dataFinal.getFullYear();
-            const mm = String(dataFinal.getMonth() + 1).padStart(2, '0');
-            const dd = String(dataFinal.getDate()).padStart(2, '0');
-            
-            document.getElementById('editRenovacao').value = `${yyyy}-${mm}-${dd}`;
-        }
-
-        function cerrarModal() {
-            const modal = document.getElementById('modalEditAssinatura');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-
-        async function salvarAlteracoes() {
-            const id = document.getElementById('editLojaId').value;
-            const btn = document.querySelector('button[onclick="salvarAlteracoes()"]');
-            
+        async function salvarLoja() {
+            const id = document.getElementById('lojaIdInput').value;
             const updates = {
-                nome: document.getElementById('editNomeInput').value.trim(),
-                plano: document.getElementById('editPlano').value,
-                valor_assinatura: parseFloat(document.getElementById('editValor').value.toString().replace(',', '.')) || 0,
-                dia_vencimento: parseInt(document.getElementById('editDiaVencimento').value) || 10,
-                data_renovacao: document.getElementById('editRenovacao').value || null,
-                forma_pagamento: document.getElementById('editPagamento').value
+                nome: document.getElementById('lojaNome').value.trim(),
+                chave_acesso: document.getElementById('lojaChave').value.trim(),
+                dono_id: document.getElementById('lojaDonoId').value.trim() || null,
+                plano: document.getElementById('lojaPlano').value,
+                data_renovacao: document.getElementById('lojaRenovacao').value || null
             };
 
-            console.log('📤 Tentando atualizar loja ID:', id, 'com dados:', updates);
+            if (!updates.nome) return alert('O nome da loja é obrigatório.');
 
             try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SALVANDO NO BANCO...';
-
-                // Usamos select() para confirmar que o dado realmente foi gravado e retornado
-                const { error, data } = await db.from('lojas').update(updates).eq('id', id).select();
-                
-                if (error) throw error;
-                
-                if (!data || data.length === 0) {
-                    console.error('❌ Nenhuma linha afetada. Verifique se o ID existe:', id);
-                    alert('⚠️ ALERTA: O banco de dados recebeu o comando, mas nenhuma alteração foi feita. Isso acontece se o ID da loja não for encontrado no banco.');
-                    return;
+                if (id) {
+                    await db.from('lojas').update(updates).eq('id', id);
+                    alert('Loja atualizada com sucesso!');
+                } else {
+                    await db.from('lojas').insert({ ...updates, criado_em: new Date().toISOString() });
+                    alert('Nova loja cadastrada com sucesso!');
                 }
-                
-                console.log('✅ Sucesso! Dados gravados:', data[0]);
-                
-                alert('✨ CONTRATO ATUALIZADO COM SUCESSO!');
-                cerrarModal();
-                await carregarDados(); // Recarrega a lista para mostrar a mudança
-                
-            } catch (e) { 
-                console.error('Falha crítica ao salvar:', e);
-                alert('❌ Erro Técnico ao Salvar: ' + (e.message || 'Verifique o console (F12)')); 
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> ATUALIZAR CONTRATO';
+                fecharModal();
+                carregarLojas();
+            } catch (err) {
+                alert('Erro ao salvar: ' + err.message);
             }
         }
 
-        async function enviarCobranca(id, tipo) {
+        function impersonate(id) {
             const l = lojasCache.find(x => x.id === id);
-            if (!l) return;
-
-            const dataVenc = l.data_renovacao ? new Date(l.data_renovacao + 'T12:00:00') : null;
-            const hoje = new Date();
-            const diasFaltando = dataVenc ? Math.ceil((dataVenc - hoje) / (1000 * 60 * 60 * 24)) : 0;
-            
-            // Textos simpáticos
-            const msgSimpatica = `Olá! Tudo bem com a equipe da ${l.nome}? 🌟 Passando para lembrar que o prazo da sua assinatura vence em ${diasFaltando} dias. Para garantir que seu acesso não seja interrompido, você pode realizar a renovação via PIX ou Cartão. Qualquer dúvida, conte comigo!`;
-            
-            const msgVencido = `Olá ${l.nome}! Notamos que sua assinatura vence hoje (${l.data_renovacao}). 🚀 Já deixamos tudo pronto para sua renovação. Aqui está o contato direto para agilizar seu acesso e evitar o bloqueio automático. Vamos renovar?`;
-
-            const textoFinal = diasFaltando <= 0 ? msgVencido : msgSimpatica;
-
-            if (tipo === 'whats') {
-                const fone = "5511999999999"; // Substitua pelo fone do cliente se tiver no banco
-                window.open(`https://wa.me/${fone}?text=${encodeURIComponent(textoFinal)}`, '_blank');
-            } else {
-                const email = l.email_contato || "cliente@email.com"; // Substitua pelo email do cliente se tiver no banco
-                window.open(`mailto:${email}?subject=Renovação de Assinatura - Verum Gestão&body=${encodeURIComponent(textoFinal)}`, '_blank');
-            }
-        }
-
-        /**
-         * 🎭 MODO SUPORTE: Entrar na visualização da loja
-         */
-        function acessarLoja(id) {
-            const l = lojasCache.find(x => x.id === id);
-            if (!l) return;
-            
+            if(!l) return;
             localStorage.setItem('master_impersonate_id', id);
             localStorage.setItem('master_impersonate_name', l.nome);
-            localStorage.setItem('master_impersonate_plan', (l.plano || 'basica').toLowerCase());
-            
             window.location.href = 'app.html';
         }
 
-        // EXCLUSÃO DE LOJA (OPERAÇÃO LIMPEZA TOTAL SEQUENCIAL)
-        async function deleteLoja(id, nome) {
-            const confirmar = confirm(`⚠️ ATENÇÃO: Deseja apagar a loja "${nome.toUpperCase()}" e TODOS os seus dados? \n\nEsta ação é irreversível e tentará limpar todos os vínculos no banco de dados.`);
+        async function removerLoja(idOriginal, nome) {
+            console.log('🔍 [DESCOBERTA] Iniciando busca reversa para:', nome);
             
-            if (!confirmar) return;
+            // Feedback visual
+            const overlay = document.createElement('div');
+            overlay.innerHTML = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;text-align:center;padding:20px;">
+                <i class="fas fa-search fa-spin" style="font-size:3rem;color:#fbbf24;margin-bottom:1rem;"></i>
+                <h2 id="nuclearTitle">VALIDANDO ID...</h2>
+                <p id="nuclearStatus">Buscando registro real no banco...</p>
+            </div>`;
+            document.body.appendChild(overlay);
 
             try {
-                console.log('🚀 Iniciando Operação Sequencial na loja:', id);
-
-                // 1. Obter Perfis e Produtos para limpeza de dependências
-                const { data: profiles } = await db.from('profiles').select('id, email').eq('loja_id', id);
-                const { data: prods } = await db.from('produtos').select('id').eq('loja_id', id);
+                // 1. BUSCA O ID REAL PELO NOME (Prevenção de truncamento)
+                const { data: lojaReal, error: errBusca } = await db.from('lojas').select('id, nome').eq('nome', nome);
                 
+                if (errBusca || !lojaReal || lojaReal.length === 0) {
+                    throw new Error("Não foi possível encontrar essa loja pelo nome no banco.");
+                }
+
+                // Se houver mais de uma com o mesmo nome, tentamos casar com o ID parcial
+                const matchingLoja = lojaReal.find(l => l.id.startsWith(idOriginal)) || lojaReal[0];
+                const id = matchingLoja.id;
+
+                console.log('🎯 [ID ENCONTRADO] O ID real é:', id);
+                document.getElementById('nuclearTitle').textContent = "ID VALIDADO!";
+                document.getElementById('nuclearStatus').textContent = `ID: ${id}...`;
+
+                if (!confirm(`⚠️ ATENÇÃO: Encontramos o ID completo no banco.\n\nDeseja APAGAR DEFINITIVAMENTE a loja "${nome}" e todos os seus vínculos?\n\nID: ${id}`)) {
+                    overlay.remove();
+                    return;
+                }
+
+                document.getElementById('nuclearTitle').textContent = "EXCLUINDO DADOS...";
+
+                // --- INICIO DA LIMPEZA NUCLEAR ---
+                
+                // 2. Coleta de dependências
+                const { data: profiles } = await db.from('profiles').select('id').eq('loja_id', id);
+                const { data: prods } = await db.from('produtos').select('id').eq('loja_id', id);
                 const uIds = profiles ? profiles.map(u => u.id) : [];
-                const uEmails = profiles ? profiles.map(u => u.email) : [];
                 const pIds = prods ? prods.map(p => p.id) : [];
 
-                console.log(`📊 Dados encontrados: ${uIds.length} usuários e ${pIds.length} produtos.`);
-
-                // 2. Função auxiliar para deletar com segurança
-                const safeDelete = async (tabela, coluna, valores) => {
-                    try {
-                        console.log(`🧹 Limpando ${tabela} onde ${coluna} está na lista...`);
-                        const { error } = await db.from(tabela).delete().in(coluna, Array.isArray(valores) ? valores : [valores]);
-                        if (error) console.warn(`ℹ️ Pulando ${tabela}: ${error.message}`);
-                    } catch (e) {
-                        console.warn(`❌ Erro técnico em ${tabela}, continuando...`);
-                    }
+                const nuke = async (tabela, coluna, valores) => {
+                    if (!valores || valores.length === 0) return;
+                    await db.from(tabela).delete().in(coluna, Array.isArray(valores) ? valores : [valores]);
                 };
 
-                // 3. LIMPEZA DE SEGUNDO NÍVEL (Dependências das Tabelas Principais)
+                // 3. FASE 1: ITENS E VARIANTES
+                document.getElementById('nuclearStatus').textContent = "Limpando variantes e itens...";
                 if (pIds.length > 0) {
-                    await safeDelete('variantes', 'id_produto', pIds);
-                    await safeDelete('variantes', 'produto_id', pIds);
-                    await safeDelete('historico_precos', 'produto_id', pIds);
-                    await safeDelete('venda_itens', 'produto_id', pIds);
-                    await safeDelete('vendas', 'id_produto', pIds);
+                    await nuke('variantes', 'id_produto', pIds);
+                    await nuke('variantes', 'produto_id', pIds);
+                    await nuke('venda_itens', 'produto_id', pIds);
+                    await nuke('historico_precos', 'produto_id', pIds);
                 }
 
-                // 4. LIMPEZA DE AUDITORIA (Por usuário e e-mail)
-                if (uIds.length > 0) {
-                    await safeDelete('logs_acessos', 'usuario_id', uIds);
-                    await safeDelete('logs_acoes', 'usuario_id', uIds);
-                    await safeDelete('logs_erros', 'usuario_id', uIds);
-                }
-                if (uEmails.length > 0) {
-                    await safeDelete('logs_acessos', 'usuario_email', uEmails);
-                    await safeDelete('logs_acoes', 'usuario_email', uEmails);
-                    await safeDelete('logs_erros', 'usuario_email', uEmails);
+                // 4. FASE 2: TABELAS DIRETAS (Tenta apagar em massa)
+                const tabelas = ['vendas', 'venda_itens', 'clientes', 'despesas', 'pagamentos', 'assinaturas', 'movimentacoes', 'variantes'];
+                for (const t of tabelas) {
+                    document.getElementById('nuclearStatus').textContent = `Limpando ${t}...`;
+                    await db.from(t).delete().eq('loja_id', id);
                 }
 
-                // 5. LIMPEZA POR LOJA_ID (Tabelas Diretas)
-                const tabelasLoja = [
-                    'vendas', 'clientes', 'despesas', 'movimentacoes', 
-                    'movimentacao_estoque', 'historico_estoque', 'logs_acessos', 
-                    'logs_acoes', 'logs_erros', 'historico_precos'
-                ];
-                for (const t of tabelasLoja) {
-                    try {
-                        console.log(`🧹 Limpando ${t} por loja_id...`);
-                        await db.from(t).delete().eq('loja_id', id);
-                    } catch (e) { /* pula */ }
+                // 5. FASE 3: AUDITORIA E LOGS
+                document.getElementById('nuclearStatus').textContent = "Limpando logs e histórico...";
+                for (const tLog of ['logs_acessos', 'logs_acoes', 'logs_erros']) {
+                    await db.from(tLog).delete().eq('loja_id', id);
+                    if (uIds.length > 0) await nuke(tLog, 'usuario_id', uIds);
                 }
 
-                // 6. LIMPEZA DE CADASTROS (Produtos e Perfis)
-                await safeDelete('produtos', 'loja_id', id);
-                await safeDelete('profiles', 'loja_id', id);
+                // 6. FASE 4: CADASTROS FINAIS
+                document.getElementById('nuclearStatus').textContent = "Removendo produtos e perfis...";
+                await db.from('produtos').delete().eq('loja_id', id);
+                await db.from('profiles').delete().eq('loja_id', id);
 
-                // 7. O GOLPE FINAL (Apagar a loja)
-                console.log('🏛️ Apagando registro oficial da loja...');
-                const { error: finalError } = await db.from('lojas').delete().eq('id', id);
+                // 7. O GOLPE DE MISERICÓRDIA (Agora pelo NOME para evitar erro de ID truncado)
+                document.getElementById('nuclearStatus').textContent = "Apagando registro mestre pelo nome...";
+                const { error: finalError } = await db.from('lojas').delete().eq('nome', nome);
 
-                if (finalError) throw finalError;
+                if (finalError) {
+                    throw new Error(`O banco bloqueou o delete final pelo nome: ${finalError.message}`);
+                }
 
-                alert('✅ EXCLUSÃO CONCLUÍDA: A loja foi removida com sucesso.');
-                carregarDados();
+                // 8. VERIFICAÇÃO FINAL
+                const { data: check } = await db.from('lojas').select('id').eq('nome', nome).single();
+                if (check) {
+                    throw new Error("A loja ainda existe no banco mesmo após o delete pelo nome!");
+                }
 
-            } catch (err) {
-                console.error('Falha na operação final:', err);
-                alert('Ocorreu um problema ao apagar o registro principal. Verifique o console.');
-            }
-        }
-
-        async function createMarcosMasterStore() {
-            if (!confirm('Deseja criar a loja oficial "Marcos Master" vinculada à sua conta agora?')) return;
-
-            try {
-                const { data: { session } } = await db.auth.getSession();
-                if (!session) return alert('Sessão expirada. Entre novamente.');
-
-                const chave = 'MASTER-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                document.getElementById('nuclearTitle').textContent = "SUCESSO!";
+                document.getElementById('nuclearStatus').textContent = "Loja varrida do mapa.";
                 
-                // 1. Criar a Loja
-                const { data: novaLoja, error: lError } = await db.from('lojas').insert({
-                    nome: 'Marcos Master',
-                    chave_acesso: chave,
-                    dono_id: session.user.id,
-                    plano: 'full',
-                    valor_assinatura: 0,
-                    data_renovacao: '2099-12-31', // Vitalício
-                    ativo: true
-                }).select().single();
-
-                if (lError) throw lError;
-
-                // 2. Vincular ao seu Perfil
-                await db.from('profiles').update({ loja_id: novaLoja.id }).eq('id', session.user.id);
-
-                alert('👑 SUCESSO! Loja "Marcos Master" criada com privilégios vitalícios. Recarregando...');
-                carregarDados();
+                setTimeout(() => {
+                    overlay.remove();
+                    alert(`✅ SUCESSO ABSOLUTO!\nA loja "${nome}" foi apagada pelo nome.`);
+                    carregarLojas();
+                }, 1000);
 
             } catch (err) {
-                alert('Erro ao criar loja master: ' + err.message);
+                overlay.remove();
+                console.error('FALHA NA OPERAÇÃO:', err);
+                alert("❌ ERRO CRÍTICO: " + err.message);
             }
         }
 
-        async function logout() { 
-            await db.auth.signOut();
-            window.location.href = 'index.html'; 
-        }
-
-        // --- NOVAS FUNÇÕES PARA CADASTRO DE CLIENTE ---
-        function abrirModalNovaLoja() {
-            const modal = document.getElementById('modalNovoCliente');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            // Sugerir 7 dias por padrão
-            const dataTrial = new Date();
-            dataTrial.setDate(dataTrial.getDate() + 7);
-            const yyyy = dataTrial.getFullYear();
-            const mm = String(dataTrial.getMonth() + 1).padStart(2, '0');
-            const dd = String(dataTrial.getDate()).padStart(2, '0');
-            document.getElementById('newRenovacao').value = `${yyyy}-${mm}-${dd}`;
-        }
-
-        function cerrarModalNovo() {
-            document.getElementById('modalNovoCliente').classList.add('hidden');
-            document.getElementById('modalNovoCliente').classList.remove('flex');
-        }
-
-        async function salvarNovaLoja() {
-            const btn = document.getElementById('btnSalvarNovo');
-            const nome = document.getElementById('newNome').value.trim();
-            const plano = document.getElementById('newPlano').value;
-            const renovacao = document.getElementById('newRenovacao').value;
-
-            if (!nome) return alert('Dê um nome para a loja.');
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CRIANDO...';
-                
-                const chave = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-                const { data, error } = await db.from('lojas').insert({
-                    nome: nome,
-                    plano: plano,
-                    data_renovacao: renovacao,
-                    chave_acesso: chave,
-                    ativo: true,
-                    valor_assinatura: plano === 'basica' ? 49.9 : 97.0 // Sugestão
-                }).select().single();
-
-                if (error) throw error;
-
-                alert('🚀 Cliente cadastrado! Chave de Acesso: ' + chave);
-                cerrarModalNovo();
-                carregarDados();
-
-            } catch (err) {
-                alert('Erro ao cadastrar: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'CADASTRAR CLIENTE';
-            }
-        }
-        
-        function exportarCSV() {
-            let csv = 'Store ID,Name,Plan,Value,Renewal,Payment\n';
-            lojasCache.forEach(l => {
-                csv += `${l.id},"${l.nome}",${l.plano},${l.valor_assinatura},${l.data_renovacao},${l.forma_pagamento}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('hidden', '');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'clientes_master.csv');
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        function logoutMaster() {
+            db.auth.signOut().then(() => window.location.href = 'index.html');
         }
     </script>
-    <!-- Modal Novo Cliente -->
-    <div id="modalNovoCliente" class="fixed inset-0 bg-black/80 hidden z-[110] items-center justify-center p-4">
-        <div class="glass-card w-full max-w-lg rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-indigo-600/10">
-                <h3 class="text-lg font-black text-white italic">CADASTRAR NOVO CLIENTE <span class="text-[10px] ml-2 text-indigo-400 opacity-50 font-mono">/NEW_STORE</span></h3>
-                <button onclick="cerrarModalNovo()" class="text-gray-500 hover:text-white transition"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-8 space-y-6">
-                <div>
-                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Nome Identificador da Loja</label>
-                    <input type="text" id="newNome" placeholder="Ex: Boutique da Maria"
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Plano Inicial</label>
-                        <select id="newPlano" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="basica">Bronze (Básico)</option>
-                            <option value="stand">Silver (Standard)</option>
-                            <option value="premium">Gold (Premium)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Vencimento do Teste</label>
-                        <input type="date" id="newRenovacao"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                </div>
-                <div class="p-4 bg-amber-500/5 rounded-xl border border-amber-500/10">
-                    <p class="text-[10px] text-amber-400 font-bold leading-relaxed">
-                        <i class="fas fa-info-circle mr-1"></i> A chave de acesso será gerada automaticamente. 
-                        O cliente terá 7 dias de teste grátis por padrão.
-                    </p>
-                </div>
-            </div>
-            <div class="p-6 border-t border-white/5 flex gap-3">
-                <button id="btnSalvarNovo" onclick="salvarNovaLoja()"
-                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20">
-                    CADASTRAR CLIENTE
-                </button>
-                <button onclick="cerrarModalNovo()"
-                    class="px-6 py-4 bg-white/5 hover:bg-white/10 text-gray-400 rounded-2xl font-bold text-xs uppercase tracking-widest transition">
-                    Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
 </body>
 
 </html>

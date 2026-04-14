@@ -1,10 +1,39 @@
+const CONFIG_SISTEMA = {
+    categoriasProdutos: ['Tênis', 'Sapatos', 'Sandálias', 'Botas', 'Camisetas', 'Calças', 'Jaquetas', 'Vestidos', 'Acessórios', 'Outros'],
+    categoriasDespesas: ['Aluguel', 'Energia/Água', 'Marketing', 'Salários/Encargos', 'Materiais/Insumos', 'Software/Assinaturas', 'Impostos', 'Pró-labore', 'Outros']
+};
+
+function popularCategorias() {
+    const selectProd = document.getElementById('categoria');
+    const selectDespesa = document.getElementById('expenseCategoria');
+
+    if (selectProd) {
+        const val = selectProd.value;
+        selectProd.innerHTML = '<option value="">Selecione a Categoria *</option>';
+        CONFIG_SISTEMA.categoriasProdutos.forEach(cat => {
+            selectProd.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+        if (val) selectProd.value = val;
+    }
+
+    if (selectDespesa) {
+        const val = selectDespesa.value;
+        selectDespesa.innerHTML = '<option value="">Selecione a Categoria *</option>';
+        CONFIG_SISTEMA.categoriasDespesas.forEach(cat => {
+            selectDespesa.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+        if (val) selectDespesa.value = val;
+    }
+}
+window.popularCategorias = popularCategorias;
+
 const categoryColors = {
     'Tênis': 'bg-blue-900 text-blue-100',
     'Sapatos': 'bg-green-900 text-green-100',
     'Sandálias': 'bg-yellow-900 text-yellow-100',
     'Botas': 'bg-purple-900 text-purple-100',
     'Camisetas': 'bg-red-900 text-red-100',
-    'Calças': 'bg-indigo-900 text-indigo-100',
+    'Calças': 'bg-amber-900 text-amber-100',
     'Jaquetas': 'bg-pink-900 text-pink-100',
     'Vestidos': 'bg-teal-900 text-teal-100',
     'Acessórios': 'bg-orange-900 text-orange-100'
@@ -423,7 +452,7 @@ function renderProductsTable() {
             <td class="px-6 py-4 text-sm font-bold text-gray-500 uppercase tracking-tighter" data-label="SKU">
                 ${produto.sku}
             </td>
-            <td class="px-6 py-4 text-sm font-black text-indigo-600 dark:text-indigo-400" data-label="Preço">
+            <td class="px-6 py-4 text-sm font-black text-amber-600 dark:text-amber-400" data-label="Preço">
                 R$ ${parseFloat(produto.preco_venda).toFixed(2).replace('.', ',')}
             </td>
             <td class="px-6 py-4 text-sm font-bold ${estoqueTotal === 0 ? 'text-rose-500' : 'text-slate-500'}" data-label="Estoque">
@@ -438,7 +467,7 @@ function renderProductsTable() {
                 }
             </td>
             <td class="px-6 py-4 text-sm font-medium" data-label="Ações">
-                <button onclick="viewProductDetails('${produto.id}')" class="text-indigo-600 hover:text-indigo-900 mr-2" title="Ver Detalhes">
+                <button onclick="viewProductDetails('${produto.id}')" class="text-amber-600 hover:text-amber-900 mr-2" title="Ver Detalhes">
                     <i class="fas fa-eye text-lg"></i>
                 </button>
                 ${(typeof PERMISSIONS !== 'undefined' && PERMISSIONS.canEditProducts()) ? 
@@ -513,12 +542,7 @@ function renderSalesTable() {
     });
 }
 
-function applyTheme(theme) {
-    // Forçar sempre modo escuro
-    const html = document.documentElement;
-    html.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
-}
+
 
 function updateSalesSummary() {
     const agora = new Date();
@@ -579,7 +603,6 @@ function resetForm() {
     if (eanField) eanField.value = '';
     document.getElementById('variantsContainer').innerHTML = '';
     addVariant();
-    selectedProductId = null;
     localStorage.removeItem('productDraft'); // Limpa rascunho ao resetar manual ou salvar
 }
 
@@ -588,9 +611,9 @@ function addVariant() {
     div.className = 'variant-item p-4 border border-gray-100 rounded-xl bg-gray-50 dark:bg-slate-900/50 mb-3';
     div.innerHTML = `
         <div class="grid grid-cols-3 gap-3 mb-3">
-            <input type="text" class="variant-tamanho w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-indigo-500" placeholder="Tam">
-            <input type="text" class="variant-cor w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-indigo-500" placeholder="Cor">
-            <input type="number" class="variant-estoque w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-indigo-500" min="0" placeholder="Qtd Estoque">
+            <input type="text" class="variant-tamanho w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-amber-500" placeholder="Tam">
+            <input type="text" class="variant-cor w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-amber-500" placeholder="Cor">
+            <input type="number" class="variant-estoque w-full px-3 py-2 border rounded-lg focus:ring-1 focus:ring-amber-500" min="0" placeholder="Qtd Estoque">
         </div>
         <div class="grid grid-cols-2 gap-3">
             <input type="number" class="variant-alerta w-full px-3 py-2 border rounded-lg" min="1" placeholder="Alerta Mínimo">
@@ -777,7 +800,7 @@ function renderCart() {
                 <p class="text-[10px] text-gray-500 dark:text-gray-400 capitalize">${item.variante} • ${item.qtd}x R$ ${item.preco.toLocaleString('pt-BR')}</p>
             </div>
             <div class="flex items-center gap-3 text-right">
-                <span class="text-sm font-bold text-indigo-600">R$ ${totalItem.toLocaleString('pt-BR')}</span>
+                <span class="text-sm font-bold text-amber-600">R$ ${totalItem.toLocaleString('pt-BR')}</span>
                 <button onclick="removeFromCart(${index})" class="text-gray-400 hover:text-red-500 transition p-1">
                     <i class="fas fa-times"></i>
                 </button>
@@ -893,3 +916,35 @@ function printProductLabel(id) {
     printWindow.document.close();
 }
 window.printProductLabel = printProductLabel;
+
+function openSaleSuccessModal(cliente, total, itens) {
+    const modal = document.getElementById('saleSuccessModal');
+    const totalEl = document.getElementById('successModalTotal');
+    const btnZap = document.getElementById('btnShareWhatsApp');
+
+    if (totalEl) totalEl.textContent = `R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    
+    if (btnZap) {
+        if (!cliente || !cliente.whatsapp) {
+            btnZap.classList.add('opacity-50', 'grayscale');
+            btnZap.onclick = () => showNotification('Aviso', 'Venda realizada! Mas este cliente não tem WhatsApp cadastrado.', 'warning');
+        } else {
+            btnZap.classList.remove('opacity-50', 'grayscale');
+            btnZap.onclick = () => {
+                const phone = cliente.whatsapp.replace(/\D/g, '');
+                const msg = encodeURIComponent(
+                    `*COMPROVANTE DE COMPRA - VERUM GESTÃO*\n\n` +
+                    `Olá ${cliente.nome}, obrigado pela preferência!\n\n` +
+                    `*Itens:* \n${itens}\n\n` +
+                    `*VALOR TOTAL:* R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n\n` +
+                    `_Agradecemos sua visita!_`
+                );
+                window.open(`https://wa.me/55${phone}?text=${msg}`, '_blank');
+                modal.classList.add('hidden');
+            };
+        }
+    }
+
+    if (modal) modal.classList.remove('hidden');
+}
+window.openSaleSuccessModal = openSaleSuccessModal;
