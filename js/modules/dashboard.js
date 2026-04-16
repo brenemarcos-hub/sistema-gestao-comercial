@@ -256,11 +256,17 @@ function updateOnboardingChecklist() {
 
     // Se todos os passos estiverem prontos, podemos esconder o checklist ou mostrar mensagem de sucesso
     const allDone = steps.product && steps.sale && steps.expense;
+    const isDismissed = localStorage.getItem('onboarding_dismissed') === 'true';
     
-    // Mostra o checklist apenas se faltar algo OU se for uma conta zerada
-    if (allDone) {
-        // Se tudo estiver pronto, esconde o checklist após um tempo (ou mantém escondido se já estava)
+    // Se tudo estiver pronto, marca como encerrado para sempre
+    if (allDone && !isDismissed) {
+        localStorage.setItem('onboarding_dismissed', 'true');
         setTimeout(() => checklist.classList.add('hidden'), 5000);
+    } 
+    
+    // Se estiver marcado como dispensado ou se já tiver uma movimentação básica (ex: vendas), esconde
+    if (isDismissed || (steps.product && steps.sale)) {
+        checklist.classList.add('hidden');
     } else {
         checklist.classList.remove('hidden');
     }

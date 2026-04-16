@@ -84,7 +84,16 @@ function renderExpensesTable() {
     tableBody.innerHTML = '';
 
     if (filtered.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Nenhuma despesa encontrada para estes filtros</td></tr>';
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center opacity-40">
+                        <i class="fas fa-file-invoice-dollar text-5xl mb-4"></i>
+                        <p class="text-lg font-bold">Nenhuma despesa encontrada</p>
+                        <p class="text-sm">Todo gasto registrado aparecerá aqui.</p>
+                    </div>
+                </td>
+            </tr>`;
         return;
     }
 
@@ -120,7 +129,15 @@ async function saveExpense(e) {
     const descricao = document.getElementById('expenseDesc').value.trim();
     const valor = parseFloat(document.getElementById('expenseValor').value) || 0;
     const data_vencimento = document.getElementById('expenseVencimento').value || null;
-    const categoria = document.getElementById('expenseCategoria').value;
+    let categoria = document.getElementById('expenseCategoria').value;
+    
+    // Suporte para nova categoria personalizada de despesa
+    if (categoria === 'NOVA') {
+        const novaCat = document.getElementById('expense_categoria_nova').value.trim();
+        if (!novaCat) return showNotification('Atenção', 'Digite o nome da nova categoria.', 'warning');
+        categoria = novaCat;
+    }
+
     const statusValue = document.getElementById('expenseStatus').value;
     const pago = statusValue === 'pago';
 
@@ -189,6 +206,11 @@ function closeSidebarExpense() {
     document.getElementById('sidebarDespesa').classList.remove('open');
     document.getElementById('drawerOverlay').classList.remove('active');
     document.getElementById('expenseForm').reset();
+    
+    // Esconder container de nova categoria de despesa
+    const novaCatContainer = document.getElementById('novaExpenseCatContainer');
+    if (novaCatContainer) novaCatContainer.classList.add('hidden');
+
     selectedExpenseId = null;
     document.getElementById('expenseSidebarTitle').textContent = 'Lançar Nova Despesa';
 }

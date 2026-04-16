@@ -60,30 +60,30 @@ const PLAN_LIMITS = {
  */
 const CAPABILITIES = {
     // --- VENDAS ---
-    'pos:use': () => true, // Todos podem vender
-    'sales:edit': () => hasMinimumRole(ROLES.GERENTE),
-    'sales:delete': () => hasMinimumRole(ROLES.DONO),
-    'sales:export': () => (hasMinimumRole(ROLES.DONO) && getStorePlan() === PLANS.PREMIUM),
+    'pos:use': () => true, 
+    'sales:edit': () => true, // Todos podem editar
+    'sales:delete': () => true, // Todos podem deletar
+    'sales:export': () => true, // Todos podem exportar
 
     // --- PRODUTOS ---
     'products:view': () => true,
-    'products:manage': () => hasMinimumRole(ROLES.GERENTE),
-    'products:cost_price': () => hasMinimumRole(ROLES.DONO),
-    'products:import_xml': () => hasMinimumRole(ROLES.GERENTE),
+    'products:manage': () => true,
+    'products:cost_price': () => true, // Liberado para todos
+    'products:import_xml': () => true,
 
     // --- CLIENTES ---
     'clients:view': () => true,
-    'clients:manage': () => true, // Vendedor pode cadastrar cliente
-    'clients:delete': () => hasMinimumRole(ROLES.GERENTE),
+    'clients:manage': () => true, 
+    'clients:delete': () => true,
 
     // --- FINANÇAS ---
-    'finance:view': () => hasMinimumRole(ROLES.DONO) || (hasMinimumRole(ROLES.GERENTE) && getStorePlan() !== PLANS.BASICA),
-    'finance:profit': () => getStorePlan() !== PLANS.BASICA && hasMinimumRole(ROLES.DONO),
-    'expenses:manage': () => hasMinimumRole(ROLES.DONO),
+    'finance:view': () => true, // Liberado para todos
+    'finance:profit': () => true, // Liberado para todos
+    'expenses:manage': () => true,
 
     // --- CONFIGURAÇÃO ---
-    'store:config': () => hasMinimumRole(ROLES.DONO),
-    'users:manage': () => hasMinimumRole(ROLES.DONO) && PLAN_LIMITS[getStorePlan()]?.usuarios > 1,
+    'store:config': () => true, // Todos podem configurar a loja
+    'users:manage': () => true,
 
     // --- MASTER ---
     'master:access': () => hasMinimumRole(ROLES.MASTER)
@@ -95,12 +95,12 @@ const CAPABILITIES = {
 
 function getUserRole() {
     if (localStorage.getItem('master_impersonate_id')) return ROLES.DONO;
-    const role = localStorage.getItem('userRole') || ROLES.VENDEDOR;
-    // Normalização rápida para legados
-    if (role === 'usuario' || role === 'vendedor') return ROLES.VENDEDOR;
-    if (role === 'admin' || role === 'dono') return ROLES.DONO;
-    if (role === 'programador' || role === 'master') return ROLES.MASTER;
-    return role;
+    const role = localStorage.getItem('userRole');
+    
+    // Se for Master, mantém Master. Qualquer outro vira DONO para ter acesso total.
+    if (role === 'master' || role === 'programador') return ROLES.MASTER;
+    
+    return ROLES.DONO; // Unificado: Todos são Donos da própria loja por enquanto
 }
 
 function getStorePlan() {

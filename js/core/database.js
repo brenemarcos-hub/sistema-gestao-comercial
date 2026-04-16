@@ -212,7 +212,15 @@ async function saveProduct(e) {
     const ean = document.getElementById('ean').value.trim();
     const sku = document.getElementById('sku').value;
     const nome = document.getElementById('nome').value;
-    const categoria = document.getElementById('categoria').value;
+    let categoria = document.getElementById('categoria').value;
+    
+    // Suporte para nova categoria personalizada
+    if (categoria === 'NOVA') {
+        const novaCat = document.getElementById('categoria_nova').value.trim();
+        if (!novaCat) return showNotification('Atenção', 'Digite o nome da nova categoria.', 'warning');
+        categoria = novaCat;
+    }
+
     const preco_venda = document.getElementById('preco_venda').value;
 
     const variantes = [];
@@ -381,53 +389,39 @@ async function saveProduct(e) {
 
 // Excluir produto
 async function deleteProduct(productId) {
-    if (!confirm('Tem certeza que deseja excluir?')) return;
+    if (!confirm('Atenção: A exclusão deste produto removerá também seu histórico de vendas e preços. Deseja continuar?')) return;
 
     try {
-        // 🔒 VALIDAÇÃO DE SEGURANÇA: Verifica se o produto pertence à loja do usuário
         const lojaId = await getUserLojaId();
-        if (!lojaId) {
-            showNotification('Erro de autenticação', 'Não foi possível identificar sua loja.', 'error');
-            return;
-        }
+        if (!lojaId) throw new Error('Loja não identificada.');
 
-        // Verifica se o produto pertence à loja antes de excluir
-        const { data: produto, error: checkError } = await supabaseClient
-            .from('produtos')
-            .select('loja_id')
-            .eq('id', productId)
-            .single();
+        showNotification('Excluindo...', 'Removendo produto e vínculos...', 'info');
 
-        if (checkError) throw checkError;
+        // 1. Remover Histórico de Preços (Com validação de loja)
+        await supabaseClient.from('historico_precos').delete().eq('produto_id', productId).eq('loja_id', lojaId);
 
-        if (produto.loja_id !== lojaId) {
-            showNotification('Acesso negado', 'Você não tem permissão para excluir este produto.', 'error');
-            console.error('⚠️ Tentativa de exclusão de produto de outra loja bloqueada!');
-            return;
-        }
+        // 2. Remover Vendas (Com validação de loja)
+        await supabaseClient.from('vendas').delete().eq('id_produto', productId).eq('loja_id', lojaId);
 
-        // Excluir variantes primeiro
+        // 3. Remover Variantes (Ligadas ao produto)
         await supabaseClient.from('variantes').delete().eq('id_produto', productId);
 
-        // Excluir produto com validação de loja_id
+        // 4. Remover o Produto (Com validação de loja)
         const { error } = await supabaseClient
             .from('produtos')
             .delete()
             .eq('id', productId)
-            .eq('loja_id', lojaId); // Segurança extra
+            .eq('loja_id', lojaId);
 
         if (error) throw error;
 
-        showNotification('Produto excluído', 'Sucesso.', 'success');
+        showNotification('Excluído', 'Produto e histórico removidos com sucesso.', 'success');
         
-        // Registrar Ação: Exclusão
-        registrarAcao(null, null, 'excluiu_produto', 'produto', productId);
-
+        registrarAcao(null, null, 'excluiu_produto_completo', 'produto', productId);
         loadProducts(true);
     } catch (error) {
         console.error('Erro ao excluir:', error);
-        capturarErro(error, { funcao: 'deleteProduct', productId: productId });
-        showNotification('Erro', 'Não foi possível excluir.', 'error');
+        showNotification('Erro ao excluir', 'Ocorreu um problema ao remover o produto.', 'error');
     }
 }
 

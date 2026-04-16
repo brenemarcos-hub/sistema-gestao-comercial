@@ -514,10 +514,10 @@ function setupAppEventListeners() {
         // Mostrar campos de parcelas se for Crédito Parcelado ou Combinado/Fiado
         if (metodo === 'Crédito Parcelado' || metodo === 'Combinado') {
             installmentFields.classList.remove('hidden');
-            if (metodo === 'Combinado') {
-                statusSelect.value = 'pendente';
-                statusSelect.dispatchEvent(new Event('change'));
-            }
+            // SE for Combinado (carnê/fiado), obrigatoriamente é PENDENTE
+            // SE for Crédito Parcelado, também pode começar como PENDENTE para controle de fluxo
+            statusSelect.value = 'pendente';
+            statusSelect.dispatchEvent(new Event('change'));
         } else {
             installmentFields.classList.add('hidden');
             statusSelect.value = 'pago';

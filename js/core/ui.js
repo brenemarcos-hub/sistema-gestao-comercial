@@ -7,12 +7,31 @@ function popularCategorias() {
     const selectProd = document.getElementById('categoria');
     const selectDespesa = document.getElementById('expenseCategoria');
 
+    // 🚀 LÓGICA DINÂMICA: Pegar categorias que já existem no sistema
+    const categoriasExtrasProd = Array.isArray(window.produtos) 
+        ? [...new Set(window.produtos.map(p => p.categoria))].filter(c => c && !CONFIG_SISTEMA.categoriasProdutos.includes(c))
+        : [];
+
     if (selectProd) {
         const val = selectProd.value;
         selectProd.innerHTML = '<option value="">Selecione a Categoria *</option>';
+        
+        // Categorias Padrão
         CONFIG_SISTEMA.categoriasProdutos.forEach(cat => {
             selectProd.innerHTML += `<option value="${cat}">${cat}</option>`;
         });
+
+        // Categorias que o usuário já criou
+        if (categoriasExtrasProd.length > 0) {
+            selectProd.innerHTML += '<option disabled>──── Personalizadas ────</option>';
+            categoriasExtrasProd.forEach(cat => {
+                selectProd.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+        }
+
+        // Opção para nova
+        selectProd.innerHTML += '<option value="NOVA" class="font-bold text-amber-600">[+] Adicionar Nova...</option>';
+        
         if (val) selectProd.value = val;
     }
 
@@ -22,10 +41,25 @@ function popularCategorias() {
         CONFIG_SISTEMA.categoriasDespesas.forEach(cat => {
             selectDespesa.innerHTML += `<option value="${cat}">${cat}</option>`;
         });
+        selectDespesa.innerHTML += '<option value="NOVA" class="font-bold text-rose-600">[+] Adicionar Nova...</option>';
         if (val) selectDespesa.value = val;
     }
 }
 window.popularCategorias = popularCategorias;
+
+function toggleNovaCategoria(select, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (select.value === 'NOVA') {
+        container.classList.remove('hidden');
+        const input = container.querySelector('input');
+        if (input) input.focus();
+    } else {
+        container.classList.add('hidden');
+    }
+}
+window.toggleNovaCategoria = toggleNovaCategoria;
 
 const categoryColors = {
     'Tênis': 'bg-blue-900 text-blue-100',
@@ -601,6 +635,11 @@ function resetForm() {
     document.getElementById('productForm').reset();
     const eanField = document.getElementById('ean');
     if (eanField) eanField.value = '';
+    
+    // Esconder container de nova categoria
+    const novaCatContainer = document.getElementById('novaCategoriaContainer');
+    if (novaCatContainer) novaCatContainer.classList.add('hidden');
+
     document.getElementById('variantsContainer').innerHTML = '';
     addVariant();
     localStorage.removeItem('productDraft'); // Limpa rascunho ao resetar manual ou salvar
@@ -617,7 +656,7 @@ function addVariant() {
         </div>
         <div class="grid grid-cols-2 gap-3">
             <input type="number" class="variant-alerta w-full px-3 py-2 border rounded-lg" min="1" placeholder="Alerta Mínimo">
-            <input type="number" class="variant-custo w-full px-3 py-2 border rounded-lg ${!PERMISSIONS.canViewProfit() ? 'hidden' : ''}" min="0" step="0.01" placeholder="Custo (R$) ${!PERMISSIONS.canViewProfit() ? '(Bloqueado)' : ''}" ${!PERMISSIONS.canViewProfit() ? 'disabled' : ''}>
+            <input type="number" class="variant-custo w-full px-3 py-2 border rounded-lg" min="0" step="0.01" placeholder="Custo (R$)">
         </div>
         <button type="button" class="mt-2 remove-variant text-rose-500 hover:bg-rose-50 p-2 rounded-lg w-full" onclick="this.closest('.variant-item').remove()"><i class="fas fa-trash mr-2"></i>Remover Variante</button>
     `;

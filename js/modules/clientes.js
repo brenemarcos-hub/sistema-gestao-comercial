@@ -56,7 +56,16 @@ function renderClientesTable() {
     tableBody.innerHTML = '';
 
     if (filtered.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-gray-500">Nenhum cliente encontrado</td></tr>';
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center opacity-40">
+                        <i class="fas fa-users-slash text-5xl mb-4"></i>
+                        <p class="text-lg font-bold">Nenhum cliente encontrado</p>
+                        <p class="text-sm">Cadastre seus melhores clientes para gerenciar dívidas e aniversários.</p>
+                    </div>
+                </td>
+            </tr>`;
         return;
     }
     filtered.forEach(cliente => {
