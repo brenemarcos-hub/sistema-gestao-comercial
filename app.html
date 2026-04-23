@@ -24,7 +24,8 @@
     <!-- Preconnect for Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
     <!-- Favicon Placeholder -->
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2897/2897837.png">
@@ -59,8 +60,10 @@
     <!-- Estilos Externos -->
     <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { font-family: 'Inter', sans-serif; }
-        
+        :root {
+            font-family: 'Inter', sans-serif;
+        }
+
         .login-glass {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
@@ -76,29 +79,59 @@
         }
 
         /* 🚨 EMERGÊNCIA: Destravar Inputs */
-        #modalCriarLojaObrigatorio, #modalCriarLojaObrigatorio * {
+        #modalCriarLojaObrigatorio,
+        #modalCriarLojaObrigatorio * {
             pointer-events: auto !important;
             user-select: auto !important;
         }
+
         body.modal-open {
             overflow: hidden !important;
         }
 
         /* Melhorias de Responsividade Mobile */
         @media (max-width: 768px) {
-            header .container { flex-direction: column; gap: 1rem; padding-bottom: 1rem; }
-            .sidebar { width: 100% !important; max-width: 100% !important; border-radius: 0 !important; }
-            #onboardingChecklist .grid { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
-            .grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-            .grid-cols-3 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+            header .container {
+                flex-direction: column;
+                gap: 1rem;
+                padding-bottom: 1rem;
+            }
+
+            .sidebar {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+            }
+
+            #onboardingChecklist .grid {
+                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+            }
+
+            .grid-cols-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            .grid-cols-3 {
+                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+            }
         }
 
         @media (max-width: 480px) {
-            .grid-cols-2, .grid-cols-4 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
-            .text-3xl { font-size: 1.25rem !important; }
-            .p-6 { padding: 1rem !important; }
+
+            .grid-cols-2,
+            .grid-cols-4 {
+                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+            }
+
+            .text-3xl {
+                font-size: 1.25rem !important;
+            }
+
+            .p-6 {
+                padding: 1rem !important;
+            }
         }
-        
+
         /* Tema Toggle Hover */
         .theme-toggle:hover i {
             transform: rotate(20deg);
@@ -109,10 +142,9 @@
 <body>
     <!-- 🚀 NOVO LOCAL: Modal Criar Loja Obrigatório (Prioridade Máxima) -->
     <div id="modalCriarLojaObrigatorio"
-        class="fixed inset-0 z-[99999] hidden items-center justify-center p-4 bg-slate-950" 
+        class="fixed inset-0 z-[99999] hidden items-center justify-center p-4 bg-slate-950"
         onclick="document.getElementById('obrigatorioNomeLoja')?.focus()">
-        <div
-            class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center border border-white/10"
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-8 text-center border border-white/10"
             onclick="event.stopPropagation()">
             <div class="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i class="fas fa-store text-amber-500 text-4xl"></i>
@@ -124,9 +156,9 @@
 
             <form id="formCriarLojaObrigatorio" class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nome da sua Loja</label>
-                    <input type="text" id="obrigatorioNomeLoja" required autofocus
-                        style="color: white !important;"
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nome da sua
+                        Loja</label>
+                    <input type="text" id="obrigatorioNomeLoja" required autofocus style="color: white !important;"
                         class="w-full px-4 py-3 bg-slate-900 text-white border border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
                         placeholder="Ex: Minha Boutique">
                 </div>
@@ -145,19 +177,22 @@
     <div id="drawerOverlay" class="drawer-overlay"></div>
 
     <!-- Banner de Aviso de Assinatura (Próximo ao Vencimento) -->
-    <div id="subscriptionWarning" class="hidden fixed top-0 left-0 w-full z-[1000] bg-gradient-to-r from-amber-600 to-amber-500 text-white py-1 px-4 text-[10px] font-black uppercase tracking-widest text-center shadow-lg animate-pulse">
-        <i class="fas fa-clock mr-2"></i> 
-        Sua assinatura expira em <span id="daysRemaining">X</span> dias. 
+    <div id="subscriptionWarning"
+        class="hidden fixed top-0 left-0 w-full z-[1000] bg-gradient-to-r from-amber-600 to-amber-500 text-white py-1 px-4 text-[10px] font-black uppercase tracking-widest text-center shadow-lg animate-pulse">
+        <i class="fas fa-clock mr-2"></i>
+        Sua assinatura expira em <span id="daysRemaining">X</span> dias.
         <a href="#" id="renewLink" class="ml-4 underline hover:text-white/80">Renovar Agora</a>
     </div>
 
     <!-- MODO SUPORTE BANNER (MASTER) -->
-    <div id="supportModeBanner" class="hidden fixed top-0 left-0 w-full z-[1001] bg-gradient-to-r from-purple-700 to-amber-600 text-white py-1.5 px-4 text-[10px] font-black uppercase tracking-widest flex items-center justify-between shadow-lg">
+    <div id="supportModeBanner"
+        class="hidden fixed top-0 left-0 w-full z-[1001] bg-gradient-to-r from-purple-700 to-amber-600 text-white py-1.5 px-4 text-[10px] font-black uppercase tracking-widest flex items-center justify-between shadow-lg">
         <div class="flex items-center gap-2">
-            <i class="fas fa-user-shield animate-pulse text-sm"></i> 
+            <i class="fas fa-user-shield animate-pulse text-sm"></i>
             Acesso de Suporte: <span id="supportStoreName" class="text-amber-200 font-black">---</span>
         </div>
-        <button onclick="sairModoSuporte()" class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl border border-white/20 transition-all active:scale-95">
+        <button onclick="sairModoSuporte()"
+            class="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl border border-white/20 transition-all active:scale-95">
             Sair do suporte
         </button>
     </div>
@@ -187,39 +222,47 @@
 
 
     <!-- Tela de Bloqueio por Falta de Pagamento -->
-    <div id="subscriptionBlocker" class="hidden fixed inset-0 z-[2000] bg-slate-950 flex items-center justify-center p-6 overflow-y-auto">
+    <div id="subscriptionBlocker"
+        class="hidden fixed inset-0 z-[2000] bg-slate-950 flex items-center justify-center p-6 overflow-y-auto">
         <div class="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-500">
             <div class="relative inline-block">
-                <div class="w-24 h-24 bg-red-600/20 rounded-3xl flex items-center justify-center mx-auto border border-red-500/30">
+                <div
+                    class="w-24 h-24 bg-red-600/20 rounded-3xl flex items-center justify-center mx-auto border border-red-500/30">
                     <i class="fas fa-lock text-4xl text-red-500"></i>
                 </div>
-                <div class="absolute -top-2 -right-2 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-950">
+                <div
+                    class="absolute -top-2 -right-2 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center shadow-lg border-2 border-slate-950">
                     <i class="fas fa-exclamation text-white text-xs"></i>
                 </div>
             </div>
 
             <div class="space-y-4">
-                <h1 class="text-3xl font-black text-white leading-tight uppercase tracking-tighter italic">Acesso Restrito</h1>
+                <h1 class="text-3xl font-black text-white leading-tight uppercase tracking-tighter italic">Acesso
+                    Restrito</h1>
                 <p class="text-slate-400 text-sm leading-relaxed">
-                    Olá! Notamos que o prazo da sua assinatura expirou. Para continuar utilizando as ferramentas de gestão e vendas, realize a renovação do seu contrato.
+                    Olá! Notamos que o prazo da sua assinatura expirou. Para continuar utilizando as ferramentas de
+                    gestão e vendas, realize a renovação do seu contrato.
                 </p>
             </div>
 
             <div class="bg-slate-900/50 border border-white/5 p-6 rounded-2xl flex flex-col gap-4">
-                <div class="flex justify-between items-center text-xs uppercase font-bold text-slate-500 tracking-widest px-2">
+                <div
+                    class="flex justify-between items-center text-xs uppercase font-bold text-slate-500 tracking-widest px-2">
                     <span>Status Atual</span>
                     <span class="text-red-500">Vencido</span>
                 </div>
                 <hr class="border-white/5">
                 <a id="btnRenovarWhats" href="https://wa.me/5511956288863" target="_blank"
-                   class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-emerald-900/20 flex items-center justify-center gap-3 active:scale-95">
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-emerald-900/20 flex items-center justify-center gap-3 active:scale-95">
                     <i class="fab fa-whatsapp text-xl"></i>
                     RENOVAR VIA WHATSAPP
                 </a>
-                <p class="text-[9px] text-slate-600 uppercase font-bold tracking-widest">Fale com o suporte técnico para liberação imediata</p>
+                <p class="text-[9px] text-slate-600 uppercase font-bold tracking-widest">Fale com o suporte técnico para
+                    liberação imediata</p>
             </div>
 
-            <button onclick="window.location.reload()" class="text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest underline transition">
+            <button onclick="window.location.reload()"
+                class="text-slate-500 hover:text-white text-[10px] font-black uppercase tracking-widest underline transition">
                 Já realizei o pagamento? Atualizar
             </button>
         </div>
@@ -240,8 +283,11 @@
                     <i id="loginDefaultIcon" class="fas fa-shield-halved text-primary text-4xl"></i>
                     <img id="loginLogoImg" src="" alt="Logo" class="hidden w-full h-full object-cover">
                 </div>
-                <h2 id="loginStoreName" class="text-4xl font-black tracking-tighter mb-2 text-slate-800 dark:text-white">VERUM GESTÃO</h2>
-                <p id="loginStoreDesc" class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">SaaS de Gestão Inteligente</p>
+                <h2 id="loginStoreName"
+                    class="text-4xl font-black tracking-tighter mb-2 text-slate-800 dark:text-white">VERUM GESTÃO</h2>
+                <p id="loginStoreDesc"
+                    class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">SaaS de
+                    Gestão Inteligente</p>
                 <div class="flex flex-col gap-3 mt-8">
                     <a href="index.html"
                         class="text-slate-400 hover:text-primary transition text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
@@ -252,7 +298,8 @@
 
             <form id="loginForm" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-2">E-mail</label>
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-2">E-mail</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <i class="fas fa-envelope"></i>
@@ -264,7 +311,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-2">Senha</label>
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-2">Senha</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <i class="fas fa-key"></i>
@@ -294,7 +342,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Seu Nome</label>
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Seu
+                        Nome</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <i class="fas fa-user"></i>
@@ -306,7 +356,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">E-mail</label>
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">E-mail</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <i class="fas fa-envelope"></i>
@@ -318,7 +369,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Senha</label>
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Senha</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <i class="fas fa-lock"></i>
@@ -391,7 +443,8 @@
             </form>
 
             <div class="mt-8 pt-6 border-t border-gray-100 dark:border-slate-700 text-center relative">
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium cursor-pointer" id="secretMasterBtn">Verum Gestão
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium cursor-pointer"
+                    id="secretMasterBtn">Verum Gestão
                     Profissional v2.0</p>
             </div>
         </div>
@@ -400,7 +453,8 @@
     <!-- Conteúdo Principal do App (Escondido até Login) -->
     <div id="mainApp" class="hidden">
         <!-- Cabeçalho -->
-        <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800">
+        <header
+            class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800">
             <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center space-x-3">
                     <div id="storeLogoContainer"
@@ -413,7 +467,8 @@
                             class="text-2xl font-black tracking-tight text-slate-800 dark:text-white">VERUM <span
                                 class="text-amber-500">GESTÃO</span></h1>
                         <div class="flex items-center gap-2 mt-0.5">
-                            <p id="headerStoreDesc" class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Gerenciamento
+                            <p id="headerStoreDesc" class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+                                Gerenciamento
                                 Profissional</p>
                             <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
                             <div id="userProfileBadge"
@@ -439,22 +494,22 @@
                     <button id="navClientes" class="nav-pill-btn">
                         <i class="fas fa-users"></i><span>Clientes</span>
                     </button>
-                    <button id="navFinancas" class="nav-pill-btn" >
+                    <button id="navFinancas" class="nav-pill-btn">
                         <i class="fas fa-wallet"></i><span>Finanças</span>
                     </button>
-                    <button id="navRelatorios" class="nav-pill-btn" >
+                    <button id="navRelatorios" class="nav-pill-btn">
                         <i class="fas fa-chart-pie"></i><span>Relatórios</span>
                     </button>
                     <!-- Somente Master -->
-                    <a href="master.html" id="navMasterPanel" 
+                    <a href="master.html" id="navMasterPanel"
                         class="nav-pill-btn hidden !text-purple-500 !bg-purple-500/10">
                         <i class="fas fa-crown"></i><span>Painel Master</span>
                     </a>
-                    <a href="master-clientes.html" id="navMasterClientes" 
+                    <a href="master-clientes.html" id="navMasterClientes"
                         class="nav-pill-btn hidden !text-blue-500 !bg-blue-500/10">
                         <i class="fas fa-id-card"></i><span>Clientes</span>
                     </a>
-                    <a href="master-auditoria.html" id="navAuditoria" 
+                    <a href="master-auditoria.html" id="navAuditoria"
                         class="nav-pill-btn hidden !text-emerald-500 !bg-emerald-500/10">
                         <i class="fas fa-shield-halved"></i><span>Auditoria</span>
                     </a>
@@ -462,31 +517,31 @@
 
                 <div class="flex items-center space-x-2">
                     <!-- Botão Recarregar Cache -->
-                    <button id="btnRefreshCache" onclick="refreshAllData()" 
+                    <button id="btnRefreshCache" onclick="refreshAllData()"
                         class="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all"
                         title="Recarregar Dados">
                         <i class="fas fa-sync-alt text-lg" id="refreshIcon"></i>
                     </button>
 
                     <!-- Botão Trocar Tema -->
-                    <button id="btnToggleTheme" onclick="toggleTheme()" 
+                    <button id="btnToggleTheme" onclick="toggleTheme()"
                         class="p-2 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all theme-toggle"
                         title="Alternar Tema (Claro/Escuro)">
                         <i class="fas fa-moon text-lg dark:fa-sun"></i>
                     </button>
 
                     <!-- Gerenciar Usuários -->
-                    <button id="usersBtn" 
+                    <button id="usersBtn" data-capability="users:manage"
                         class="hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition btn-premium"
                         title="Gerenciar Usuários">
                         <i class="fas fa-users-cog text-slate-500 dark:text-slate-400 dark:text-gray-400 text-xl"></i>
                     </button>
 
                     <!-- Bibliotecas Externas -->
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
-    
-    <!-- Configuração e Auth -->
-                    <button id="btnConfigLoja" title="Configurações da Loja" onclick="openStoreConfigModal()" 
+                    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+
+                    <!-- Configuração e Auth -->
+                    <button id="btnConfigLoja" data-capability="store:config" title="Configurações da Loja" onclick="openStoreConfigModal()"
                         class="hidden p-2 text-slate-500 dark:text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all">
                         <i class="fas fa-cog text-xl"></i>
                     </button>
@@ -505,26 +560,31 @@
             <!-- Conteúdo Principal -->
             <main class="flex-1">
                 <!-- Checklist de Onboarding (Aparece apenas para novos usuários) -->
-                <div id="onboardingChecklist" class="hidden mb-8 bg-gradient-to-r from-amber-600 to-orange-700 rounded-3xl p-6 text-white shadow-xl">
+                <div id="onboardingChecklist"
+                    class="hidden mb-8 bg-gradient-to-r from-amber-600 to-orange-700 rounded-3xl p-6 text-white shadow-xl">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">
                             <i class="fas fa-rocket"></i>
                         </div>
                         <div>
                             <h2 class="text-xl font-black">Bem-vindo ao Verum Gestão!</h2>
-                            <p class="text-amber-100 text-sm">Complete os passos abaixo para ativar seu painel de inteligência.</p>
+                            <p class="text-amber-100 text-sm">Complete os passos abaixo para ativar seu painel de
+                                inteligência.</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div id="step-product" class="bg-white/10 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
+                        <div id="step-product"
+                            class="bg-white/10 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
                             <i class="far fa-circle text-xl opacity-50"></i>
                             <span class="font-bold text-sm">Cadastrar 1º Produto</span>
                         </div>
-                        <div id="step-sale" class="bg-white/10 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
+                        <div id="step-sale"
+                            class="bg-white/10 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
                             <i class="far fa-circle text-xl opacity-50"></i>
                             <span class="font-bold text-sm">Registrar 1ª Venda</span>
                         </div>
-                        <div id="step-expense" class="bg-white/10 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
+                        <div id="step-expense"
+                            class="bg-white/10 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
                             <i class="far fa-circle text-xl opacity-50"></i>
                             <span class="font-bold text-sm">Lançar 1ª Despesa</span>
                         </div>
@@ -536,38 +596,50 @@
 
                     <!-- Cards de Resumo -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center">
-                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Total de Produtos</p>
-                            <h2 id="totalProdutos" class="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tighter">0</h2>
+                        <div
+                            class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center">
+                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Total de
+                                Produtos</p>
+                            <h2 id="totalProdutos"
+                                class="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tighter">0</h2>
                             <div class="bg-primary/10 p-3 rounded-2xl mt-4 text-primary">
                                 <i class="fas fa-boxes text-xl"></i>
                             </div>
                         </div>
 
-                        <div class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center">
-                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Itens em Estoque</p>
-                            <h2 id="totalEstoque" class="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tighter">0</h2>
+                        <div
+                            class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center">
+                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Itens em
+                                Estoque</p>
+                            <h2 id="totalEstoque"
+                                class="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tighter">0</h2>
                             <div class="bg-emerald-500/10 p-3 rounded-2xl mt-4 text-emerald-500">
                                 <i class="fas fa-box-open text-xl"></i>
                             </div>
                         </div>
-                        <div class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center transition-all duration-300">
-                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Categorias</p>
-                            <h2 id="totalCategorias" class="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tighter">0</h2>
+                        <div
+                            class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center transition-all duration-300">
+                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Categorias
+                            </p>
+                            <h2 id="totalCategorias"
+                                class="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tighter">0</h2>
                             <div class="bg-purple-500/10 p-3 rounded-2xl mt-4 text-purple-600">
                                 <i class="fas fa-tags text-xl"></i>
                             </div>
                         </div>
 
-                        <div class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center transition-all duration-300">
-                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Estoque Baixo</p>
+                        <div
+                            class="premium-card p-8 flex flex-col justify-center items-center h-44 overflow-hidden text-center transition-all duration-300">
+                            <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Estoque Baixo
+                            </p>
                             <h2 id="estoqueBaixo" class="text-4xl font-extrabold text-rose-500 tracking-tighter">0</h2>
                             <div class="bg-rose-500/10 p-3 rounded-2xl mt-4 text-rose-500">
                                 <i class="fas fa-exclamation-triangle text-xl"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-4 mb-6 border border-slate-200 dark:border-slate-800">
+                    <div
+                        class="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-4 mb-6 border border-slate-200 dark:border-slate-800">
                         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                             <div class="relative w-full md:w-auto">
                                 <i
@@ -577,12 +649,12 @@
                                     class="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm">
                             </div>
                             <div class="flex gap-2">
-                                <button id="addProductBtn" 
+                                <button id="addProductBtn"
                                     class="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition btn-premium shadow-lg shadow-primary/20">
                                     <i class="fas fa-plus"></i>
                                     Novo Produto
                                 </button>
-                                <button onclick="openImportModal()" 
+                                <button onclick="openImportModal()"
                                     class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition btn-premium shadow-lg shadow-purple-600/20">
                                     <i class="fas fa-file-import"></i>
                                     Importar
@@ -592,7 +664,8 @@
                     </div>
 
                     <!-- Tabela de Produtos -->
-                    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden border border-slate-200 dark:border-slate-800">
+                    <div
+                        class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden border border-slate-200 dark:border-slate-800">
                         <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
                             <h3 class="text-lg font-black text-slate-800 dark:text-white">Produtos em Estoque</h3>
                         </div>
@@ -624,7 +697,8 @@
                                             Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody id="produtosTable" class="bg-white dark:bg-slate-950 divide-y divide-slate-100 dark:divide-slate-800">
+                                <tbody id="produtosTable"
+                                    class="bg-white dark:bg-slate-950 divide-y divide-slate-100 dark:divide-slate-800">
                                     <tr id="loadingRow">
                                         <td colspan="7" class="px-6 py-12 text-center">
                                             <div class="flex justify-center">
@@ -632,14 +706,16 @@
                                                     class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary">
                                                 </div>
                                             </div>
-                                            <p class="mt-4 text-sm text-slate-500 font-medium">Sincronizando estoque...</p>
+                                            <p class="mt-4 text-sm text-slate-500 font-medium">Sincronizando estoque...
+                                            </p>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                        <div
+                            class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
                             <div class="text-sm text-slate-500 dark:text-slate-400">
                                 Mostrando <span id="produtosMostrados">0</span> de <span
                                     id="totalProdutosTabela">0</span>
@@ -666,11 +742,14 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         <div
                             class="premium-card p-6 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
-                            <p class="title-static text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px]">Vendas
+                            <p
+                                class="title-static text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                                Vendas
                                 Hoje</p>
 
                             <div class="main-content">
-                                <h2 id="vendasHoje" class="text-3xl font-black mt-2 text-slate-800 dark:text-white">0</h2>
+                                <h2 id="vendasHoje" class="text-3xl font-black mt-2 text-slate-800 dark:text-white">0
+                                </h2>
                                 <div class="bg-emerald-100 dark:bg-emerald-500/10 p-2 rounded-full mt-2">
                                     <i class="fas fa-chart-line text-emerald-600 dark:text-emerald-400 text-sm"></i>
                                 </div>
@@ -678,17 +757,21 @@
 
                             <div class="hover-content bg-white dark:bg-slate-900">
                                 <span class="insight-title text-slate-400">Última Venda</span>
-                                <span id="insightVendaHoje" class="insight-content dark:text-slate-200">Nenhuma hoje</span>
+                                <span id="insightVendaHoje" class="insight-content dark:text-slate-200">Nenhuma
+                                    hoje</span>
                             </div>
                         </div>
 
                         <div
                             class="premium-card p-6 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
-                            <p class="title-static text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px]">Total
+                            <p
+                                class="title-static text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                                Total
                                 Vendido</p>
 
                             <div class="main-content">
-                                <h2 id="totalVendido" class="text-3xl font-black mt-2 text-slate-800 dark:text-white">0</h2>
+                                <h2 id="totalVendido" class="text-3xl font-black mt-2 text-slate-800 dark:text-white">0
+                                </h2>
                                 <div class="bg-blue-100 dark:bg-blue-500/10 p-2 rounded-full mt-2">
                                     <i class="fas fa-shopping-bag text-blue-600 dark:text-blue-400 text-sm"></i>
                                 </div>
@@ -696,17 +779,21 @@
 
                             <div class="hover-content bg-white dark:bg-slate-900">
                                 <span class="insight-title text-slate-400">Total Geral</span>
-                                <span id="insightTotalVendido" class="insight-content dark:text-slate-200">Carregando...</span>
+                                <span id="insightTotalVendido"
+                                    class="insight-content dark:text-slate-200">Carregando...</span>
                             </div>
                         </div>
 
                         <div
                             class="premium-card p-6 card-hover flex flex-col justify-center items-center h-32 md:h-40 overflow-hidden text-center transition-all duration-300">
-                            <p class="title-static text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px]">Receita
+                            <p
+                                class="title-static text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                                Receita
                                 Total</p>
 
                             <div class="main-content">
-                                <h2 id="receitaTotal" class="text-3xl font-black mt-2 text-slate-800 dark:text-white">R$ 0,00</h2>
+                                <h2 id="receitaTotal" class="text-3xl font-black mt-2 text-slate-800 dark:text-white">R$
+                                    0,00</h2>
                                 <div class="bg-orange-100 dark:bg-orange-500/10 p-2 rounded-full mt-2">
                                     <i class="fas fa-dollar-sign text-orange-600 dark:text-orange-400 text-sm"></i>
                                 </div>
@@ -714,12 +801,14 @@
 
                             <div class="hover-content bg-white dark:bg-slate-900">
                                 <span class="insight-title text-slate-400">Top Rentável</span>
-                                <span id="insightReceitaTotal" class="insight-content dark:text-slate-200">Carregando...</span>
+                                <span id="insightReceitaTotal"
+                                    class="insight-content dark:text-slate-200">Carregando...</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-4 mb-6 border border-slate-200 dark:border-slate-800">
+                    <div
+                        class="bg-white dark:bg-slate-900 rounded-xl shadow-sm p-4 mb-6 border border-slate-200 dark:border-slate-800">
                         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                             <div class="relative w-full md:w-auto">
                                 <i
@@ -728,7 +817,7 @@
                                     placeholder="Buscar vendas por produto ou SKU..."
                                     class="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm">
                             </div>
-                            <button id="addVendaBtn" 
+                            <button id="addVendaBtn"
                                 class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition btn-premium shadow-lg shadow-emerald-500/20">
                                 <i class="fas fa-cart-plus"></i>
                                 Registrar Venda
@@ -737,9 +826,10 @@
                     </div>
 
                     <div class="bg-white rounded-xl shadow overflow-hidden">
-                        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                        <div
+                            class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                             <h3 class="text-lg font-semibold">Histórico de Vendas</h3>
-                            <button id="exportVendas"   class="text-sm text-amber-600 hover:text-amber-800">
+                            <button id="exportVendas" class="text-sm text-amber-600 hover:text-amber-800">
                                 <i class="fas fa-download mr-1"></i> Exportar
                             </button>
                         </div>
@@ -782,7 +872,8 @@
                                 </thead>
                                 <tbody id="vendasTable" class="bg-white divide-y divide-gray-200">
                                     <tr>
-                                        <td colspan="7" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                                        <td colspan="7"
+                                            class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
                                             Carregando vendas...
                                         </td>
                                     </tr>
@@ -820,43 +911,45 @@
                     <!-- Controle de Data e Ações -->
                     <div
                         class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100 dark:bg-slate-800 dark:border-slate-700">
-                        <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
-                            <div>
+                        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                            <div class="w-full lg:w-auto">
                                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Inteligência de Vendas</h2>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 dark:text-gray-400">Análise detalhada para tomada de
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Análise detalhada para tomada de
                                     decisão.</p>
                             </div>
 
-                            <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                                 <!-- Filtro de Data Personalizado -->
                                 <div
-                                    class="flex items-center gap-2 bg-gray-50 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 dark:border-slate-600">
-                                    <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-calendar text-gray-400 text-xs"></i>
+                                    class="flex flex-col sm:flex-row items-center gap-2 bg-gray-50 dark:bg-slate-900 p-2 sm:p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+                                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                                        <div class="relative flex-1 sm:w-32">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="fas fa-calendar text-gray-400 text-xs"></i>
+                                            </div>
+                                            <input type="date" id="dateStart"
+                                                class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 pl-8 w-full cursor-pointer font-bold">
                                         </div>
-                                        <input type="date" id="dateStart"
-                                            class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 pl-8 w-32 cursor-pointer font-medium">
-                                    </div>
-                                    <span class="text-gray-400 font-bold text-xs">ATÉ</span>
-                                    <div class="relative">
-                                        <div
-                                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <i class="fas fa-calendar text-gray-400 text-xs"></i>
+                                        <span class="text-gray-400 font-black text-[10px] px-1">ATÉ</span>
+                                        <div class="relative flex-1 sm:w-32">
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <i class="fas fa-calendar text-gray-400 text-xs"></i>
+                                            </div>
+                                            <input type="date" id="dateEnd"
+                                                class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 pl-8 w-full cursor-pointer font-bold">
                                         </div>
-                                        <input type="date" id="dateEnd"
-                                            class="bg-transparent border-none text-xs text-gray-600 dark:text-gray-300 focus:ring-0 pl-8 w-32 cursor-pointer font-medium">
                                     </div>
                                     <button id="applyDateBtn"
-                                        class="bg-amber-600 text-white px-3 py-1.5 rounded-md text-xs font-bold hover:bg-amber-700 transition shadow-sm">
+                                        class="w-full sm:w-auto bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-amber-700 transition shadow-md uppercase tracking-wider">
                                         FILTRAR
                                     </button>
                                 </div>
 
                                 <button id="btnExportReport"
-                                    class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-700 transition shadow-sm btn-premium">
-                                    <i class="fas fa-file-pdf"></i> Exportar Relatório
+                                    class="flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-black text-xs hover:bg-emerald-700 transition shadow-md btn-premium uppercase tracking-widest">
+                                    <i class="fas fa-file-pdf"></i> Exportar PDF
                                 </button>
                             </div>
                         </div>
@@ -1002,7 +1095,8 @@
                                 <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
                                     <i class="fas fa-bullseye text-amber-600"></i> Meta Mensal
                                 </h3>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Defina sua meta de faturamento para acompanhar o
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Defina sua meta de
+                                    faturamento para acompanhar o
                                     progresso.</p>
                             </div>
                             <div class="flex items-center gap-2 mt-4 md:mt-0">
@@ -1013,30 +1107,27 @@
                         </div>
                     </div>
 
-                    <div class="relative pt-1">
-                        <div class="flex mb-2 items-center justify-between">
+                    <div class="relative pt-1 px-1">
+                        <div class="flex mb-4 items-center justify-between">
                             <div>
                                 <span id="metaPorcentagem"
-                                    class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-amber-600 bg-amber-200">
-                                    0%
+                                    class="text-[10px] font-black inline-block py-1 pr-3 uppercase text-amber-600">
+                                    0% DO OBJETIVO
                                 </span>
                             </div>
                             <div class="text-right">
-                                <span class="text-xs font-semibold inline-block text-amber-600">
-                                    Faltam <span id="metaFaltante">R$ 0,00</span>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Faltam <span id="metaFaltante" class="text-amber-500">R$ 0,00</span>
                                 </span>
                             </div>
                         </div>
-                        <div class="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-amber-100 dark:bg-slate-700">
+                        <div
+                            class="overflow-hidden h-3 mb-4 flex rounded-full bg-gray-100 dark:bg-slate-700 shadow-inner">
                             <div id="barraProgressoMeta" style="width:0%"
-                                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-amber-500 transition-all duration-1000 ease-out relative overflow-hidden">
-                                <div
-                                    class="absolute top-0 left-0 w-full h-full bg-white/20 animate-[pulse_2s_ease-in-out_infinite]">
-                                </div>
+                                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-1000 ease-out relative">
+                                <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
                             </div>
                         </div>
-                        <p id="metaMensagem" class="text-center text-sm font-medium text-slate-500 dark:text-slate-400 italic">"Vamos lá!
-                            Cada venda conta para atingir o objetivo."</p>
                     </div>
 
 
@@ -1084,29 +1175,35 @@
 
                     <!-- Widget de CRM Interativo - NOVO -->
                     <div id="birthdayWidget" class="hidden mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
-                        <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-6 text-slate-900 shadow-lg shadow-orange-500/20 flex items-center justify-between">
+                        <div
+                            class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-6 text-slate-900 shadow-lg shadow-orange-500/20 flex items-center justify-between">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
                                     <i class="fas fa-gift"></i>
                                 </div>
                                 <div>
                                     <h3 class="font-black text-lg tracking-tight">Aniversariante(s) de Hoje!</h3>
-                                    <p id="birthdayMessage" class="text-amber-900 text-xs font-bold uppercase tracking-widest">Carregando aniversariantes...</p>
+                                    <p id="birthdayMessage"
+                                        class="text-amber-900 text-xs font-bold uppercase tracking-widest">Carregando
+                                        aniversariantes...</p>
                                 </div>
                             </div>
                             <div id="birthdayList" class="flex -space-x-3">
                                 <!-- Preenchido via JS -->
                             </div>
                         </div>
-                        
-                        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-amber-100 dark:border-slate-700 flex items-center justify-between shadow-sm">
+
+                        <div
+                            class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-amber-100 dark:border-slate-700 flex items-center justify-between shadow-sm">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-amber-50 dark:bg-amber-500/10 rounded-xl flex items-center justify-center text-2xl text-amber-500">
+                                <div
+                                    class="w-12 h-12 bg-amber-50 dark:bg-amber-500/10 rounded-xl flex items-center justify-center text-2xl text-amber-500">
                                     <i class="fas fa-bullhorn"></i>
                                 </div>
                                 <div>
                                     <h3 class="font-bold text-gray-800 dark:text-white">Dica de Fidelização</h3>
-                                    <p class="text-slate-500 dark:text-slate-400 text-xs">Mande um cupom de 10% de desconto para quem faz aniversário!</p>
+                                    <p class="text-slate-500 dark:text-slate-400 text-xs">Mande um cupom de 10% de
+                                        desconto para quem faz aniversário!</p>
                                 </div>
                             </div>
                         </div>
@@ -1127,36 +1224,49 @@
                         </div>
 
                         <!-- Análise ABC (Giro de Produtos) - NOVO -->
-                        <div class="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700 flex flex-col">
+                        <div
+                            class="lg:col-span-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700 flex flex-col">
                             <h3 class="font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
                                 <i class="fas fa-chart-line text-amber-500"></i> Análise ABC (Giro)
                             </h3>
-                            <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-6 uppercase tracking-widest font-black">Concentração de Faturamento</p>
-                            
+                            <p
+                                class="text-[10px] text-slate-500 dark:text-slate-400 mb-6 uppercase tracking-widest font-black">
+                                Concentração de Faturamento</p>
+
                             <div id="abcChartContainer" class="flex-1 space-y-4">
                                 <!-- Preenchido via JS -->
                                 <div class="flex flex-col gap-4">
-                                     <div id="abc-class-a" class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
-                                         <div class="flex justify-between items-center mb-1">
-                                             <span class="text-[10px] font-black text-emerald-700 uppercase">Classe A</span>
-                                             <span id="abc-a-percent" class="text-xs font-bold text-emerald-600">0%</span>
-                                         </div>
-                                         <p class="text-[9px] text-emerald-600/70 font-medium">Produtos que geram 80% da sua receita.</p>
-                                     </div>
-                                     <div id="abc-class-b" class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800/50">
-                                         <div class="flex justify-between items-center mb-1">
-                                             <span class="text-[10px] font-black text-amber-700 uppercase">Classe B</span>
-                                             <span id="abc-b-percent" class="text-xs font-bold text-amber-600">0%</span>
-                                         </div>
-                                         <p class="text-[9px] text-amber-600/70 font-medium">Produtos de giro médio (15% da receita).</p>
-                                     </div>
-                                     <div id="abc-class-c" class="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                                         <div class="flex justify-between items-center mb-1">
-                                             <span class="text-[10px] font-black text-slate-700 uppercase">Classe C</span>
-                                             <span id="abc-c-percent" class="text-xs font-bold text-slate-600">0%</span>
-                                         </div>
-                                         <p class="text-[9px] text-slate-600/70 font-medium">Baixo faturamento (5% restante).</p>
-                                     </div>
+                                    <div id="abc-class-a"
+                                        class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-[10px] font-black text-emerald-700 uppercase">Classe
+                                                A</span>
+                                            <span id="abc-a-percent"
+                                                class="text-xs font-bold text-emerald-600">0%</span>
+                                        </div>
+                                        <p class="text-[9px] text-emerald-600/70 font-medium">Produtos que geram 80% da
+                                            sua receita.</p>
+                                    </div>
+                                    <div id="abc-class-b"
+                                        class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800/50">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-[10px] font-black text-amber-700 uppercase">Classe
+                                                B</span>
+                                            <span id="abc-b-percent" class="text-xs font-bold text-amber-600">0%</span>
+                                        </div>
+                                        <p class="text-[9px] text-amber-600/70 font-medium">Produtos de giro médio (15%
+                                            da receita).</p>
+                                    </div>
+                                    <div id="abc-class-c"
+                                        class="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <span class="text-[10px] font-black text-slate-700 uppercase">Classe
+                                                C</span>
+                                            <span id="abc-c-percent" class="text-xs font-bold text-slate-600">0%</span>
+                                        </div>
+                                        <p class="text-[9px] text-slate-600/70 font-medium">Baixo faturamento (5%
+                                            restante).</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1183,8 +1293,8 @@
                                 <i class="fas fa-chart-pie text-purple-500"></i> Performance por Categoria
                             </h3>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">Distribuição de Receita</p>
-                            <div class="relative h-[250px] w-full flex items-center justify-center">
-                                <canvas id="chartCategorias"></canvas>
+                            <div class="relative h-[250px] w-full flex items-center justify-center overflow-hidden">
+                                <canvas id="chartCategorias" class="max-w-full h-auto"></canvas>
                             </div>
                         </div>
 
@@ -1195,7 +1305,9 @@
                                 <h3 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
                                     <i class="fas fa-calculator text-rose-500"></i> Demonstrativo (DRE)
                                 </h3>
-                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">Resumo Contábil do
+                                <p
+                                    class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">
+                                    Resumo Contábil do
                                     Período</p>
                             </div>
                             <div class="p-0">
@@ -1262,18 +1374,33 @@
                             <table class="min-w-full divide-y divide-gray-200 responsive-table">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cliente</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status Financeiro</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">WhatsApp</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aniversário</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">CPF/CNPJ</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cadastro</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ações</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            Cliente</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            Status Financeiro</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            WhatsApp</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            Aniversário</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            CPF/CNPJ</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            Cadastro</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="clientesTable" class="bg-white divide-y divide-gray-200">
                                     <tr>
-                                        <td colspan="5" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Carregando
+                                        <td colspan="5"
+                                            class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Carregando
                                             clientes...</td>
                                     </tr>
                                 </tbody>
@@ -1287,23 +1414,27 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                         <!-- Faturamento -->
                         <div class="premium-card rounded-xl p-6 border-amber-500/10">
-                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Faturamento (Bruto)</p>
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Faturamento
+                                (Bruto)</p>
                             <h3 id="finFaturamentoTotal" class="text-xl font-black text-white">R$ 0,00</h3>
                         </div>
                         <!-- Recebido -->
                         <div class="premium-card rounded-xl p-6 border-emerald-500/10">
-                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Recebido (Caixa)</p>
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Recebido
+                                (Caixa)</p>
                             <h3 id="finRecebidoTotal" class="text-xl font-black text-emerald-500">R$ 0,00</h3>
                         </div>
                         <!-- A Receber (Crédito/Fiado) -->
                         <div class="premium-card rounded-xl p-6 border-amber-500/10 flex flex-col justify-between">
                             <div>
-                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">A Receber Total</p>
+                                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">A Receber
+                                    Total</p>
                                 <h3 id="finAReceberTotal" class="text-xl font-black text-amber-500">R$ 0,00</h3>
                             </div>
                             <div class="mt-4 pt-2 border-t border-white/5 grid grid-cols-2 gap-2">
                                 <div>
-                                    <p class="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">Este Mês</p>
+                                    <p class="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">Este Mês
+                                    </p>
                                     <p id="finAReceberMes" class="text-[10px] font-black text-amber-600">R$ 0,00</p>
                                 </div>
                                 <div>
@@ -1314,12 +1445,14 @@
                         </div>
                         <!-- Despesas -->
                         <div class="premium-card rounded-xl p-6 border-rose-500/10">
-                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Custos + Despesas</p>
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Custos +
+                                Despesas</p>
                             <h3 id="finDespesasTotal" class="text-xl font-black text-rose-500">R$ 0,00</h3>
                         </div>
                         <!-- Lucro Real -->
                         <div class="premium-card rounded-xl p-6 border-primary/20 bg-primary/5">
-                            <p class="text-[9px] font-black text-primary uppercase tracking-widest mb-1">Lucro Líquido</p>
+                            <p class="text-[9px] font-black text-primary uppercase tracking-widest mb-1">Lucro Líquido
+                            </p>
                             <h3 id="finLucroLiquido" class="text-xl font-black text-white">R$ 0,00</h3>
                         </div>
                     </div>
@@ -1393,7 +1526,9 @@
                                     <h4 class="text-sm font-bold text-gray-800 dark:text-white"><i
                                             class="fas fa-chart-pie text-rose-500 mr-2"></i> Distribuição de Despesas
                                     </h4>
-                                    <p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">Onde seu
+                                    <p
+                                        class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">
+                                        Onde seu
                                         dinheiro está indo</p>
                                 </div>
                                 <div id="finExpenseSummaryText" class="text-right">
@@ -1409,7 +1544,8 @@
                     </div>
 
                     <div class="bg-white rounded-xl shadow overflow-hidden">
-                        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                        <div
+                            class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                             <h3 class="text-lg font-semibold">Gestão de Despesas</h3>
                             <button id="addExpenseBtn"
                                 class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2">
@@ -1442,7 +1578,8 @@
                                 </thead>
                                 <tbody id="expensesTable" class="bg-white divide-y divide-gray-200">
                                     <tr>
-                                        <td colspan="6" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Carregando
+                                        <td colspan="6"
+                                            class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">Carregando
                                             despesas...</td>
                                     </tr>
                                 </tbody>
@@ -1465,21 +1602,26 @@
             </div>
             <form id="productForm" class="space-y-6 px-6 pb-6">
                 <!-- Upload de Imagem -->
-                <div class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-100 dark:border-slate-700 rounded-2xl bg-gray-50/50 dark:bg-slate-900/30 group hover:border-amber-400 transition-all cursor-pointer relative overflow-hidden" onclick="document.getElementById('productImageInput').click()">
+                <div class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-100 dark:border-slate-700 rounded-2xl bg-gray-50/50 dark:bg-slate-900/30 group hover:border-amber-400 transition-all cursor-pointer relative overflow-hidden"
+                    onclick="document.getElementById('productImageInput').click()">
                     <img id="productImagePreview" src="" class="hidden w-full h-32 object-cover rounded-xl mb-2">
                     <div id="imagePlaceholder" class="flex flex-col items-center py-4">
                         <i class="fas fa-image text-3xl text-gray-300 group-hover:text-amber-400 mb-2"></i>
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Foto do Produto</span>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Foto do
+                            Produto</span>
                     </div>
-                    <input type="file" id="productImageInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    <input type="file" id="productImageInput" accept="image/*" class="hidden"
+                        onchange="previewImage(this)">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Código de Barras (EAN)</label>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Código de Barras
+                        (EAN)</label>
                     <div class="flex gap-2">
                         <input type="text" id="ean" placeholder="EAN / BIP"
                             class="flex-1 px-3 py-2 border rounded-xl focus:ring-2 focus:ring-primary">
-                        <button type="button" onclick="generateRandomEAN()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700">
+                        <button type="button" onclick="generateRandomEAN()"
+                            class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700">
                             GERAR
                         </button>
                     </div>
@@ -1494,7 +1636,8 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Categoria *</label>
-                    <select id="categoria" class="w-full px-3 py-2 border rounded-xl" onchange="toggleNovaCategoria(this, 'novaCategoriaContainer')">
+                    <select id="categoria" class="w-full px-3 py-2 border rounded-xl"
+                        onchange="toggleNovaCategoria(this, 'novaCategoriaContainer')">
                         <option value="">Selecione...</option>
                         <option value="Tênis">Tênis</option>
                         <option value="Sapatos">Sapatos</option>
@@ -1509,13 +1652,24 @@
                     </select>
                 </div>
                 <div id="novaCategoriaContainer" class="hidden animate-in fade-in slide-in-from-top-1 duration-200">
-                    <label class="block text-xs font-bold text-amber-600 uppercase mb-1 ml-1">Nome da Nova Categoria</label>
-                    <input type="text" id="categoria_nova" placeholder="Ex: Bolsas, Meias..." class="w-full px-3 py-2 border-2 border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
+                    <label class="block text-xs font-bold text-amber-600 uppercase mb-1 ml-1">Nome da Nova
+                        Categoria</label>
+                    <input type="text" id="categoria_nova" placeholder="Ex: Bolsas, Meias..."
+                        class="w-full px-3 py-2 border-2 border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Preço Venda (R$) *</label>
-                    <input type="number" id="preco_venda" step="0.01" required
-                        class="w-full px-3 py-2 border rounded-xl">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Preço Venda (R$)
+                        *</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="preco_venda" step="0.01" required
+                            class="flex-1 px-3 py-2 border rounded-xl focus:ring-2 focus:ring-primary outline-none">
+                        <button type="button" onclick="openPricingAssistant()"
+                            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95"
+                            title="Assistente de Precificação">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                            <span class="text-xs font-black uppercase tracking-widest hidden sm:inline">Lucro</span>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <div class="flex justify-between items-center mb-4">
@@ -1534,7 +1688,8 @@
                                     placeholder="Estoque">
                             </div>
                             <div class="grid grid-cols-2 gap-2">
-                                <input type="number" class="variant-alerta w-full p-2 text-sm border rounded" placeholder="Alerta Mín">
+                                <input type="number" class="variant-alerta w-full p-2 text-sm border rounded"
+                                    placeholder="Alerta Mín">
                                 <input type="number" step="0.01" class="variant-custo w-full p-2 text-sm border rounded"
                                     placeholder="Custo (R$)">
                             </div>
@@ -1560,7 +1715,8 @@
                 <input type="text" id="clientNome" placeholder="Nome Completo *" required
                     class="w-full p-3 border rounded-xl">
                 <input type="text" id="clientWhatsapp" placeholder="WhatsApp" class="w-full p-3 border rounded-xl">
-                <input type="text" id="clientAniversario" placeholder="Aniversário (DD/MM/AAAA)" class="w-full p-3 border rounded-xl">
+                <input type="text" id="clientAniversario" placeholder="Aniversário (DD/MM/AAAA)"
+                    class="w-full p-3 border rounded-xl">
                 <input type="text" id="clientCpf" placeholder="CPF/CNPJ" class="w-full p-3 border rounded-xl">
                 <textarea id="clientEndereco" placeholder="Endereço" class="w-full p-3 border rounded-xl"></textarea>
                 <div class="flex gap-3">
@@ -1600,19 +1756,23 @@
                 </select>
                 <div class="grid grid-cols-2 gap-4">
                     <input type="number" id="saleQuantidade" value="1" min="1" required class="p-3 border rounded-xl">
-                    <input type="text" id="salePrecoUnitario" readonly class="p-3 border rounded-xl bg-gray-100">
+                    <input type="number" id="salePrecoUnitario" step="0.01"
+                        class="p-3 border rounded-xl bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary outline-none"
+                        placeholder="Preço (R$)">
                 </div>
-                
+
                 <div class="space-y-4 border-t border-gray-100 dark:border-slate-700 pt-6 mt-4">
-                    <label class="block text-[11px] uppercase font-black text-gray-400 dark:text-slate-500 tracking-widest mb-3">
+                    <label
+                        class="block text-[11px] uppercase font-black text-gray-400 dark:text-slate-500 tracking-widest mb-3">
                         Configuração de Pagamento
                     </label>
-                    
+
                     <div class="space-y-3">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase">Método</label>
-                                <select id="saleMetodoPagamento" required class="w-full p-3 border rounded-xl bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary transition-all font-medium text-sm">
+                                <select id="saleMetodoPagamento" required
+                                    class="w-full p-3 border rounded-xl bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary transition-all font-medium text-sm">
                                     <option value="Dinheiro">Dinheiro</option>
                                     <option value="Pix">Pix</option>
                                     <option value="Débito">Cartão de Débito</option>
@@ -1623,34 +1783,38 @@
                             </div>
                             <div class="space-y-1">
                                 <label class="block text-[10px] font-bold text-gray-400 uppercase">Status</label>
-                                <select id="saleStatusPagamento" class="w-full p-3 border rounded-xl bg-emerald-50 text-emerald-700 font-black text-sm focus:ring-2 focus:ring-emerald-500 transition-all">
+                                <select id="saleStatusPagamento"
+                                    class="w-full p-3 border rounded-xl bg-emerald-50 text-emerald-700 font-black text-sm focus:ring-2 focus:ring-emerald-500 transition-all">
                                     <option value="pago" selected>PAGO</option>
                                     <option value="pendente">PENDENTE</option>
                                 </select>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Campos de Parcelamento -->
                     <div id="saleInstallmentFields" class="hidden animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-700">
+                        <div
+                            class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-700">
                             <div class="space-y-1">
-                                <label class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 dark:text-slate-400">Parcelas</label>
+                                <label
+                                    class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 dark:text-slate-400">Parcelas</label>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                                         <i class="fas fa-layer-group text-xs"></i>
                                     </span>
-                                    <input type="number" id="saleParcelas" value="1" min="1" max="24" 
+                                    <input type="number" id="saleParcelas" value="1" min="1" max="24"
                                         class="w-full pl-9 p-2.5 border rounded-xl bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary outline-none">
                                 </div>
                             </div>
                             <div class="space-y-1">
-                                <label class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 dark:text-slate-400">Vencimento</label>
+                                <label
+                                    class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 dark:text-slate-400">Vencimento</label>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                                         <i class="fas fa-calendar-day text-xs"></i>
                                     </span>
-                                    <input type="date" id="saleDataProximo" 
+                                    <input type="date" id="saleDataProximo"
                                         class="w-full pl-9 p-2.5 border rounded-xl bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary outline-none">
                                 </div>
                             </div>
@@ -1694,7 +1858,8 @@
                     <input type="date" id="expenseVencimento" class="p-3 border rounded-xl">
                 </div>
                 <div class="space-y-2">
-                    <select id="expenseCategoria" class="w-full p-3 border rounded-xl" onchange="toggleNovaCategoria(this, 'novaExpenseCatContainer')">
+                    <select id="expenseCategoria" class="w-full p-3 border rounded-xl"
+                        onchange="toggleNovaCategoria(this, 'novaExpenseCatContainer')">
                         <option value="">Categoria *</option>
                         <option value="Aluguel">Aluguel</option>
                         <option value="Energia/Água">Energia/Água</option>
@@ -1707,9 +1872,12 @@
                         <option value="Outros">Outros</option>
                         <option value="NOVA" class="font-bold text-rose-600">[+] Adicionar Nova...</option>
                     </select>
-                    <div id="novaExpenseCatContainer" class="hidden animate-in fade-in slide-in-from-top-1 duration-200">
-                        <label class="block text-[10px] font-bold text-rose-600 uppercase mb-1 ml-1">Nome da Nova Categoria</label>
-                        <input type="text" id="expense_categoria_nova" placeholder="Ex: Manutenção, Viagens..." class="w-full p-3 border-2 border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
+                    <div id="novaExpenseCatContainer"
+                        class="hidden animate-in fade-in slide-in-from-top-1 duration-200">
+                        <label class="block text-[10px] font-bold text-rose-600 uppercase mb-1 ml-1">Nome da Nova
+                            Categoria</label>
+                        <input type="text" id="expense_categoria_nova" placeholder="Ex: Manutenção, Viagens..."
+                            class="w-full p-3 border-2 border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none">
                     </div>
                 </div>
                 <select id="expenseStatus" class="w-full p-3 border rounded-xl">
@@ -1780,12 +1948,15 @@
                 <div>
                     <h2 id="modalProductName" class="text-3xl font-black text-gray-900 dark:text-white"></h2>
                     <div class="flex gap-4 mt-2">
-                        <span id="modalProductSku" class="text-xs font-bold text-gray-400 bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded"></span>
-                        <span id="modalProductCategory" class="text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded"></span>
+                        <span id="modalProductSku"
+                            class="text-xs font-bold text-gray-400 bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded"></span>
+                        <span id="modalProductCategory"
+                            class="text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded"></span>
                     </div>
                 </div>
                 <div class="text-right">
-                    <button id="closeModal" class="text-2xl text-gray-400 hover:text-gray-600 transition-colors mb-2"><i class="fas fa-times"></i></button>
+                    <button id="closeModal" class="text-2xl text-gray-400 hover:text-gray-600 transition-colors mb-2"><i
+                            class="fas fa-times"></i></button>
                     <div id="modalProductPrice" class="text-2xl font-black text-emerald-600"></div>
                 </div>
             </div>
@@ -1808,15 +1979,18 @@
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg max-w-4xl w-full mx-4 p-8">
             <div class="flex justify-between mb-6 border-b pb-4 dark:border-slate-700">
                 <div>
-                    <h2 id="historyClientName" class="text-2xl font-black text-gray-900 dark:text-white">Histórico de Compras</h2>
+                    <h2 id="historyClientName" class="text-2xl font-black text-gray-900 dark:text-white">Histórico de
+                        Compras</h2>
                     <p id="historyClientSummary" class="text-sm text-slate-500 dark:text-slate-400"></p>
                 </div>
-                <button id="closeClientHistoryModal" class="text-2xl text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                <button id="closeClientHistoryModal" class="text-2xl text-gray-400 hover:text-gray-600"><i
+                        class="fas fa-times"></i></button>
             </div>
 
             <div class="overflow-x-auto max-h-[60vh]">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 dark:bg-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400 dark:text-gray-400">
+                    <thead
+                        class="bg-gray-50 dark:bg-slate-700 text-xs uppercase font-bold text-slate-500 dark:text-slate-400 dark:text-gray-400">
                         <tr>
                             <th class="p-4">Data</th>
                             <th class="p-4">Produto</th>
@@ -1833,30 +2007,35 @@
 
             <div class="mt-6 flex justify-between items-center p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
                 <span class="font-bold text-amber-900 dark:text-amber-300">Total Acumulado:</span>
-                <span id="historyClientTotal" class="text-xl font-black text-amber-600 dark:text-amber-400">R$ 0,00</span>
+                <span id="historyClientTotal" class="text-xl font-black text-amber-600 dark:text-amber-400">R$
+                    0,00</span>
             </div>
         </div>
     </div>
 
     <!-- Modal de Checkout de Recebimento Profissional -->
     <div id="paymentModal" class="modal-overlay hidden z-[110]">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden border-4 border-amber-600">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden border-4 border-amber-600">
             <!-- Topo do Cupom -->
             <div class="bg-amber-600 p-6 text-white text-center">
                 <i class="fas fa-file-invoice-dollar text-4xl mb-2"></i>
                 <h2 class="text-xl font-black uppercase tracking-tighter">Confirmar Recebimento</h2>
             </div>
-            
+
             <div class="p-6 space-y-6">
                 <!-- Detalhes da Dívida -->
-                <div class="bg-amber-50 dark:bg-slate-900/50 p-4 rounded-2xl border-2 border-dashed border-amber-200 dark:border-slate-700">
+                <div
+                    class="bg-amber-50 dark:bg-slate-900/50 p-4 rounded-2xl border-2 border-dashed border-amber-200 dark:border-slate-700">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-[10px] font-bold text-gray-400 uppercase">Valor em Aberto</span>
-                        <span id="payModalTotalVenda" class="text-lg font-black text-gray-900 dark:text-white">R$ 0,00</span>
+                        <span id="payModalTotalVenda" class="text-lg font-black text-gray-900 dark:text-white">R$
+                            0,00</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-[10px] font-bold text-gray-400 uppercase">Parcelas Restantes</span>
-                        <span id="payModalParcelasRest" class="bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0x</span>
+                        <span id="payModalParcelasRest"
+                            class="bg-amber-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0x</span>
                     </div>
                 </div>
 
@@ -1864,21 +2043,26 @@
                 <div class="space-y-4">
                     <!-- Qtd Parcelas -->
                     <div>
-                        <label class="block text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1">Quantas parcelas está recebendo?</label>
-                        <input type="number" id="payInputQtdParcelas" min="1" value="1" 
-                               class="w-full p-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 dark:border-slate-700 rounded-2xl font-black text-center text-2xl text-amber-600 focus:border-amber-600 outline-none transition-all">
-                        <p class="text-[9px] text-center text-gray-400 mt-2 font-medium">Valor por parcela: <span id="payModalValorUnit" class="text-amber-600 font-bold">R$ 0,00</span></p>
+                        <label
+                            class="block text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase mb-2 ml-1">Quantas
+                            parcelas está recebendo?</label>
+                        <input type="number" id="payInputQtdParcelas" min="1" value="1"
+                            class="w-full p-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 dark:border-slate-700 rounded-2xl font-black text-center text-2xl text-amber-600 focus:border-amber-600 outline-none transition-all">
+                        <p class="text-[9px] text-center text-gray-400 mt-2 font-medium">Valor por parcela: <span
+                                id="payModalValorUnit" class="text-amber-600 font-bold">R$ 0,00</span></p>
                     </div>
 
                     <!-- DESCONTO (MEGA DESTAQUE) -->
-                    <div class="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border-2 border-amber-200 dark:border-amber-900/30">
-                        <label class="block text-center text-[11px] font-black text-amber-700 dark:text-amber-500 uppercase mb-2">
-                             🎁 Aplicar Desconto (Opcional)
+                    <div
+                        class="bg-amber-50 dark:bg-amber-900/10 p-4 rounded-2xl border-2 border-amber-200 dark:border-amber-900/30">
+                        <label
+                            class="block text-center text-[11px] font-black text-amber-700 dark:text-amber-500 uppercase mb-2">
+                            🎁 Aplicar Desconto (Opcional)
                         </label>
                         <div class="relative">
                             <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-amber-600">R$</span>
                             <input type="number" id="payInputDesconto" placeholder="0,00" step="0.01"
-                                   class="w-full p-4 pl-12 bg-white dark:bg-slate-900 border-2 border-amber-300 dark:border-amber-900 rounded-xl font-black text-xl text-amber-600 focus:ring-4 focus:ring-amber-200 outline-none">
+                                class="w-full p-4 pl-12 bg-white dark:bg-slate-900 border-2 border-amber-300 dark:border-amber-900 rounded-xl font-black text-xl text-amber-600 focus:ring-4 focus:ring-amber-200 outline-none">
                         </div>
                     </div>
                 </div>
@@ -1886,17 +2070,19 @@
                 <!-- Total Final -->
                 <div class="pt-2">
                     <div class="text-center mb-6">
-                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Total Líquido a Receber</span>
-                        <span id="payModalFinalValue" class="text-4xl font-black text-emerald-600 tracking-tighter">R$ 0,00</span>
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Total
+                            Líquido a Receber</span>
+                        <span id="payModalFinalValue" class="text-4xl font-black text-emerald-600 tracking-tighter">R$
+                            0,00</span>
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <button id="btnConfirmPayment"
-                                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-xl shadow-xl shadow-emerald-100 dark:shadow-none transition-all flex items-center justify-center gap-3 active:scale-95">
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 rounded-2xl font-black text-xl shadow-xl shadow-emerald-100 dark:shadow-none transition-all flex items-center justify-center gap-3 active:scale-95">
                             <i class="fas fa-money-check-alt"></i> CONFIRMAR AGORA
                         </button>
-                        <button onclick="document.getElementById('paymentModal').classList.add('hidden')" 
-                                class="w-full py-3 text-xs font-bold text-gray-400 hover:text-gray-600 transition uppercase tracking-widest">
+                        <button onclick="document.getElementById('paymentModal').classList.add('hidden')"
+                            class="w-full py-3 text-xs font-bold text-gray-400 hover:text-gray-600 transition uppercase tracking-widest">
                             Cancelar Operação
                         </button>
                     </div>
@@ -1907,8 +2093,11 @@
 
     <!-- Modal de Zoom de Imagem -->
     <div id="imageZoomModal" class="modal-overlay hidden z-[100]" onclick="this.classList.add('hidden')">
-        <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-2xl max-w-3xl w-full mx-4 relative" onclick="event.stopPropagation()">
-            <button class="absolute -top-4 -right-4 bg-white dark:bg-slate-800 w-10 h-10 rounded-full shadow-lg text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center justify-center font-bold text-xl" onclick="document.getElementById('imageZoomModal').classList.add('hidden')">
+        <div class="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-2xl max-w-3xl w-full mx-4 relative"
+            onclick="event.stopPropagation()">
+            <button
+                class="absolute -top-4 -right-4 bg-white dark:bg-slate-800 w-10 h-10 rounded-full shadow-lg text-slate-500 dark:text-slate-400 hover:text-rose-500 flex items-center justify-center font-bold text-xl"
+                onclick="document.getElementById('imageZoomModal').classList.add('hidden')">
                 <i class="fas fa-times"></i>
             </button>
             <img id="imageZoomContent" src="" class="w-full h-auto max-h-[80vh] object-contain rounded-xl">
@@ -1921,7 +2110,8 @@
     <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl m-4 max-h-[90vh] overflow-y-auto">
             <!-- Header -->
-            <div class="p-6 border-b border-slate-200 dark:border-slate-700 dark:border-slate-700 flex justify-between items-center">
+            <div
+                class="p-6 border-b border-slate-200 dark:border-slate-700 dark:border-slate-700 flex justify-between items-center">
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <i class="fas fa-file-excel text-emerald-600"></i>
                     Importar Estoque (Planilha ou XML)
@@ -1934,13 +2124,15 @@
             <!-- Body -->
             <div class="p-6">
                 <!-- Instruções -->
-                <div class="mb-6 bg-amber-50 dark:bg-amber-900/30 p-4 rounded-xl border border-amber-200 dark:border-amber-800">
+                <div
+                    class="mb-6 bg-amber-50 dark:bg-amber-900/30 p-4 rounded-xl border border-amber-200 dark:border-amber-800">
                     <h3 class="font-bold text-amber-900 dark:text-amber-300 mb-2 flex items-center gap-2">
                         <i class="fas fa-info-circle"></i>
                         Instruções para a Planilha
                     </h3>
                     <p class="text-xs text-amber-700 dark:text-amber-400 mb-3">
-                        O sistema identifica os produtos pelo <strong>SKU</strong>. Use as colunas exatamente como no modelo.
+                        O sistema identifica os produtos pelo <strong>SKU</strong>. Use as colunas exatamente como no
+                        modelo.
                     </p>
                     <ul class="text-[10px] text-amber-700 dark:text-amber-400 space-y-1 grid grid-cols-2">
                         <li>• <strong>sku:</strong> Código único (Obrigatório)</li>
@@ -1964,11 +2156,11 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 mb-6">
-                    <button onclick="downloadExcelTemplate()" 
+                    <button onclick="downloadExcelTemplate()"
                         class="w-full py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
                         <i class="fas fa-file-excel"></i> Modelo Excel
                     </button>
-                    <button onclick="downloadXMLTemplate()" 
+                    <button onclick="downloadXMLTemplate()"
                         class="w-full py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
                         <i class="fas fa-file-code"></i> Modelo XML
                     </button>
@@ -2013,7 +2205,8 @@
             </div>
 
             <!-- Footer -->
-            <div class="p-6 border-t border-slate-200 dark:border-slate-700 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-b-xl">
+            <div
+                class="p-6 border-t border-slate-200 dark:border-slate-700 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-b-xl">
                 <p class="text-xs text-slate-500 dark:text-slate-400 dark:text-gray-400 text-center">
                     <i class="fas fa-shield-alt"></i>
                     Apenas usuários com permissão de <strong>Gerente+</strong> podem importar produtos
@@ -2156,14 +2349,18 @@
             <div class="p-6 space-y-4">
                 <!-- Nome da Loja -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Nome da Loja</label>
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Nome
+                        da Loja</label>
                     <input type="text" id="confNomeLoja"
                         class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm transition-all">
                 </div>
 
                 <!-- Descrição -->
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Slogan ou
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Slogan
+                        ou
                         Descrição</label>
                     <input type="text" id="confDescLoja"
                         class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm transition-all"
@@ -2172,7 +2369,9 @@
 
                 <!-- Chave de Acesso (Segura) -->
                 <div class="pt-4 border-t border-gray-100 dark:border-slate-700">
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Chave de Acesso
+                    <label
+                        class="block text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-gray-300 mb-1">Chave
+                        de Acesso
                         Funcionários</label>
                     <div class="flex gap-2">
                         <div class="relative flex-1">
@@ -2185,7 +2384,8 @@
                             <i class="fas fa-copy"></i>
                         </button>
                     </div>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2 italic">Forneça esta chave para que seus vendedores possam
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2 italic">Forneça esta chave para que
+                        seus vendedores possam
                         se cadastrar na sua loja.</p>
                 </div>
 
@@ -2214,6 +2414,85 @@
     <!-- Scripts Externos -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+        <!-- Modal Assistente de Lucro Real (Glassmorphism) -->
+        <div id="pricingAssistantModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 backdrop-blur-md bg-black/40 hidden">
+            <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-700 overflow-hidden animate-in fade-in zoom-in duration-300">
+                <!-- Header -->
+                <div class="p-8 border-b border-gray-100 dark:border-slate-700 bg-amber-500/5 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tighter italic">ASSISTENTE DE LUCRO</h3>
+                        <p class="text-[10px] text-amber-500 font-bold uppercase tracking-widest">Precificação Inteligente & Margem Real</p>
+                    </div>
+                    <button onclick="closePricingAssistant()" class="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition flex items-center justify-center">
+                        <i class="fas fa-times text-gray-400"></i>
+                    </button>
+                </div>
+
+                <!-- Body -->
+                <div class="p-8 space-y-6">
+                    <!-- Dashboard de Resultado -->
+                    <div id="pricingResultCard" class="p-6 rounded-3xl bg-slate-900 border border-white/5 flex flex-col items-center transition-all duration-500 text-center">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Lucro Líquido Real</p>
+                        <h2 id="calcLucroRealValor" class="text-4xl font-black text-white italic mb-1">R$ 0,00</h2>
+                        <div class="flex items-center gap-2">
+                            <span id="calcLucroRealPorcentagem" class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black tracking-widest border border-emerald-500/20">0%</span>
+                            <p id="calcInsightTexto" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Margem Saudável</p>
+                        </div>
+                    </div>
+
+                    <!-- Sliders e Inputs -->
+                    <div class="space-y-4">
+                        <!-- Custo Base -->
+                        <div class="p-4 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-700">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Custo do Produto (R$)</label>
+                                <span id="calcCustoDisplay" class="text-xs font-bold text-gray-800 dark:text-white">R$ 0,00</span>
+                            </div>
+                            <input type="number" id="calcCustoInput" step="0.01" class="w-full bg-white dark:bg-slate-800 border-none px-4 py-2 rounded-xl text-sm font-bold focus:ring-2 focus:ring-amber-500 outline-none" oninput="updatePricingRealTime()">
+                            <p class="text-[8px] text-gray-400 mt-2 uppercase font-medium italic">* Média das variantes cadastradas</p>
+                        </div>
+
+                        <!-- Configurações Adicionais -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Impostos -->
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Impostos (%)</label>
+                                <input type="number" id="calcImposto" value="6" step="0.1" class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900 rounded-xl text-xs font-bold border border-gray-100 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500" oninput="updatePricingRealTime()">
+                            </div>
+                            <!-- Taxa Cartão -->
+                            <div class="space-y-1">
+                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Taxas Venda (%)</label>
+                                <input type="number" id="calcTaxa" value="4.5" step="0.1" class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900 rounded-xl text-xs font-bold border border-gray-100 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500" oninput="updatePricingRealTime()">
+                            </div>
+                        </div>
+
+                        <!-- Custo Fixo Sugerido (Pro-rata) -->
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Despesas Operacionais (%)</label>
+                            <input type="number" id="calcFixo" value="15" step="0.1" class="w-full px-4 py-3 bg-gray-50 dark:bg-slate-900 rounded-xl text-xs font-bold border border-gray-100 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500" oninput="updatePricingRealTime()">
+                            <p id="calcFixoHelp" class="text-[8px] text-gray-400 mt-1 italic leading-tight">Sua média atual de despesas fixas da loja</p>
+                        </div>
+
+                        <!-- Preço de Venda Final -->
+                        <div class="pt-2 border-t border-gray-100 dark:border-slate-700">
+                            <label class="block text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2 text-center">Simular Preço de Venda (R$)</label>
+                            <input type="number" id="calcVendaInput" step="0.01" class="w-full bg-amber-500/10 border-2 border-amber-500 px-6 py-4 rounded-3xl text-xl font-black text-amber-600 text-center outline-none" oninput="updatePricingRealTime()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 bg-gray-50 dark:bg-slate-900/50 flex gap-4">
+                    <button onclick="applyPricing()" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-900 font-black py-4 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-xl shadow-amber-500/20 active:scale-95">
+                        <i class="fas fa-check mr-2"></i> Aplicar Preço
+                    </button>
+                    <button onclick="closePricingAssistant()" class="px-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-gray-100 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+
     <script src="js/config/config.js"></script>
     <script src="js/auditoria.js"></script>
     <script src="js/core/permissions.js"></script>
@@ -2227,6 +2506,7 @@
     <script src="js/modules/charts.js"></script>
 
     <script src="js/modules/users.js"></script>
+    <script src="js/modules/pricingAssistant.js"></script>
     <script src="js/main.js"></script>
     <script src="js/modules/import.js"></script>
 
@@ -2246,31 +2526,34 @@
     </script>
     <!-- Modal de Sucesso de Venda (Recibo Digital) -->
     <div id="saleSuccessModal" class="modal-overlay hidden z-[120]">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden border-4 border-emerald-500 animate-bounce-in">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden border-4 border-emerald-500 animate-bounce-in">
             <div class="bg-emerald-500 p-8 text-white text-center">
                 <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-check text-4xl"></i>
                 </div>
                 <h2 class="text-2xl font-black uppercase tracking-tighter">Venda Realizada!</h2>
-                <p class="text-emerald-100 text-xs font-bold mt-1 uppercase tracking-widest">Recibo gerado com sucesso</p>
+                <p class="text-emerald-100 text-xs font-bold mt-1 uppercase tracking-widest">Recibo gerado com sucesso
+                </p>
             </div>
-            
+
             <div class="p-6 space-y-6">
                 <!-- Resumo Rápido -->
                 <div class="text-center">
                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Recebido</p>
-                    <h3 id="successModalTotal" class="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">R$ 0,00</h3>
+                    <h3 id="successModalTotal"
+                        class="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">R$ 0,00</h3>
                 </div>
 
                 <!-- Botão de WhatsApp -->
                 <div class="space-y-3">
-                    <button id="btnShareWhatsApp" 
-                            class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-4 rounded-2xl font-black text-base shadow-lg shadow-green-100 dark:shadow-none transition-all flex items-center justify-center gap-3 active:scale-95">
+                    <button id="btnShareWhatsApp"
+                        class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white py-4 rounded-2xl font-black text-base shadow-lg shadow-green-100 dark:shadow-none transition-all flex items-center justify-center gap-3 active:scale-95">
                         <i class="fab fa-whatsapp text-2xl"></i> ENVIAR PELO WHATSAPP
                     </button>
-                    
-                    <button onclick="document.getElementById('saleSuccessModal').classList.add('hidden')" 
-                            class="w-full py-4 text-xs font-black text-gray-400 hover:text-gray-600 transition uppercase tracking-widest border-2 border-dashed border-gray-100 dark:border-slate-700 rounded-2xl">
+
+                    <button onclick="document.getElementById('saleSuccessModal').classList.add('hidden')"
+                        class="w-full py-4 text-xs font-black text-gray-400 hover:text-gray-600 transition uppercase tracking-widest border-2 border-dashed border-gray-100 dark:border-slate-700 rounded-2xl">
                         Fechar e Continuar
                     </button>
                 </div>

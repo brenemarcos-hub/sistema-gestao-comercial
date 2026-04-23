@@ -1,10 +1,12 @@
 const CACHE_NAME = 'verum-v1';
 const ASSETS = [
-    '/app.html',
-    '/js/main.js',
-    '/js/core/database.js',
-    '/js/core/ui.js',
-    '/manifest.json'
+    'index.html',
+    'app.html',
+    'css/style.css',
+    'js/main.js',
+    'js/core/database.js',
+    'js/core/ui.js',
+    'manifest.json'
 ];
 
 // Instalação do Service Worker e Cache de arquivos essenciais

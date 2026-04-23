@@ -769,9 +769,16 @@ function updateSalePriceAndStock() {
     const vId = document.getElementById('saleVariante').value;
     const p = produtos.find(item => item.id == pId);
     if (p) {
-        document.getElementById('salePrecoUnitario').value = `R$ ${parseFloat(p.preco_venda).toFixed(2).replace('.', ',')}`;
+        // Agora preenchemos apenas o número para permitir a edição direta
+        document.getElementById('salePrecoUnitario').value = parseFloat(p.preco_venda).toFixed(2);
         const v = p.variantes.find(item => item.id == vId);
         document.getElementById('saleEstoqueInfo').textContent = `Estoque disponível: ${v ? v.estoque_atual : '-'}`;
+        
+        // Disparar atualização do total prévio se existir a função no main.js
+        const qtdInput = document.getElementById('saleQuantidade');
+        if (qtdInput) {
+            qtdInput.dispatchEvent(new Event('input'));
+        }
     }
 }
 const handleSaleBarcode = (ean) => {

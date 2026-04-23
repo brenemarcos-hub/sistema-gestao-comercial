@@ -463,6 +463,15 @@ function setupAppEventListeners() {
             return showNotification('Estoque insuficiente', `Apenas ${variante.estoque_atual} disponíveis.`, 'error');
         }
 
+        // Capturar o preço que está no input de forma robusta
+        const precoInput = document.getElementById('salePrecoUnitario').value;
+        // Se o input estiver vazio, usa o preço do produto. Se tiver valor (mesmo 0), usa o valor do input.
+        const precoCustomizado = (precoInput !== "" && !isNaN(parseFloat(precoInput))) 
+            ? parseFloat(precoInput) 
+            : produto.preco_venda;
+
+        console.log(`💰 Preço Base: ${produto.preco_venda}, Preço no Input: "${precoInput}", Preço Final: ${precoCustomizado}`);
+
         // Verifica se já existe no carrinho para somar
         const indexExistente = carrinho.findIndex(item => item.variantId === vId);
         if (indexExistente > -1) {
@@ -471,13 +480,15 @@ function setupAppEventListeners() {
                 return showNotification('Estoque insuficiente', `O carrinho + nova adição (${novaQtd}) excede o estoque.`, 'error');
             }
             carrinho[indexExistente].qtd = novaQtd;
+            // Opcional: Atualizar preço se for diferente? (Geralmente mantemos o primeiro ou o último)
+            carrinho[indexExistente].preco = precoCustomizado;
         } else {
             carrinho.push({
                 productId: pId,
                 variantId: vId,
                 nome: produto.nome,
                 variante: `${variante.tamanho} / ${variante.cor}`,
-                preco: produto.preco_venda,
+                preco: precoCustomizado,
                 qtd: qtd
             });
         }
@@ -534,13 +545,15 @@ function setupAppEventListeners() {
         }
     });
 
-    addListener('saleQuantidade', 'input', () => {
-        const pId = document.getElementById('saleProduto').value;
+    const updateSaleTotalPreview = () => {
+        const preco = parseFloat(document.getElementById('salePrecoUnitario').value) || 0;
         const qtd = parseInt(document.getElementById('saleQuantidade').value) || 0;
-        const p = produtos.find(item => item.id == pId);
         const totalEl = document.getElementById('cartGrandTotal');
-        if (totalEl) totalEl.textContent = p ? `R$ ${(p.preco_venda * qtd).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
-    });
+        if (totalEl) totalEl.textContent = `R$ ${(preco * qtd).toFixed(2).replace('.', ',')}`;
+    };
+
+    addListener('saleQuantidade', 'input', updateSaleTotalPreview);
+    addListener('salePrecoUnitario', 'input', updateSaleTotalPreview);
 
     // Gerenciamento de Usuários
     addListener('usersBtn', 'click', () => {

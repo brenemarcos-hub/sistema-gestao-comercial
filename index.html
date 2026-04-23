@@ -469,11 +469,13 @@
             mouse.x = e.clientX;
             mouse.y = e.clientY;
 
-            // Parallax image movement
+            // Parallax image movement (verificação de existência para evitar erros)
             const img = document.querySelector('.parallax-img');
-            const moveX = (e.clientX - window.innerWidth / 2) / 50;
-            const moveY = (e.clientY - window.innerHeight / 2) / 50;
-            img.style.transform = `rotateY(${moveX}deg) rotateX(${-moveY}deg)`;
+            if (img) {
+                const moveX = (e.clientX - window.innerWidth / 2) / 50;
+                const moveY = (e.clientY - window.innerHeight / 2) / 50;
+                img.style.transform = `rotateY(${moveX}deg) rotateX(${-moveY}deg)`;
+            }
         });
 
         // Magnetic Button Logic

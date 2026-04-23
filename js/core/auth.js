@@ -137,14 +137,23 @@ async function checkSession() {
             const role = profileCheck?.role || profile?.role;
             
             // 🔓 REVELAR BOTÕES MASTER
+            // 🔓 REVELAR BOTÕES MASTER EXCLUSIVOS
             if (role === 'master') {
-                ['navMasterPanel', 'navMasterClientes', 'navAuditoria', 'btnConfigLoja'].forEach(id => {
+                ['navMasterPanel', 'navMasterClientes', 'navAuditoria'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.remove('hidden');
                 });
-                // No Master, as engrenagens podem levar ao painel de controle geral
+            }
+
+            // ⚙️ REVELAR CONFIGURAÇÕES E USUÁRIOS (MASTER E DONO)
+            if (role === 'master' || role === 'dono') {
                 const configBtn = document.getElementById('btnConfigLoja');
-                if (configBtn) configBtn.title = "Painel de Controle Master";
+                if (configBtn) {
+                    configBtn.classList.remove('hidden');
+                    if (role === 'master') configBtn.title = "Painel de Controle Master";
+                }
+                const usersBtn = document.getElementById('usersBtn');
+                if (usersBtn) usersBtn.classList.remove('hidden');
             }
 
             await checkSubscriptionStatus(session.user.id, role);
